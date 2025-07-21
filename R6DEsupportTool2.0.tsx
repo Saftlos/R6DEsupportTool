@@ -47,7 +47,7 @@ const settings = definePluginSettings({
   restrictToServer: {
     type: OptionType.BOOLEAN,
     description: "Nur auf R6DE Server anzeigen",
-    default: false
+    default: true // Default auf true gesetzt
   },
   defaultPinned: {
     type: OptionType.BOOLEAN,
@@ -200,7 +200,7 @@ export default definePlugin({
     // Modernes Design mit Glas-Effekt
     Object.assign(popup.style, {
       position: "fixed",
-      background: "rgba(14, 15, 18, 0.9)",
+      background: settings.store.backgroundColor,
       backdropFilter: "blur(10px)",
       WebkitBackdropFilter: "blur(10px)",
       color: settings.store.textColor,
@@ -218,17 +218,17 @@ export default definePlugin({
       fontWeight: "500",
       lineHeight: "1.5",
       cursor: "grab",
-      border: `${settings.store.borderSize}px ${settings.store.borderStyle} rgba(78, 93, 148, 0.4)`,
+      border: `${settings.store.borderSize}px ${settings.store.borderStyle} ${settings.store.borderColor}`,
       opacity: settings.store.popupOpacity.toString(),
       visibility: "hidden",
       transform: "scale(0.98)",
-      transition: `
-        opacity ${settings.store.animationDuration}ms cubic-bezier(0.16, 1, 0.3, 1),
-        transform ${settings.store.animationDuration}ms cubic-bezier(0.16, 1, 0.3, 1),
-        visibility ${settings.store.animationDuration}ms ease,
-        backdrop-filter 0.3s ease,
-        background 0.3s ease
-      `
+      transition: settings.store.tooltipAnimation 
+        ? `opacity ${settings.store.animationDuration}ms cubic-bezier(0.16, 1, 0.3, 1),
+           transform ${settings.store.animationDuration}ms cubic-bezier(0.16, 1, 0.3, 1),
+           visibility ${settings.store.animationDuration}ms ease,
+           backdrop-filter 0.3s ease,
+           background 0.3s ease`
+        : "none"
     });
     
     document.body.appendChild(popup);
@@ -274,6 +274,7 @@ export default definePlugin({
     let dragOffsetX = 0;
     let dragOffsetY = 0;
     let userHasDragged = false;
+    let dragStartPosition = { x: 0, y: 0 };
 
     popup.addEventListener("mousedown", (e) => {
       if (e.button !== 0) return;
@@ -282,18 +283,28 @@ export default definePlugin({
       popup.style.cursor = "grabbing";
       dragOffsetX = e.clientX - popup.getBoundingClientRect().left;
       dragOffsetY = e.clientY - popup.getBoundingClientRect().top;
+      dragStartPosition = { x: e.clientX, y: e.clientY };
       e.preventDefault();
     });
 
     const mouseMoveHandler = (e: MouseEvent) => {
       if (!isDragging) return;
       
+      // Minimum-Bewegungsschwelle (5px)
+      const moveThreshold = 5;
+      const dx = Math.abs(e.clientX - dragStartPosition.x);
+      const dy = Math.abs(e.clientY - dragStartPosition.y);
+      
+      if (dx < moveThreshold && dy < moveThreshold) return;
+      
       let newLeft = e.clientX - dragOffsetX;
       let newTop = e.clientY - dragOffsetY;
       const rect = popup.getBoundingClientRect();
-      const vw = window.innerWidth, vh = window.innerHeight;
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
       const margin = 5;
 
+      // Begrenze die Position auf den Bildschirm
       newLeft = Math.max(margin, Math.min(vw - rect.width - margin, newLeft));
       newTop = Math.max(margin, Math.min(vh - rect.height - margin, newTop));
 
@@ -306,8 +317,9 @@ export default definePlugin({
       popup.style.cursor = "grab";
     };
 
-    window.addEventListener("mousemove", mouseMoveHandler);
-    window.addEventListener("mouseup", mouseUpHandler);
+    document.addEventListener("mousemove", mouseMoveHandler);
+    document.addEventListener("mouseup", mouseUpHandler);
+    document.addEventListener("mouseleave", mouseUpHandler);
 
     // CSS für modernes Design mit Animationen
     const style = document.createElement("style");
@@ -693,6 +705,52 @@ export default definePlugin({
         font-size: 14px;
         color: #a0a5b8;
         margin-top: 10px;
+      }
+
+      /* Minimalistisches Popup */
+      .minimalist-popup .strafakte-header {
+        padding-bottom: 10px;
+        margin-bottom: 10px;
+      }
+      
+      .minimalist-popup .strafakte-avatar {
+        width: 36px;
+        height: 36px;
+      }
+      
+      .minimalist-popup .strafakte-username {
+        font-size: 14px;
+      }
+      
+      .minimalist-popup .strafakte-userid {
+        font-size: 11px;
+      }
+      
+      .minimalist-popup .strafakte-stat {
+        padding: 8px;
+        min-width: 70px;
+      }
+      
+      .minimalist-popup .strafakte-stat-value {
+        font-size: 16px;
+      }
+      
+      .minimalist-popup .strafakte-stat-label {
+        font-size: 10px;
+      }
+      
+      .minimalist-popup .strafakte-warning {
+        padding: 8px 10px;
+        font-size: 12px;
+      }
+      
+      .minimalist-popup .strafakte-list-container {
+        max-height: 200px;
+      }
+      
+      .minimalist-popup .strafakte-entry {
+        padding: 8px 10px;
+        font-size: 12px;
       }
     `;
     document.head.appendChild(style);
@@ -1265,8 +1323,11 @@ export default definePlugin({
         return;
       }
 
+      // Minimalistisches Popup Styling anwenden
+      const minimalistClass = settings.store.minimalistPopup ? "minimalist-popup" : "";
+      
       let contentHtml = `
-        <div class="strafakte-header">
+        <div class="strafakte-header ${minimalistClass}">
           ${settings.store.showAvatars && currentStrafakteData.avatarUrl ? ` 
             <img src="${currentStrafakteData.avatarUrl}" class="strafakte-avatar" />
           ` : '<div class="strafakte-avatar" style="background:#2c2f33;display:flex;align-items:center;justify-content:center;font-size:20px">👤</div>'}
@@ -1300,7 +1361,7 @@ export default definePlugin({
       } 
       // Tab-Inhalte
       else {
-        contentHtml += `<div class="strafakte-tab-content">`;
+        contentHtml += `<div class="strafakte-tab-content ${minimalistClass}">`;
         
         switch (activeView) {
           case 'summary':
