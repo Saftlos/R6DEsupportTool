@@ -132,21 +132,25 @@ interface PenaltyEntry {
   days?: number;
   offense?: string;
   date?: Date;
+  evidence?: string[]; // Hinzugefügt für Beweise
 }
 
 interface WarningEntry {
   offense: string;
   date: Date;
+  evidence?: string[]; // Hinzugefügt für Beweise
 }
 
 interface UnbanEntry {
   reason: string;
   date: Date;
+  evidence?: string[]; // Hinzugefügt für Beweise
 }
 
 interface WatchlistEntry {
   reason: string;
   date: Date;
+  evidence?: string[]; // Hinzugefügt für Beweise
 }
 
 interface StrafakteData {
@@ -671,6 +675,93 @@ export default definePlugin({
         font-size: 13px;
         word-break: break-word;
       }
+
+      .strafakte-evidence-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        gap: 8px;
+        margin-top: 8px;
+      }
+      
+      .strafakte-evidence-item {
+        border-radius: 4px;
+        overflow: hidden;
+        position: relative;
+        cursor: pointer;
+        aspect-ratio: 1/1;
+      }
+      
+      .strafakte-evidence-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      
+      .strafakte-evidence-video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      
+      .strafakte-evidence-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0,0,0,0.5);
+        opacity: 0;
+        transition: opacity 0.2s ease;
+      }
+      
+      .strafakte-evidence-overlay:hover {
+        opacity: 1;
+      }
+      
+      .strafakte-evidence-play {
+        font-size: 24px;
+        color: white;
+      }
+      
+      .lightbox {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.9);
+        z-index: 10000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+      }
+      
+      .lightbox-content {
+        max-width: 90%;
+        max-height: 90%;
+        object-fit: contain;
+      }
+      
+      .lightbox-close {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        color: white;
+        font-size: 30px;
+        cursor: pointer;
+        z-index: 10001;
+        background: rgba(0,0,0,0.5);
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
       
       @keyframes fadeIn {
         from { opacity: 0; transform: translateY(8px); }
@@ -794,10 +885,49 @@ export default definePlugin({
     // Variable für letzten Mauszeiger-Event
     let latestAvatarMouseEvent: MouseEvent | null = null;
 
-    // Positionierungsfunktion
+    // Lightbox für Beweise
+    function openLightbox(url: string, type: 'image' | 'video') {
+      const lightbox = document.createElement("div");
+      lightbox.className = "lightbox";
+      
+      const closeBtn = document.createElement("div");
+      closeBtn.className = "lightbox-close";
+      closeBtn.textContent = "✖";
+      closeBtn.onclick = (e) => {
+        e.stopPropagation();
+        lightbox.remove();
+      };
+      
+      let content;
+      if (type === 'image') {
+        content = document.createElement("img");
+        content.src = url;
+        content.className = "lightbox-content";
+      } else {
+        content = document.createElement("video");
+        content.src = url;
+        content.className = "lightbox-content";
+        content.controls = true;
+        content.autoplay = true;
+      }
+      
+      lightbox.appendChild(content);
+      lightbox.appendChild(closeBtn);
+      
+      lightbox.onclick = (e) => {
+        if (e.target === lightbox) {
+          lightbox.remove();
+        }
+      };
+      
+      document.body.appendChild(lightbox);
+    }
+
+    // Positionierungsfunktion mit verbessertem Bildschirmrand-Handling
     function positionPopup(popupElement: HTMLElement, e: MouseEvent, xOffset: number = 15, yOffset: number = 15) {
       const rect = popupElement.getBoundingClientRect();
-      const vw = window.innerWidth, vh = window.innerHeight;
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
       const position = settings.store.popupPosition;
       const margin = 10;
 
@@ -817,7 +947,7 @@ export default definePlugin({
           break;
       }
 
-      // Randbegrenzung
+      // Randbegrenzung mit Überprüfung der Höhe
       left = Math.max(margin, Math.min(vw - rect.width - margin, left));
       top = Math.max(margin, Math.min(vh - rect.height - margin, top));
 
@@ -1126,9 +1256,19 @@ export default definePlugin({
               }
             }
             
+            // Beweise extrahieren
+            const evidenceLines = content.split("\n").filter(line => 
+              line.match(/https?:\/\/[^\s]+/) && 
+              (line.toLowerCase().includes("beweis") || line.toLowerCase().includes("evidence"))
+            );
+            const evidenceUrls = evidenceLines.flatMap(line => 
+              line.match(/https?:\/\/[^\s]+/g) || []
+            );
+            
             watchlistEntries.push({
               reason: vorwurfText,
-              date: new Date(msg.timestamp)
+              date: new Date(msg.timestamp),
+              evidence: evidenceUrls
             });
           }
         }
@@ -1174,9 +1314,19 @@ export default definePlugin({
             const reasonLine = content.split("\n").find(line => line.toLowerCase().startsWith("grund:"));
             const reason = reasonLine?.replace(/Grund:/i, "").trim() || "Kein Grund angegeben";
             
+            // Beweise extrahieren
+            const evidenceLines = content.split("\n").filter(line => 
+              line.match(/https?:\/\/[^\s]+/) && 
+              (line.toLowerCase().includes("beweis") || line.toLowerCase().includes("evidence"))
+            );
+            const evidenceUrls = evidenceLines.flatMap(line => 
+              line.match(/https?:\/\/[^\s]+/g) || []
+            );
+            
             unbans.push({
               reason,
-              date: new Date(msg.timestamp)
+              date: new Date(msg.timestamp),
+              evidence: evidenceUrls
             });
             continue;
           }
@@ -1192,9 +1342,20 @@ export default definePlugin({
           const kat = parseStrafeKategorie(strafeText);
           if (kat === "B") {
             warnCount++;
+            
+            // Beweise extrahieren
+            const evidenceLines = content.split("\n").filter(line => 
+              line.match(/https?:\/\/[^\s]+/) && 
+              (line.toLowerCase().includes("beweis") || line.toLowerCase().includes("evidence"))
+            );
+            const evidenceUrls = evidenceLines.flatMap(line => 
+              line.match(/https?:\/\/[^\s]+/g) || []
+            );
+            
             warnings.push({
               offense,
-              date: new Date(msg.timestamp)
+              date: new Date(msg.timestamp),
+              evidence: evidenceUrls
             });
             continue;
           }
@@ -1212,13 +1373,23 @@ export default definePlugin({
           const matchDays = strafeText.match(/(\d+)d/i);
           if (matchDays) days = parseInt(matchDays[1]);
 
+          // Beweise extrahieren
+          const evidenceLines = content.split("\n").filter(line => 
+            line.match(/https?:\/\/[^\s]+/) && 
+            (line.toLowerCase().includes("beweis") || line.toLowerCase().includes("evidence"))
+          );
+          const evidenceUrls = evidenceLines.flatMap(line => 
+            line.match(/https?:\/\/[^\s]+/g) || []
+          );
+          
           penalties.push({
             text: strafeText,
             category: kat,
             expired: verfallen,
             days,
             offense,
-            date: new Date(msg.timestamp)
+            date: new Date(msg.timestamp),
+            evidence: evidenceUrls
           });
 
           if (!verfallen && days > 0 && days > newestActiveDays) {
@@ -1329,6 +1500,49 @@ export default definePlugin({
           <div class="strafakte-detail-field">
             <div class="strafakte-detail-label">Datum</div>
             <div class="strafakte-detail-value">${detailEntry.date?.toLocaleDateString('de-DE') || 'Unbekannt'}</div>
+          </div>
+        `;
+      }
+
+      // Beweise anzeigen
+      if (detailEntry.evidence && detailEntry.evidence.length > 0) {
+        detailHtml += `
+          <div class="strafakte-detail-field">
+            <div class="strafakte-detail-label">Beweise</div>
+            <div class="strafakte-evidence-grid">
+        `;
+        
+        detailEntry.evidence.forEach(url => {
+          const isImage = /\.(jpeg|jpg|png|gif|webp)$/i.test(url);
+          const isVideo = /\.(mp4|webm|mov)$/i.test(url);
+          
+          if (isImage) {
+            detailHtml += `
+              <div class="strafakte-evidence-item" onclick="openLightbox('${url}', 'image')">
+                <img src="${url}" class="strafakte-evidence-img" />
+                <div class="strafakte-evidence-overlay">
+                  <div class="strafakte-evidence-play">🔍</div>
+                </div>
+              </div>
+            `;
+          } else if (isVideo) {
+            detailHtml += `
+              <div class="strafakte-evidence-item" onclick="openLightbox('${url}', 'video')">
+                <video src="${url}" class="strafakte-evidence-video"></video>
+                <div class="strafakte-evidence-overlay">
+                  <div class="strafakte-evidence-play">▶️</div>
+                </div>
+              </div>
+            `;
+          } else {
+            detailHtml += `
+              <a href="${url}" target="_blank" style="color: #7289da; grid-column: span 2;">${url}</a>
+            `;
+          }
+        });
+        
+        detailHtml += `
+            </div>
           </div>
         `;
       }
@@ -1629,6 +1843,9 @@ export default definePlugin({
           pinBtn.title = isPinned ? 'Angepinnt' : 'Anheften';
         }
       });
+
+      // Position anpassen nach dem Rendern
+      positionPopup(popup, latestAvatarMouseEvent!);
     }
 
     // Popup-Interaktion
@@ -1652,7 +1869,7 @@ export default definePlugin({
             hidePopupWithAnimation();
             activeView = 'summary';
             detailSourceView = null;
-          }, 500);
+          }, 300); // Verkürzt auf 300ms
         }
       }
     });
@@ -1789,12 +2006,24 @@ export default definePlugin({
               activeView = 'summary';
               detailSourceView = null;
             }
-          }, 300);
+          }, 300); // Verkürzt auf 300ms
+        }
+      };
+
+      // Schließen bei Klick auf Avatar
+      const handleMouseDown = () => {
+        if (!isPinned) {
+          setTimeout(() => {
+            hidePopupWithAnimation();
+            activeView = 'summary';
+            detailSourceView = null;
+          }, 100);
         }
       };
 
       el.addEventListener("mouseenter", handleMouseEnter);
       el.addEventListener("mouseleave", handleMouseLeave);
+      el.addEventListener("mousedown", handleMouseDown);
     };
 
     // Einladungsvorschau
@@ -1937,6 +2166,9 @@ export default definePlugin({
     const initialLinks = document.querySelectorAll<HTMLAnchorElement>("a[href*='discord.gg'], a[href*='discord.com/invite']");
     initialLinks.forEach(handleInvitePreview);
 
+    // Globale Funktion für Lightbox
+    (window as any).openLightbox = openLightbox;
+
     observer.observe(document.body, { childList: true, subtree: true });
     this.observers.push(observer);
   },
@@ -1946,7 +2178,9 @@ export default definePlugin({
     const popup = document.getElementById("r6de-supporter-popup");
     if (popup) popup.remove();
     document.querySelectorAll('.r6de-invite-preview').forEach(el => el.remove());
+    document.querySelectorAll('.lightbox').forEach(el => el.remove());
     document.querySelectorAll('[data-r6de-processed]').forEach(el => el.removeAttribute("data-r6de-processed"));
     document.querySelectorAll('[data-r6de-invite-processed]').forEach(el => el.removeAttribute("data-r6de-invite-processed"));
+    delete (window as any).openLightbox;
   }
 });
