@@ -47,7 +47,7 @@ const settings = definePluginSettings({
   restrictToServer: {
     type: OptionType.BOOLEAN,
     description: "Nur auf R6DE Server anzeigen",
-    default: true // Default auf true gesetzt
+    default: true
   },
   defaultPinned: {
     type: OptionType.BOOLEAN,
@@ -132,25 +132,25 @@ interface PenaltyEntry {
   days?: number;
   offense?: string;
   date?: Date;
-  evidence?: string[]; // Hinzugefügt für Beweise
+  evidence?: string[];
 }
 
 interface WarningEntry {
   offense: string;
   date: Date;
-  evidence?: string[]; // Hinzugefügt für Beweise
+  evidence?: string[];
 }
 
 interface UnbanEntry {
   reason: string;
   date: Date;
-  evidence?: string[]; // Hinzugefügt für Beweise
+  evidence?: string[];
 }
 
 interface WatchlistEntry {
   reason: string;
   date: Date;
-  evidence?: string[]; // Hinzugefügt für Beweise
+  evidence?: string[];
 }
 
 interface StrafakteData {
@@ -237,7 +237,7 @@ export default definePlugin({
     
     document.body.appendChild(popup);
 
-    // Scrollbar Styling - verbesserte Usability
+    // Scrollbar Styling
     const scrollFixStyle = document.createElement("style");
     scrollFixStyle.textContent = `
       .r6de-supporter-popup::-webkit-scrollbar {
@@ -895,8 +895,6 @@ export default definePlugin({
     
     // Variable für letzten Mauszeiger-Event
     let latestAvatarMouseEvent: MouseEvent | null = null;
-    // Variable für gespeicherte Position
-    let savedPosition = { left: "", top: "" };
 
     // Lightbox für Beweise
     function openLightbox(url: string, type: 'image' | 'video') {
@@ -916,12 +914,18 @@ export default definePlugin({
         content = document.createElement("img");
         content.src = url;
         content.className = "lightbox-content";
+        content.onerror = () => {
+          // Fallback wenn Bild nicht geladen werden kann
+          content.onerror = null;
+          content.src = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 24 24' fill='none' stroke='%237289da' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><rect x='3' y='3' width='18' height='18' rx='2'/><circle cx='8.5' cy='8.5' r='1.5'/><path d='M21 15l-5-5L5 21'/></svg>";
+        };
       } else {
         content = document.createElement("video");
         content.src = url;
         content.className = "lightbox-content";
         content.controls = true;
         content.autoplay = true;
+        content.playsInline = true;
       }
       
       lightbox.appendChild(content);
@@ -936,7 +940,7 @@ export default definePlugin({
       document.body.appendChild(lightbox);
     }
 
-    // Positionierungsfunktion mit verbessertem Bildschirmrand-Handling
+    // Positionierungsfunktion
     function positionPopup(popupElement: HTMLElement, e: MouseEvent, xOffset: number = 15, yOffset: number = 15) {
       const rect = popupElement.getBoundingClientRect();
       const vw = window.innerWidth;
@@ -960,16 +964,9 @@ export default definePlugin({
           break;
       }
 
-      // Randbegrenzung mit Überprüfung der Höhe
+      // Randbegrenzung
       left = Math.max(margin, Math.min(vw - rect.width - margin, left));
       top = Math.max(margin, Math.min(vh - rect.height - margin, top));
-
-      // Dynamische Höhenanpassung für Listen
-      const maxAllowedHeight = Math.min(
-        settings.store.popupMaxHeight,
-        vh - top - margin
-      );
-      popupElement.style.maxHeight = `${maxAllowedHeight}px`;
 
       popupElement.style.left = `${left}px`;
       popupElement.style.top = `${top}px`;
@@ -1011,7 +1008,6 @@ export default definePlugin({
           const fiber = (el as any)[key];
           let fiberNode = fiber;
           
-          // Durch React-Fiber-Baum navigieren
           while (fiberNode) {
             const props = fiberNode?.pendingProps || fiberNode?.memoizedProps;
             const userId = props?.user?.id || props?.userId || 
@@ -1033,10 +1029,9 @@ export default definePlugin({
         }
       }
 
-      // HTMLImageElement - Extrahiere ID aus Avatar-URL
+      // HTMLImageElement
       if (el instanceof HTMLImageElement && el.classList.toString().includes('avatar')) {
         const src = el.src;
-        // Extrahiere Benutzer-ID aus dem Avatar-Pfad
         const match = src.match(/avatars\/(\d{17,20})\//) || 
                      src.match(/users\/(\d{17,20})\//);
         if (match) return match[1];
@@ -1256,11 +1251,9 @@ export default definePlugin({
             const content = msg.content as string;
             if (!content.includes(`ID: ${userId}`)) continue;
             
-            // Verbesserte Extraktion des Vorwurfs
             const vorwurfLine = content.split("\n").find(line => line.toLowerCase().includes("vorwurf:")) ||
                               content.split("\n").find(line => line.toLowerCase().includes("grund:"));
             
-            // Extrahiere den Text nach "Vorwurf:" oder "Grund:"
             let vorwurfText = "Kein Vorwurf angegeben";
             if (vorwurfLine) {
               const vorwurfMatch = vorwurfLine.match(/Vorwurf:\s*(.+)|Grund:\s*(.+)/i);
@@ -1269,14 +1262,8 @@ export default definePlugin({
               }
             }
             
-            // Beweise extrahieren
-            const evidenceLines = content.split("\n").filter(line => 
-              line.match(/https?:\/\/[^\s]+/) && 
-              (line.toLowerCase().includes("beweis") || line.toLowerCase().includes("evidence"))
-            );
-            const evidenceUrls = evidenceLines.flatMap(line => 
-              line.match(/https?:\/\/[^\s]+/g) || []
-            );
+            // Beweise extrahieren (alle URLs in der Nachricht)
+            const evidenceUrls = content.match(/https?:\/\/[^\s]+/g) || [];
             
             watchlistEntries.push({
               reason: vorwurfText,
@@ -1323,18 +1310,11 @@ export default definePlugin({
           if (unbanPattern.test(content) && !/KEINE CHANCE AUF ENTBANNUNG/i.test(content)) {
             unbanCount++;
             
-            // Grund statt Tat für Entbannungen
             const reasonLine = content.split("\n").find(line => line.toLowerCase().startsWith("grund:"));
             const reason = reasonLine?.replace(/Grund:/i, "").trim() || "Kein Grund angegeben";
             
             // Beweise extrahieren
-            const evidenceLines = content.split("\n").filter(line => 
-              line.match(/https?:\/\/[^\s]+/) && 
-              (line.toLowerCase().includes("beweis") || line.toLowerCase().includes("evidence"))
-            );
-            const evidenceUrls = evidenceLines.flatMap(line => 
-              line.match(/https?:\/\/[^\s]+/g) || []
-            );
+            const evidenceUrls = content.match(/https?:\/\/[^\s]+/g) || [];
             
             unbans.push({
               reason,
@@ -1356,14 +1336,7 @@ export default definePlugin({
           if (kat === "B") {
             warnCount++;
             
-            // Beweise extrahieren
-            const evidenceLines = content.split("\n").filter(line => 
-              line.match(/https?:\/\/[^\s]+/) && 
-              (line.toLowerCase().includes("beweis") || line.toLowerCase().includes("evidence"))
-            );
-            const evidenceUrls = evidenceLines.flatMap(line => 
-              line.match(/https?:\/\/[^\s]+/g) || []
-            );
+            const evidenceUrls = content.match(/https?:\/\/[^\s]+/g) || [];
             
             warnings.push({
               offense,
@@ -1386,14 +1359,7 @@ export default definePlugin({
           const matchDays = strafeText.match(/(\d+)d/i);
           if (matchDays) days = parseInt(matchDays[1]);
 
-          // Beweise extrahieren
-          const evidenceLines = content.split("\n").filter(line => 
-            line.match(/https?:\/\/[^\s]+/) && 
-            (line.toLowerCase().includes("beweis") || line.toLowerCase().includes("evidence"))
-          );
-          const evidenceUrls = evidenceLines.flatMap(line => 
-            line.match(/https?:\/\/[^\s]+/g) || []
-          );
+          const evidenceUrls = content.match(/https?:\/\/[^\s]+/g) || [];
           
           penalties.push({
             text: strafeText,
@@ -1440,22 +1406,12 @@ export default definePlugin({
 
     // Ansicht wechseln
     function changeView(view: 'summary' | 'warnings' | 'unbans' | 'penalties' | 'watchlist' | 'detail') {
-      // Position speichern bevor die Ansicht geändert wird
-      savedPosition = {
-        left: popup.style.left,
-        top: popup.style.top
-      };
       activeView = view;
       renderStrafakteContent();
     }
 
     // Detailansicht für einen Eintrag anzeigen
     function showEntryDetail(entry: PenaltyEntry | WarningEntry | UnbanEntry | WatchlistEntry, sourceView: 'warnings' | 'unbans' | 'penalties' | 'watchlist') {
-      // Position speichern bevor die Ansicht geändert wird
-      savedPosition = {
-        left: popup.style.left,
-        top: popup.style.top
-      };
       detailEntry = entry;
       detailSourceView = sourceView;
       changeView('detail');
@@ -1512,7 +1468,6 @@ export default definePlugin({
         // UnbanEntry oder WatchlistEntry
         const isUnban = detailSourceView === 'unbans';
         
-        // Korrekte Beschriftung für Entbannungen
         const labelText = isUnban ? "Grund der Entbannung" : "Vorwurf";
         
         detailHtml += `
@@ -1536,13 +1491,17 @@ export default definePlugin({
         `;
         
         detailEntry.evidence.forEach(url => {
-          const isImage = /\.(jpeg|jpg|png|gif|webp)$/i.test(url);
-          const isVideo = /\.(mp4|webm|mov)$/i.test(url);
+          // Bessere Erkennung von Medien-Typen
+          const isImage = /\.(jpe?g|png|gif|webp|bmp|svg)$/i.test(url) || 
+                         /(imgur\.com|i\.imgur\.com|gyazo\.com|prntscr\.com|cdn\.discordapp\.com\/attachments).*\.(jpe?g|png|gif|webp|bmp|svg)/i.test(url);
+                         
+          const isVideo = /\.(mp4|webm|mov|avi|mkv|flv|wmv)$/i.test(url) || 
+                         /(youtube\.com|youtu\.be|streamable\.com|clips\.twitch\.tv|cdn\.discordapp\.com\/attachments).*\.(mp4|webm|mov|avi|mkv|flv|wmv)/i.test(url);
           
           if (isImage) {
             detailHtml += `
               <div class="strafakte-evidence-item" onclick="openLightbox('${url}', 'image')">
-                <img src="${url}" class="strafakte-evidence-img" />
+                <img src="${url}" class="strafakte-evidence-img" loading="lazy" />
                 <div class="strafakte-evidence-overlay">
                   <div class="strafakte-evidence-play">🔍</div>
                 </div>
@@ -1551,7 +1510,7 @@ export default definePlugin({
           } else if (isVideo) {
             detailHtml += `
               <div class="strafakte-evidence-item" onclick="openLightbox('${url}', 'video')">
-                <video src="${url}" class="strafakte-evidence-video"></video>
+                <video src="${url}" class="strafakte-evidence-video" preload="none"></video>
                 <div class="strafakte-evidence-overlay">
                   <div class="strafakte-evidence-play">▶️</div>
                 </div>
@@ -1559,7 +1518,9 @@ export default definePlugin({
             `;
           } else {
             detailHtml += `
-              <a href="${url}" target="_blank" style="color: #7289da; grid-column: span 2;">${url}</a>
+              <a href="${url}" target="_blank" rel="noopener noreferrer" style="color: #7289da; grid-column: span 2;">
+                🔗 ${url.substring(0, 40)}...
+              </a>
             `;
           }
         });
@@ -1584,8 +1545,11 @@ export default definePlugin({
         popup.innerHTML = "Keine Daten verfügbar";
         return;
       }
+
+      // Position vor dem Rendern speichern
+      const oldLeft = popup.style.left;
+      const oldTop = popup.style.top;
       
-      // Minimalistisches Popup Styling anwenden
       const minimalistClass = settings.store.minimalistPopup ? "minimalist-popup" : "";
       
       let contentHtml = `
@@ -1777,16 +1741,14 @@ export default definePlugin({
             break;
         }
         
-        contentHtml += `</div>`; // Ende .strafakte-tab-content
+        contentHtml += `</div>`;
       }
 
       popup.innerHTML = contentHtml;
       
-      // Gespeicherte Position wiederherstellen, falls vorhanden
-      if (savedPosition.left && savedPosition.top) {
-        popup.style.left = savedPosition.left;
-        popup.style.top = savedPosition.top;
-      }
+      // Gespeicherte Position wiederherstellen
+      popup.style.left = oldLeft;
+      popup.style.top = oldTop;
 
       // Event Listener für Tabs und Navigation
       document.querySelectorAll('.strafakte-stat, .strafakte-back-button').forEach(el => {
@@ -1853,14 +1815,14 @@ export default definePlugin({
           }, 500);
         }
         
-        // Position speichern vor dem Aktualisieren
-        savedPosition = {
-          left: popup.style.left,
-          top: popup.style.top
-        };
+        const oldLeft = popup.style.left;
+        const oldTop = popup.style.top;
         
         currentStrafakteData = await fetchStrafakte(currentUserId);
         renderStrafakteContent();
+        
+        popup.style.left = oldLeft;
+        popup.style.top = oldTop;
       });
 
       document.getElementById("strafakte-pin")?.addEventListener("click", () => {
@@ -1874,7 +1836,7 @@ export default definePlugin({
       });
 
       // Position anpassen nach dem Rendern
-      if (latestAvatarMouseEvent) {
+      if (latestAvatarMouseEvent && !userHasDragged) {
         positionPopup(popup, latestAvatarMouseEvent);
       }
     }
@@ -1900,7 +1862,7 @@ export default definePlugin({
             hidePopupWithAnimation();
             activeView = 'summary';
             detailSourceView = null;
-          }, 300); // Verkürzt auf 300ms
+          }, 300);
         }
       }
     });
@@ -2012,7 +1974,11 @@ export default definePlugin({
           currentUserId = finalUserId;
           currentStrafakteData = await fetchStrafakte(finalUserId);
           renderStrafakteContent();
-          if (latestAvatarMouseEvent) positionPopup(popup, latestAvatarMouseEvent);
+          
+          // Positionierung nur wenn nicht gedraggt wurde
+          if (!userHasDragged && latestAvatarMouseEvent) {
+            positionPopup(popup, latestAvatarMouseEvent);
+          }
 
           if (tempMouseMoveListener) {
             window.removeEventListener("mousemove", tempMouseMoveListener);
@@ -2037,7 +2003,7 @@ export default definePlugin({
               activeView = 'summary';
               detailSourceView = null;
             }
-          }, 300); // Verkürzt auf 300ms
+          }, 300);
         }
       };
 
