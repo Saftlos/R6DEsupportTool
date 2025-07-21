@@ -689,6 +689,11 @@ export default definePlugin({
         position: relative;
         cursor: pointer;
         aspect-ratio: 1/1;
+        transition: transform 0.2s ease;
+      }
+      
+      .strafakte-evidence-item:hover {
+        transform: scale(1.05);
       }
       
       .strafakte-evidence-img {
@@ -761,6 +766,12 @@ export default definePlugin({
         display: flex;
         align-items: center;
         justify-content: center;
+        transition: all 0.2s ease;
+      }
+      
+      .lightbox-close:hover {
+        transform: scale(1.1);
+        background: rgba(0,0,0,0.7);
       }
       
       @keyframes fadeIn {
@@ -1184,11 +1195,11 @@ export default definePlugin({
           warnCount: 0, 
           unbanCount: 0, 
           watchlistCount: 0,
-          penalties: [], 
-          warnings: [],
-          unbans: [],
-          watchlist: [],
-          newestActiveDays: 0, 
+            penalties: [], 
+            warnings: [],
+            unbans: [],
+            watchlist: [],
+            newestActiveDays: 0, 
           error: "Kein Token" 
         };
 
@@ -1562,6 +1573,10 @@ export default definePlugin({
         return;
       }
 
+      // Position vor dem Rendern speichern
+      const oldLeft = popup.style.left;
+      const oldTop = popup.style.top;
+      
       // Minimalistisches Popup Styling anwenden
       const minimalistClass = settings.store.minimalistPopup ? "minimalist-popup" : "";
       
@@ -1758,6 +1773,10 @@ export default definePlugin({
       }
 
       popup.innerHTML = contentHtml;
+      
+      // Gespeicherte Position wiederherstellen
+      popup.style.left = oldLeft;
+      popup.style.top = oldTop;
 
       // Event Listener für Tabs und Navigation
       document.querySelectorAll('.strafakte-stat, .strafakte-back-button').forEach(el => {
@@ -1845,7 +1864,9 @@ export default definePlugin({
       });
 
       // Position anpassen nach dem Rendern
-      positionPopup(popup, latestAvatarMouseEvent!);
+      if (latestAvatarMouseEvent) {
+        positionPopup(popup, latestAvatarMouseEvent);
+      }
     }
 
     // Popup-Interaktion
