@@ -895,6 +895,8 @@ export default definePlugin({
     
     // Variable für letzten Mauszeiger-Event
     let latestAvatarMouseEvent: MouseEvent | null = null;
+    // Variable für gespeicherte Position
+    let savedPosition = { left: "", top: "" };
 
     // Lightbox für Beweise
     function openLightbox(url: string, type: 'image' | 'video') {
@@ -1438,12 +1440,22 @@ export default definePlugin({
 
     // Ansicht wechseln
     function changeView(view: 'summary' | 'warnings' | 'unbans' | 'penalties' | 'watchlist' | 'detail') {
+      // Position speichern bevor die Ansicht geändert wird
+      savedPosition = {
+        left: popup.style.left,
+        top: popup.style.top
+      };
       activeView = view;
       renderStrafakteContent();
     }
 
     // Detailansicht für einen Eintrag anzeigen
     function showEntryDetail(entry: PenaltyEntry | WarningEntry | UnbanEntry | WatchlistEntry, sourceView: 'warnings' | 'unbans' | 'penalties' | 'watchlist') {
+      // Position speichern bevor die Ansicht geändert wird
+      savedPosition = {
+        left: popup.style.left,
+        top: popup.style.top
+      };
       detailEntry = entry;
       detailSourceView = sourceView;
       changeView('detail');
@@ -1572,10 +1584,6 @@ export default definePlugin({
         popup.innerHTML = "Keine Daten verfügbar";
         return;
       }
-
-      // Position vor dem Rendern speichern
-      const oldLeft = popup.style.left;
-      const oldTop = popup.style.top;
       
       // Minimalistisches Popup Styling anwenden
       const minimalistClass = settings.store.minimalistPopup ? "minimalist-popup" : "";
@@ -1774,9 +1782,11 @@ export default definePlugin({
 
       popup.innerHTML = contentHtml;
       
-      // Gespeicherte Position wiederherstellen
-      popup.style.left = oldLeft;
-      popup.style.top = oldTop;
+      // Gespeicherte Position wiederherstellen, falls vorhanden
+      if (savedPosition.left && savedPosition.top) {
+        popup.style.left = savedPosition.left;
+        popup.style.top = savedPosition.top;
+      }
 
       // Event Listener für Tabs und Navigation
       document.querySelectorAll('.strafakte-stat, .strafakte-back-button').forEach(el => {
@@ -1843,14 +1853,14 @@ export default definePlugin({
           }, 500);
         }
         
-        const oldLeft = popup.style.left;
-        const oldTop = popup.style.top;
+        // Position speichern vor dem Aktualisieren
+        savedPosition = {
+          left: popup.style.left,
+          top: popup.style.top
+        };
         
         currentStrafakteData = await fetchStrafakte(currentUserId);
         renderStrafakteContent();
-        
-        popup.style.left = oldLeft;
-        popup.style.top = oldTop;
       });
 
       document.getElementById("strafakte-pin")?.addEventListener("click", () => {
