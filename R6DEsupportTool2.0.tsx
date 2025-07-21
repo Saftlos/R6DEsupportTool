@@ -973,6 +973,48 @@ export default definePlugin({
       popupElement.style.top = `${top}px`;
     }
 
+    // Popup-Anpassung bei Größenänderung
+    function adjustPopupPosition() {
+      const popupEl = popup;
+      if (!popupEl || popupEl.style.display === 'none') return;
+
+      const rect = popupEl.getBoundingClientRect();
+      const vw = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+      const vh = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+      const margin = 10;
+
+      // Parse die aktuelle Position
+      let left = parseFloat(popupEl.style.left);
+      let top = parseFloat(popupEl.style.top);
+
+      // Falls die Position nicht gesetzt ist (NaN), setzen wir auf 0 und korrigieren dann
+      if (isNaN(left)) left = 0;
+      if (isNaN(top)) top = 0;
+
+      // Korrektur für rechten Rand
+      if (left + rect.width > vw - margin) {
+        left = vw - rect.width - margin;
+      }
+
+      // Korrektur für unteren Rand
+      if (top + rect.height > vh - margin) {
+        top = vh - rect.height - margin;
+      }
+
+      // Korrektur für linken Rand
+      if (left < margin) {
+        left = margin;
+      }
+
+      // Korrektur für oberen Rand
+      if (top < margin) {
+        top = margin;
+      }
+
+      popupEl.style.left = `${left}px`;
+      popupEl.style.top = `${top}px`;
+    }
+
     // Popup Animationen
     function showPopupWithAnimation() {
       popup.style.display = "block";
@@ -1440,6 +1482,7 @@ export default definePlugin({
     function changeView(view: 'summary' | 'warnings' | 'unbans' | 'penalties' | 'watchlist' | 'detail') {
       activeView = view;
       renderStrafakteContent();
+      adjustPopupPosition(); // Position anpassen nach View-Wechsel
     }
 
     // Detailansicht für einen Eintrag anzeigen
@@ -1529,7 +1572,7 @@ export default definePlugin({
           
           if (isImage) {
             detailHtml += `
-              <div class="strafakte-evidence-item" onclick="openLightbox('${url}', 'image')">
+              <div class="strafakte-evidence-item" data-url="${url}" data-type="image">
                 <img src="${url}" class="strafakte-evidence-img" />
                 <div class="strafakte-evidence-overlay">
                   <div class="strafakte-evidence-play">🔍</div>
@@ -1538,7 +1581,7 @@ export default definePlugin({
             `;
           } else if (isVideo) {
             detailHtml += `
-              <div class="strafakte-evidence-item" onclick="openLightbox('${url}', 'video')">
+              <div class="strafakte-evidence-item" data-url="${url}" data-type="video">
                 <video src="${url}" class="strafakte-evidence-video"></video>
                 <div class="strafakte-evidence-overlay">
                   <div class="strafakte-evidence-play">▶️</div>
@@ -1863,17 +1906,29 @@ export default definePlugin({
         }
       });
 
-      // Position anpassen nach dem Rendern
-      if (latestAvatarMouseEvent) {
-        positionPopup(popup, latestAvatarMouseEvent);
-      }
+      // Position nach dem Rendern anpassen
+      adjustPopupPosition();
       
       // Automatische Anpassung bei Größenänderung
       window.addEventListener('resize', () => {
-        if (popup.style.display === 'block' && latestAvatarMouseEvent) {
-          positionPopup(popup, latestAvatarMouseEvent);
+        if (popup.style.display === 'block') {
+          adjustPopupPosition();
         }
       });
+
+      // Event-Listener für Beweise in Detailansicht
+      if (activeView === 'detail') {
+        document.querySelectorAll('.strafakte-evidence-item').forEach(item => {
+          item.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const url = item.getAttribute('data-url');
+            const type = item.getAttribute('data-type') as 'image' | 'video';
+            if (url && type) {
+              openLightbox(url, type);
+            }
+          });
+        });
+      }
     }
 
     // Popup-Interaktion
@@ -1954,6 +2009,7 @@ export default definePlugin({
           
           showPopupWithAnimation();
           if (latestAvatarMouseEvent) positionPopup(popup, latestAvatarMouseEvent);
+          adjustPopupPosition(); // Position anpassen
 
           const finalUserId = userId === "?" ? await getUserIdFromContextMenu(el) : userId;
           
@@ -2010,6 +2066,7 @@ export default definePlugin({
           currentStrafakteData = await fetchStrafakte(finalUserId);
           renderStrafakteContent();
           if (latestAvatarMouseEvent) positionPopup(popup, latestAvatarMouseEvent);
+          adjustPopupPosition(); // Position anpassen
 
           if (tempMouseMoveListener) {
             window.removeEventListener("mousemove", tempMouseMoveListener);
@@ -2194,9 +2251,6 @@ export default definePlugin({
     const initialLinks = document.querySelectorAll<HTMLAnchorElement>("a[href*='discord.gg'], a[href*='discord.com/invite']");
     initialLinks.forEach(handleInvitePreview);
 
-    // Globale Funktion für Lightbox
-    (window as any).openLightbox = openLightbox;
-
     observer.observe(document.body, { childList: true, subtree: true });
     this.observers.push(observer);
   },
@@ -2209,6 +2263,5 @@ export default definePlugin({
     document.querySelectorAll('.lightbox').forEach(el => el.remove());
     document.querySelectorAll('[data-r6de-processed]').forEach(el => el.removeAttribute("data-r6de-processed"));
     document.querySelectorAll('[data-r6de-invite-processed]').forEach(el => el.removeAttribute("data-r6de-invite-processed"));
-    delete (window as any).openLightbox;
   }
 });
