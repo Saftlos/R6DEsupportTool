@@ -509,7 +509,7 @@ export default definePlugin({
       }
       
       .strafakte-list-container {
-        maxHeight: 250px;
+        max-height: 250px;
         overflow-y: auto;
         padding-right: 5px;
         scroll-behavior: smooth;
@@ -752,6 +752,24 @@ export default definePlugin({
         padding: 8px 10px;
         font-size: 12px;
       }
+      
+      /* Einheitliches Design für Einladungsvorschau */
+      .r6de-invite-preview {
+        background: ${settings.store.backgroundColor} !important;
+        backdrop-filter: blur(10px) !important;
+        -webkit-backdrop-filter: blur(10px) !important;
+        color: ${settings.store.textColor} !important;
+        border: ${settings.store.borderSize}px ${settings.store.borderStyle} ${settings.store.borderColor} !important;
+        border-radius: ${settings.store.roundedCorners ? '12px' : '0'} !important;
+        padding: 14px 16px !important;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.25), 0 4px 12px rgba(0,0,0,0.15) !important;
+        font-family: 'Whitney', 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
+        font-weight: 500 !important;
+        line-height: 1.5 !important;
+        font-size: 13px !important;
+        max-width: 300px !important;
+        opacity: ${settings.store.popupOpacity} !important;
+      }
     `;
     document.head.appendChild(style);
 
@@ -802,6 +820,13 @@ export default definePlugin({
       // Randbegrenzung
       left = Math.max(margin, Math.min(vw - rect.width - margin, left));
       top = Math.max(margin, Math.min(vh - rect.height - margin, top));
+
+      // Dynamische Höhenanpassung für Listen
+      const maxAllowedHeight = Math.min(
+        settings.store.popupMaxHeight,
+        vh - top - margin
+      );
+      popupElement.style.maxHeight = `${maxAllowedHeight}px`;
 
       popupElement.style.left = `${left}px`;
       popupElement.style.top = `${top}px`;
@@ -1780,6 +1805,10 @@ export default definePlugin({
       const code = link.href.match(inviteRegex)?.[3];
       if (!code) return;
 
+      // Unterdrücke das Discord-Tooltip
+      link.title = "";
+      link.removeAttribute("title");
+
       fetch(`https://discord.com/api/v9/invites/${code}?with_counts=true&with_expiration=true`)
         .then(res => res.json())
         .then(data => {
@@ -1787,21 +1816,18 @@ export default definePlugin({
           let tooltipMouseMoveHandler: ((event: MouseEvent) => void) | null = null;
 
           link.addEventListener("mouseenter", (e) => {
+            // Verhindere das Standard-Discord-Tooltip
+            e.stopPropagation();
+            e.preventDefault();
+            
             tooltip = document.createElement("div");
-            tooltip.className = "invite-preview-tooltip";
+            tooltip.className = "r6de-invite-preview";
             Object.assign(tooltip.style, {
               position: "fixed",
-              background: "rgba(0, 0, 0, 0.85)",
-              backdropFilter: "blur(5px)",
-              color: "white",
-              padding: "10px",
-              borderRadius: "8px",
               zIndex: "10000",
               maxWidth: "300px",
-              boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
               pointerEvents: "none",
-              fontSize: "13px",
-              fontFamily: "Whitney, Helvetica Neue, Helvetica, Arial, sans-serif"
+              display: "none"
             });
             document.body.appendChild(tooltip);
 
@@ -1818,6 +1844,20 @@ export default definePlugin({
               <div>👥 Mitglieder: ${data.approximate_member_count || "Unbekannt"}</div>
             `;
 
+            // Zeige Tooltip mit Animation
+            tooltip.style.display = "block";
+            tooltip.style.visibility = "hidden";
+            tooltip.style.opacity = "0";
+            tooltip.style.transform = "scale(0.98)";
+            
+            setTimeout(() => {
+              if (tooltip) {
+                tooltip.style.visibility = "visible";
+                tooltip.style.opacity = "1";
+                tooltip.style.transform = "scale(1)";
+              }
+            }, 10);
+
             positionPopup(tooltip, e as MouseEvent, 12, 12);
           });
 
@@ -1827,8 +1867,16 @@ export default definePlugin({
 
           link.addEventListener("mouseleave", () => {
             if (tooltip) {
-              tooltip.remove();
-              tooltip = null;
+              // Animation für Schließen
+              tooltip.style.opacity = "0";
+              tooltip.style.transform = "scale(0.98)";
+              
+              setTimeout(() => {
+                if (tooltip) {
+                  tooltip.remove();
+                  tooltip = null;
+                }
+              }, settings.store.animationDuration);
             }
           });
         })
@@ -1897,7 +1945,7 @@ export default definePlugin({
     this.observers.forEach(obs => obs.disconnect());
     const popup = document.getElementById("r6de-supporter-popup");
     if (popup) popup.remove();
-    document.querySelectorAll('.invite-preview-tooltip').forEach(el => el.remove());
+    document.querySelectorAll('.r6de-invite-preview').forEach(el => el.remove());
     document.querySelectorAll('[data-r6de-processed]').forEach(el => el.removeAttribute("data-r6de-processed"));
     document.querySelectorAll('[data-r6de-invite-processed]').forEach(el => el.removeAttribute("data-r6de-invite-processed"));
   }
