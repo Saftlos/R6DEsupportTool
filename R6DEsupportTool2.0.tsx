@@ -158,7 +158,7 @@ export default definePlugin({
       WebkitBackdropFilter: glassEffect ? "blur(20px) saturate(180%)" : "none",
       color: settings.store.textColor,
       padding: "0",
-      borderRadius: settings.store.roundedCorners ? "20px" : "8px",
+      borderRadius: settings.store.roundedCorners ? "8px" : "4px",
       fontSize: "14px",
       fontWeight: "500",
       zIndex: "999999",
@@ -206,21 +206,22 @@ export default definePlugin({
       }
       
       .r6de-supporter-popup::-webkit-scrollbar {
-        width: 6px;
+        width: 8px;
       }
       
       .r6de-supporter-popup::-webkit-scrollbar-track {
-        background: transparent;
+        background: rgba(0, 0, 0, 0.1);
+        border-radius: 4px;
       }
       
       .r6de-supporter-popup::-webkit-scrollbar-thumb {
-        background: var(--primary);
-        border-radius: 3px;
+        background: rgba(114, 137, 218, 0.6);
+        border-radius: 4px;
         transition: background 0.3s ease;
       }
       
       .r6de-supporter-popup::-webkit-scrollbar-thumb:hover {
-        background: var(--primary-hover);
+        background: rgba(91, 110, 174, 0.8);
       }
       
       .strafakte-header {
@@ -254,7 +255,7 @@ export default definePlugin({
       .strafakte-avatar {
         width: 56px;
         height: 56px;
-        border-radius: 16px;
+        border-radius: 12px;
         margin-right: 16px;
         object-fit: cover;
         border: 2px solid var(--primary);
@@ -336,11 +337,11 @@ export default definePlugin({
         width: 32px;
         height: 32px;
         border: none;
-        border-radius: 10px;
+        border-radius: 8px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 14px;
+        font-size: 16px;
         cursor: pointer;
         position: relative;
         overflow: hidden;
@@ -400,7 +401,7 @@ export default definePlugin({
       }
       
       .strafakte-content {
-        padding: 24px;
+        padding: 20px;
         max-height: ${settings.store.popupMaxHeight - 120}px;
         overflow-y: auto;
       }
@@ -414,7 +415,7 @@ export default definePlugin({
       
       .strafakte-stat {
         background: var(--surface);
-        border-radius: 16px;
+        border-radius: 12px;
         padding: 20px 16px;
         text-align: center;
         cursor: pointer;
@@ -468,7 +469,7 @@ export default definePlugin({
       .strafakte-warning {
         background: linear-gradient(135deg, rgba(255, 176, 46, 0.15), rgba(255, 176, 46, 0.05));
         border: 1px solid var(--warning);
-        border-radius: 16px;
+        border-radius: 12px;
         padding: 16px 20px;
         margin-bottom: 24px;
         display: flex;
@@ -552,21 +553,26 @@ export default definePlugin({
       }
       
       .strafakte-list-container::-webkit-scrollbar {
-        width: 4px;
+        width: 6px;
       }
       
       .strafakte-list-container::-webkit-scrollbar-track {
-        background: transparent;
+        background: rgba(0, 0, 0, 0.1);
+        border-radius: 3px;
       }
       
       .strafakte-list-container::-webkit-scrollbar-thumb {
-        background: var(--primary);
-        border-radius: 2px;
+        background: rgba(114, 137, 218, 0.5);
+        border-radius: 3px;
+      }
+      
+      .strafakte-list-container::-webkit-scrollbar-thumb:hover {
+        background: rgba(91, 110, 174, 0.7);
       }
       
       .strafakte-entry {
         background: var(--surface);
-        border-radius: 12px;
+        border-radius: 8px;
         padding: 16px;
         margin-bottom: 12px;
         cursor: pointer;
@@ -650,7 +656,7 @@ export default definePlugin({
         font-size: 11px;
         font-weight: 700;
         padding: 0 8px;
-        border-radius: 8px;
+        border-radius: 6px;
         margin-top: 8px;
         background: var(--primary);
         color: white;
@@ -761,7 +767,7 @@ export default definePlugin({
         -webkit-backdrop-filter: ${settings.store.glassEffect ? 'blur(20px) saturate(180%)' : 'none'} !important;
         color: ${settings.store.textColor} !important;
         border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        border-radius: ${settings.store.roundedCorners ? '16px' : '8px'} !important;
+        border-radius: ${settings.store.roundedCorners ? '12px' : '8px'} !important;
         padding: 20px !important;
         box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4) !important;
         font-family: 'Inter', 'Segoe UI', system-ui, sans-serif !important;
@@ -1392,7 +1398,7 @@ export default definePlugin({
             </button>
             <button id="strafakte-copy-id" class="strafakte-button" title="ID kopieren">&#x1F4CB;</button>
             <button id="strafakte-refresh" class="strafakte-button" title="Aktualisieren">&#x1F504;</button>
-            <button id="strafakte-close" class="strafakte-button close" title="Schließen">&times;</button>
+            <button id="strafakte-close" class="strafakte-button close" title="Schließen">✖</button>
           </div>
         </div>
         <div class="strafakte-content">
