@@ -158,7 +158,7 @@ export default definePlugin({
       WebkitBackdropFilter: glassEffect ? "blur(20px) saturate(180%)" : "none",
       color: settings.store.textColor,
       padding: "0",
-      borderRadius: settings.store.roundedCorners ? "4px" : "2px",
+      borderRadius: settings.store.roundedCorners ? "2px" : "0px",
       fontSize: "14px",
       fontWeight: "500",
       zIndex: "999999",
@@ -187,6 +187,16 @@ export default definePlugin({
     style.textContent = `
       * {
         box-sizing: border-box;
+      }
+      
+      /* Hide default scrollbar globally */
+      ::-webkit-scrollbar {
+        display: none !important;
+      }
+      
+      * {
+        scrollbar-width: none !important;
+        -ms-overflow-style: none !important;
       }
       
       .r6de-supporter-popup {
@@ -615,11 +625,11 @@ export default definePlugin({
         left: 100%;
       }
       
-      .strafakte-penalty-category-A { border-left-color: var(--success); }
-      .strafakte-penalty-category-B { border-left-color: var(--warning); }
-      .strafakte-penalty-category-C { border-left-color: var(--orange); }
-      .strafakte-penalty-category-D { border-left-color: var(--danger); }
-      .strafakte-penalty-category-E { border-left-color: var(--purple); }
+      .strafakte-penalty-category-A { border-left-color: var(--gray); }
+      .strafakte-penalty-category-B { border-left-color: var(--gray); }
+      .strafakte-penalty-category-C { border-left-color: var(--gray); }
+      .strafakte-penalty-category-D { border-left-color: var(--gray); }
+      .strafakte-penalty-category-E { border-left-color: var(--gray); }
       .strafakte-penalty-category-KICK { border-left-color: var(--orange); }
       .strafakte-penalty-category-UNKNOWN { border-left-color: var(--gray); }
       
@@ -884,32 +894,34 @@ export default definePlugin({
     document.addEventListener("mousemove", mouseMoveHandler);
     document.addEventListener("mouseup", mouseUpHandler);
 
-    // Positionierung ohne Grid-Snapping
+    // Verbesserte Positionierung ohne aggressives Springen
     function positionPopup(popupElement: HTMLElement, e: MouseEvent, xOffset: number = 15, yOffset: number = 15) {
       const rect = popupElement.getBoundingClientRect();
       const vw = window.innerWidth;
       const vh = window.innerHeight;
-      const margin = 15;
+      const margin = 5; // Kleinerer Margin für weniger aggressives Springen
 
       let left = e.pageX + xOffset;
       let top = e.pageY + yOffset;
 
-      // Smart positioning
+      // Sanfte Anpassung nur wenn wirklich nötig
       if (left + rect.width > vw - margin) {
-        left = e.pageX - rect.width - xOffset;
+        left = Math.max(margin, e.pageX - rect.width - xOffset);
       }
       if (top + rect.height > vh - margin) {
-        top = e.pageY - rect.height - yOffset;
+        top = Math.max(margin, vh - rect.height - margin);
       }
 
-      // Clamp to screen with margin
+      // Sicherstellen dass es im Viewport bleibt
       left = Math.max(margin, Math.min(vw - rect.width - margin, left));
       top = Math.max(margin, Math.min(vh - rect.height - margin, top));
 
-      // Pixel-perfect positioning
-      popupElement.style.left = `${Math.round(left)}px`;
-      popupElement.style.top = `${Math.round(top)}px`;
-      popupElement.style.transform = "none";
+      // Smooth positioning
+      requestAnimationFrame(() => {
+        popupElement.style.left = `${Math.round(left)}px`;
+        popupElement.style.top = `${Math.round(top)}px`;
+        popupElement.style.transform = "none";
+      });
     }
 
     // Popup Animationen ohne Transform-Conflicts
@@ -1394,7 +1406,7 @@ export default definePlugin({
           </div>
           <div class="strafakte-button-container">
             <button id="strafakte-pin" class="strafakte-button ${isPinned ? 'pinned' : 'unpinned'}" title="${isPinned ? 'Angepinnt' : 'Anheften'}">
-              ${isPinned ? '&#x1F512;' : '&#x1F4CC;'}
+              ${isPinned ? '&#x1F512;' : '&#x1F513;'}
             </button>
             <button id="strafakte-copy-id" class="strafakte-button" title="ID kopieren">&#x1F4CB;</button>
             <button id="strafakte-refresh" class="strafakte-button" title="Aktualisieren">&#x1F504;</button>
@@ -1653,7 +1665,7 @@ export default definePlugin({
         const pinBtn = document.getElementById("strafakte-pin");
         if (pinBtn) {
           pinBtn.className = `strafakte-button ${isPinned ? 'pinned' : 'unpinned'}`;
-          pinBtn.innerHTML = isPinned ? '&#x1F512;' : '&#x1F4CC;';
+          pinBtn.innerHTML = isPinned ? '&#x1F512;' : '&#x1F513;';
           pinBtn.title = isPinned ? 'Angepinnt' : 'Anheften';
         }
       });
