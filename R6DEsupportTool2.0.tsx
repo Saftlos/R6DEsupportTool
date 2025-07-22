@@ -18,7 +18,7 @@ const settings = definePluginSettings({
     description: "Verzögerung beim Hovern (ms)",
     default: 300,
     min: 0,
-    max: 2000
+    max: 10000
   },
   roundedCorners: {
     type: OptionType.BOOLEAN,
@@ -28,26 +28,26 @@ const settings = definePluginSettings({
   backgroundColor: {
     type: OptionType.STRING,
     description: "Hintergrundfarbe (Hex)",
-    default: "#0a0b0f"
+    default: "#0e0f12"
   },
   popupWidth: {
     type: OptionType.NUMBER,
     description: "Popup-Breite (px)",
-    default: 480,
-    min: 300,
+    default: 450,
+    min: 100,
     max: 800
   },
   popupMaxHeight: {
     type: OptionType.NUMBER,
     description: "Maximale Höhe (px)",
-    default: 600,
-    min: 400,
+    default: 500,
+    min: 0,
     max: 1000
   },
   restrictToServer: {
     type: OptionType.BOOLEAN,
     description: "Nur auf R6DE Server anzeigen",
-    default: true
+    default: true // Default auf true gesetzt
   },
   defaultPinned: {
     type: OptionType.BOOLEAN,
@@ -57,22 +57,71 @@ const settings = definePluginSettings({
   textColor: {
     type: OptionType.STRING,
     description: "Textfarbe (Hex)",
-    default: "#ffffff"
+    default: "#e0e7ff"
   },
-  accentColor: {
+  borderSize: {
+    type: OptionType.NUMBER,
+    description: "Rahmendicke (px)",
+    default: 1,
+    min: 0,
+    max: 10
+  },
+  borderColor: {
     type: OptionType.STRING,
-    description: "Akzentfarbe (Hex)",
-    default: "#5865f2"
+    description: "Rahmenfarbe (Hex)",
+    default: "#4e5d94"
+  },
+  borderStyle: {
+    type: OptionType.SELECT,
+    description: "Rahmenstil",
+    default: "solid",
+    options: [
+      { label: "Durchgezogen", value: "solid" },
+      { label: "Gestrichelt", value: "dashed" },
+      { label: "Gepunktet", value: "dotted" },
+      { label: "Doppelt", value: "double" }
+    ]
+  },
+  popupOpacity: {
+    type: OptionType.NUMBER,
+    description: "Deckkraft (0.0 - 1.0)",
+    default: 1.0,
+    min: 0.0,
+    max: 1.0,
+    step: 0.05
+  },
+  tooltipAnimation: {
+    type: OptionType.BOOLEAN,
+    description: "Animationen aktivieren",
+    default: true
+  },
+  animationDuration: {
+    type: OptionType.NUMBER,
+    description: "Animationsdauer (ms)",
+    default: 200,
+    min: 0,
+    max: 1000
+  },
+  popupPosition: {
+    type: OptionType.SELECT,
+    description: "Popup-Position",
+    default: "bottom-right",
+    options: [
+      { label: "Unten rechts", value: "bottom-right" },
+      { label: "Unten links", value: "bottom-left" },
+      { label: "Oben rechts", value: "top-right" },
+      { label: "Oben links", value: "top-left" }
+    ]
   },
   showAvatars: {
     type: OptionType.BOOLEAN,
     description: "Avatare anzeigen",
     default: true
   },
-  glassEffect: {
+  minimalistPopup: {
     type: OptionType.BOOLEAN,
-    description: "Glasmorphismus-Effekt",
-    default: true
+    description: "Minimalistisches Popup",
+    default: false
   }
 });
 
@@ -116,7 +165,7 @@ interface StrafakteData {
 
 export default definePlugin({
   name: "R6DEsupporterTool",
-  description: "Moderne Strafakte & Einladungsvorschau mit kräftigen Animationen",
+  description: "Strafakte, Einladungsvorschau & Sprachbenachrichtigungen",
   authors: [{ id: 549586034242093069n, name: "Saftlos" }],
   settings,
   dependencies: ["ContextMenuAPI"],
@@ -141,595 +190,493 @@ export default definePlugin({
 
   async start() {
     const GUILD_ID = "787620905269854259";
+    const WATCHLIST_CHANNEL_ID = "843185952122077224";
     
     // Popup Container
     const popup = document.createElement("div");
     popup.id = "r6de-supporter-popup";
     popup.classList.add("r6de-supporter-popup");
     
-    // Moderne Styling-Eigenschaften
-    const glassEffect = settings.store.glassEffect;
+    // Modernes Design mit Glas-Effekt
     Object.assign(popup.style, {
       position: "fixed",
-      background: glassEffect 
-        ? `linear-gradient(135deg, ${settings.store.backgroundColor}ee, ${settings.store.backgroundColor}dd)`
-        : settings.store.backgroundColor,
-      backdropFilter: glassEffect ? "blur(20px) saturate(180%)" : "none",
-      WebkitBackdropFilter: glassEffect ? "blur(20px) saturate(180%)" : "none",
+      background: settings.store.backgroundColor,
+      backdropFilter: "blur(10px)",
+      WebkitBackdropFilter: "blur(10px)",
       color: settings.store.textColor,
-      padding: "0",
-      borderRadius: settings.store.roundedCorners ? "2px" : "0px",
-      fontSize: "14px",
-      fontWeight: "500",
-      zIndex: "999999",
+      padding: "14px 16px",
+      borderRadius: settings.store.roundedCorners ? "12px" : "0",
+      fontSize: "13px",
+      zIndex: "9999",
       pointerEvents: "auto",
       display: "none",
       width: `${settings.store.popupWidth}px`,
-      maxWidth: "90vw",
-      maxHeight: `${settings.store.popupMaxHeight}px`,
-      minWidth: "320px",
+      maxHeight: settings.store.popupMaxHeight > 0 ? `${settings.store.popupMaxHeight}px` : 'none',
       overflowY: "auto",
-      boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05)",
-      fontFamily: "'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif",
+      boxShadow: "0 8px 24px rgba(0,0,0,0.25), 0 4px 12px rgba(0,0,0,0.15)",
+      fontFamily: "'Whitney', 'Helvetica Neue', Helvetica, Arial, sans-serif",
+      fontWeight: "500",
+      lineHeight: "1.5",
       cursor: "grab",
-      border: `1px solid rgba(255, 255, 255, 0.1)`,
-      opacity: "0",
+      border: `${settings.store.borderSize}px ${settings.store.borderStyle} ${settings.store.borderColor}`,
+      opacity: settings.store.popupOpacity.toString(),
       visibility: "hidden",
-      transform: "scale(0.9) translateY(20px)",
-      transition: "all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1)",
-      willChange: "transform, opacity"
+      transform: "scale(0.98)",
+      transition: settings.store.tooltipAnimation 
+        ? `opacity ${settings.store.animationDuration}ms cubic-bezier(0.16, 1, 0.3, 1),
+           transform ${settings.store.animationDuration}ms cubic-bezier(0.16, 1, 0.3, 1),
+           visibility ${settings.store.animationDuration}ms ease,
+           backdrop-filter 0.3s ease,
+           background 0.3s ease`
+        : "none"
     });
     
     document.body.appendChild(popup);
 
-    // Modernes CSS mit kräftigen Animationen
-    const style = document.createElement("style");
-    style.textContent = `
-      * {
-        box-sizing: border-box;
-      }
-      
-      /* Hide default scrollbar globally */
-      ::-webkit-scrollbar {
-        display: none !important;
-      }
-      
-      * {
-        scrollbar-width: none !important;
-        -ms-overflow-style: none !important;
-      }
-      
-      .r6de-supporter-popup {
-        --primary: ${settings.store.accentColor};
-        --primary-hover: ${settings.store.accentColor}dd;
-        --success: #00d26a;
-        --warning: #ffb02e;
-        --danger: #f23f43;
-        --purple: #8b5cf6;
-        --orange: #ff6b35;
-        --gray: #6b7280;
-        --surface: rgba(255, 255, 255, 0.05);
-        --surface-hover: rgba(255, 255, 255, 0.1);
-        --text-primary: ${settings.store.textColor};
-        --text-secondary: ${settings.store.textColor}cc;
-        --text-muted: ${settings.store.textColor}88;
-      }
-      
+    // Scrollbar Styling - verbesserte Usability
+    const scrollFixStyle = document.createElement("style");
+    scrollFixStyle.textContent = `
       .r6de-supporter-popup::-webkit-scrollbar {
         width: 8px;
       }
-      
       .r6de-supporter-popup::-webkit-scrollbar-track {
         background: rgba(0, 0, 0, 0.1);
         border-radius: 4px;
       }
-      
       .r6de-supporter-popup::-webkit-scrollbar-thumb {
         background: rgba(114, 137, 218, 0.6);
         border-radius: 4px;
-        transition: background 0.3s ease;
+        cursor: pointer;
       }
-      
       .r6de-supporter-popup::-webkit-scrollbar-thumb:hover {
         background: rgba(91, 110, 174, 0.8);
       }
+      .strafakte-list-container::-webkit-scrollbar {
+        width: 6px;
+      }
+      .strafakte-list-container::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.1);
+        border-radius: 3px;
+      }
+      .strafakte-list-container::-webkit-scrollbar-thumb {
+        background: rgba(114, 137, 218, 0.5);
+        border-radius: 3px;
+        cursor: pointer;
+      }
+      .strafakte-list-container::-webkit-scrollbar-thumb:hover {
+        background: rgba(91, 110, 174, 0.7);
+      }
+    `;
+    document.head.appendChild(scrollFixStyle);
+
+    // Dragging Logik
+    let isDragging = false;
+    let dragOffsetX = 0;
+    let dragOffsetY = 0;
+    let userHasDragged = false;
+    let dragStartPosition = { x: 0, y: 0 };
+
+    popup.addEventListener("mousedown", (e) => {
+      if (e.button !== 0) return;
+      isDragging = true;
+      userHasDragged = true;
+      popup.style.cursor = "grabbing";
+      dragOffsetX = e.clientX - popup.getBoundingClientRect().left;
+      dragOffsetY = e.clientY - popup.getBoundingClientRect().top;
+      dragStartPosition = { x: e.clientX, y: e.clientY };
+      e.preventDefault();
+    });
+
+    const mouseMoveHandler = (e: MouseEvent) => {
+      if (!isDragging) return;
       
-      .strafakte-header {
+      // Minimum-Bewegungsschwelle (5px)
+      const moveThreshold = 5;
+      const dx = Math.abs(e.clientX - dragStartPosition.x);
+      const dy = Math.abs(e.clientY - dragStartPosition.y);
+      
+      if (dx < moveThreshold && dy < moveThreshold) return;
+      
+      let newLeft = e.clientX - dragOffsetX;
+      let newTop = e.clientY - dragOffsetY;
+      const rect = popup.getBoundingClientRect();
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      const margin = 5;
+
+      // Begrenze die Position auf den Bildschirm
+      newLeft = Math.max(margin, Math.min(vw - rect.width - margin, newLeft));
+      newTop = Math.max(margin, Math.min(vh - rect.height - margin, newTop));
+
+      popup.style.left = `${newLeft}px`;
+      popup.style.top = `${newTop}px`;
+    };
+
+    const mouseUpHandler = () => {
+      isDragging = false;
+      popup.style.cursor = "grab";
+    };
+
+    document.addEventListener("mousemove", mouseMoveHandler);
+    document.addEventListener("mouseup", mouseUpHandler);
+    document.addEventListener("mouseleave", mouseUpHandler);
+
+    // CSS für modernes Design mit Animationen
+    const style = document.createElement("style");
+    style.textContent = `
+      .r6de-supporter-popup {
+        transition: 
+          opacity ${settings.store.animationDuration}ms cubic-bezier(0.16, 1, 0.3, 1), 
+          transform ${settings.store.animationDuration}ms cubic-bezier(0.16, 1, 0.3, 1), 
+          visibility ${settings.store.animationDuration}ms ease,
+          backdrop-filter 0.3s ease,
+          background 0.3s ease;
+      }
+      
+      .strafakte-button {
+        background: rgba(88, 101, 242, 0.9);
+        color: white;
+        border: none;
+        padding: 0;
+        border-radius: 6px;
+        font-size: 15px;
+        cursor: pointer;
         display: flex;
         align-items: center;
-        padding: 20px;
-        background: linear-gradient(135deg, var(--surface), transparent);
-        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-        position: relative;
-        overflow: hidden;
-        min-height: 80px;
-        gap: 12px;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
       }
       
-      .strafakte-header::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 2px;
-        background: linear-gradient(90deg, var(--primary), var(--purple), var(--primary));
-        animation: shimmer 2s ease-in-out infinite;
+      .strafakte-button:hover {
+        transform: scale(1.08);
+        background: rgba(71, 82, 196, 0.9);
+        box-shadow: 0 3px 6px rgba(0,0,0,0.25);
       }
       
-      @keyframes shimmer {
-        0% { transform: translateX(-100%); }
-        100% { transform: translateX(100%); }
+      .strafakte-button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
       }
       
-      .strafakte-avatar {
-        width: 56px;
-        height: 56px;
-        border-radius: 12px;
-        margin-right: 16px;
-        object-fit: cover;
-        border: 2px solid var(--primary);
-        transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
-        position: relative;
-        overflow: hidden;
+      .strafakte-button.pinned {
+        background: rgba(67, 181, 129, 0.9);
       }
       
-      .strafakte-avatar::after {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-        transition: left 0.6s ease;
+      .strafakte-button.pinned:hover {
+        background: rgba(61, 163, 112, 0.9);
       }
       
-      .strafakte-avatar:hover {
-        transform: scale(1.1) rotate(5deg);
-        border-color: var(--success);
-        box-shadow: 0 8px 25px rgba(88, 101, 242, 0.4);
+      .strafakte-button.unpinned {
+        background: rgba(240, 71, 71, 0.9);
       }
       
-      .strafakte-avatar:hover::after {
-        left: 100%;
+      .strafakte-button.unpinned:hover {
+        background: rgba(216, 64, 64, 0.9);
+      }
+
+      .strafakte-button.close {
+        background: none !important;
+        color: #f04747;
+        font-size: 17px;
+        line-height: 1;
+        box-shadow: none;
       }
       
-      .strafakte-user-info {
-        flex: 1;
-        min-width: 0;
-        margin-right: 8px;
-        overflow: hidden;
-      }
-      
-      .strafakte-username {
-        font-weight: 700;
-        font-size: 16px;
-        color: var(--text-primary);
-        margin-bottom: 4px;
-        background: linear-gradient(135deg, var(--text-primary), var(--primary));
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        animation: textGlow 3s ease-in-out infinite alternate;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        max-width: 100%;
-      }
-      
-      @keyframes textGlow {
-        from { filter: brightness(1); }
-        to { filter: brightness(1.2); }
-      }
-      
-      .strafakte-userid {
-        font-size: 11px;
-        color: var(--text-muted);
-        font-family: 'JetBrains Mono', 'Fira Code', monospace;
-        font-weight: 500;
-        letter-spacing: 0.5px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        max-width: 100%;
+      .strafakte-button.close:hover {
+        transform: scale(1.15);
+        color: #ff5c5c;
       }
       
       .strafakte-button-container {
         display: flex;
         align-items: center;
-        gap: 6px;
-        flex-shrink: 0;
+        gap: 8px;
         margin-left: auto;
       }
       
-      .strafakte-button {
-        width: 32px;
-        height: 32px;
-        border: none;
-        border-radius: 8px;
+      .strafakte-avatar {
+        width: 46px;
+        height: 46px;
+        border-radius: 50%;
+        margin-right: 12px;
+        object-fit: cover;
+        border: 1px solid rgba(78, 93, 148, 0.3);
+        transition: transform 0.3s ease;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      }
+      
+      .strafakte-avatar:hover {
+        transform: scale(1.08);
+      }
+      
+      .strafakte-header {
         display: flex;
         align-items: center;
-        justify-content: center;
-        font-size: 16px;
-        cursor: pointer;
+        margin-bottom: 14px;
+        padding-bottom: 14px;
+        border-bottom: 1px solid rgba(255,255,255,0.08);
         position: relative;
+      }
+      
+      .strafakte-user-info {
+        flex: 1;
+        min-width: 0;
+        margin-right: 10px;
+      }
+      
+      .strafakte-username {
+        font-weight: 600;
+        font-size: 16px;
+        color: #fff;
+        white-space: nowrap;
         overflow: hidden;
-        transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
-        transform-origin: center;
-        background: var(--surface);
-        color: var(--text-primary);
-        flex-shrink: 0;
+        text-overflow: ellipsis;
+        letter-spacing: 0.2px;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.2);
       }
       
-      .strafakte-button::before {
-        content: '';
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        width: 0;
-        height: 0;
-        border-radius: 50%;
-        background: rgba(255, 255, 255, 0.2);
-        transition: all 0.4s ease;
-        transform: translate(-50%, -50%);
-      }
-      
-      .strafakte-button:hover {
-        transform: scale(1.15) translateY(-2px);
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-      }
-      
-      .strafakte-button:hover::before {
-        width: 100%;
-        height: 100%;
-      }
-      
-      .strafakte-button:active {
-        transform: scale(0.95);
-      }
-      
-      .strafakte-button.pinned {
-        background: linear-gradient(135deg, var(--success), #00b359);
-        color: white;
-        animation: pulse 2s ease-in-out infinite;
-      }
-      
-      .strafakte-button.unpinned {
-        background: linear-gradient(135deg, var(--danger), #e73c40);
-        color: white;
-      }
-      
-      .strafakte-button.close {
-        background: linear-gradient(135deg, var(--danger), #e73c40);
-        color: white;
-      }
-      
-      @keyframes pulse {
-        0%, 100% { box-shadow: 0 0 0 0 rgba(0, 210, 106, 0.4); }
-        50% { box-shadow: 0 0 0 8px rgba(0, 210, 106, 0); }
-      }
-      
-      .strafakte-content {
-        padding: 20px;
-        max-height: ${settings.store.popupMaxHeight - 120}px;
-        overflow-y: auto;
+      .strafakte-userid {
+        font-size: 12px;
+        color: #a0a5b8;
+        margin-top: 5px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-family: 'Consolas', 'Courier New', monospace;
+        opacity: 0.8;
       }
       
       .strafakte-stats {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-        gap: 12px;
-        margin-bottom: 24px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 14px;
+        justify-content: space-between;
       }
       
       .strafakte-stat {
-        background: var(--surface);
-        border-radius: 12px;
-        padding: 20px 16px;
+        background: rgba(255, 255, 255, 0.06);
+        border-radius: 8px;
+        padding: 10px;
         text-align: center;
         cursor: pointer;
-        position: relative;
-        overflow: hidden;
-        transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
-        border: 1px solid rgba(255, 255, 255, 0.05);
-      }
-      
-      .strafakte-stat::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
-        transition: left 0.6s ease;
+        transition: all 0.25s ease;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        border: 1px solid rgba(255,255,255,0.05);
+        flex: 1;
+        min-width: 80px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
       }
       
       .strafakte-stat:hover {
-        transform: translateY(-8px) scale(1.02);
-        background: var(--surface-hover);
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-        border-color: var(--primary);
-      }
-      
-      .strafakte-stat:hover::before {
-        left: 100%;
+        background: rgba(255, 255, 255, 0.1);
+        transform: translateY(-3px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
       }
       
       .strafakte-stat-value {
-        font-weight: 800;
-        font-size: 24px;
-        line-height: 1;
-        margin-bottom: 8px;
-        background: linear-gradient(135deg, var(--primary), var(--purple));
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
+        font-weight: 700;
+        font-size: 18px;
+        color: #7289da;
+        line-height: 1.2;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.2);
       }
       
       .strafakte-stat-label {
         font-size: 11px;
-        font-weight: 600;
+        color: #a0a5b8;
+        margin-top: 5px;
+        letter-spacing: 0.5px;
         text-transform: uppercase;
-        letter-spacing: 1px;
-        color: var(--text-secondary);
+        opacity: 0.8;
       }
       
       .strafakte-warning {
-        background: linear-gradient(135deg, rgba(255, 176, 46, 0.15), rgba(255, 176, 46, 0.05));
-        border: 1px solid var(--warning);
-        border-radius: 12px;
-        padding: 16px 20px;
-        margin-bottom: 24px;
+        background: linear-gradient(90deg, rgba(255, 204, 0, 0.15), rgba(255, 184, 0, 0.1));
+        border-radius: 8px;
+        padding: 10px 12px;
+        margin-bottom: 14px;
+        font-size: 13px;
         display: flex;
         align-items: center;
-        gap: 12px;
-        animation: warningPulse 2s ease-in-out infinite alternate;
-      }
-      
-      @keyframes warningPulse {
-        from { box-shadow: 0 0 0 0 rgba(255, 176, 46, 0.2); }
-        to { box-shadow: 0 0 0 4px rgba(255, 176, 46, 0); }
-      }
-      
-      .strafakte-warning-icon {
-        font-size: 20px;
-        animation: bounce 2s ease-in-out infinite;
-      }
-      
-      @keyframes bounce {
-        0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(-4px); }
-      }
-      
-      .strafakte-list-title {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 16px;
-        padding-bottom: 12px;
-        border-bottom: 2px solid rgba(255, 255, 255, 0.1);
-        position: relative;
-      }
-      
-      .strafakte-list-title::after {
-        content: '';
-        position: absolute;
-        bottom: -2px;
-        left: 0;
-        width: 40px;
-        height: 2px;
-        background: linear-gradient(90deg, var(--primary), var(--purple));
-        transition: width 0.4s ease;
-      }
-      
-      .strafakte-list-title:hover::after {
-        width: 100%;
-      }
-      
-      .strafakte-list-title h3 {
-        font-size: 18px;
-        font-weight: 700;
-        color: var(--text-primary);
-        margin: 0;
-      }
-      
-      .strafakte-back-button {
-        background: var(--surface);
-        border: none;
-        color: var(--primary);
-        padding: 8px 16px;
-        border-radius: 12px;
-        font-size: 14px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
-      
-      .strafakte-back-button:hover {
-        background: var(--primary);
-        color: white;
-        transform: translateX(-4px);
+        border-left: 3px solid #ffcc00;
       }
       
       .strafakte-list-container {
-        max-height: 300px;
+        max-height: 250px;
         overflow-y: auto;
-        padding-right: 8px;
+        padding-right: 5px;
+        scroll-behavior: smooth;
+        margin-top: 5px;
       }
       
-      .strafakte-list-container::-webkit-scrollbar {
-        width: 6px;
+      .strafakte-list-title {
+        margin-bottom: 10px;
+        font-size: 15px;
+        color: #7289da;
+        border-bottom: 1px solid rgba(255,255,255,0.08);
+        padding-bottom: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-weight: 600;
       }
       
-      .strafakte-list-container::-webkit-scrollbar-track {
-        background: rgba(0, 0, 0, 0.1);
-        border-radius: 3px;
+      .strafakte-back-button {
+        background: none;
+        border: none;
+        color: #7289da;
+        cursor: pointer;
+        font-size: 15px;
+        display: flex;
+        align-items: center;
+        padding: 4px 8px;
+        border-radius: 4px;
+        transition: all 0.2s ease;
       }
       
-      .strafakte-list-container::-webkit-scrollbar-thumb {
-        background: rgba(114, 137, 218, 0.5);
-        border-radius: 3px;
-      }
-      
-      .strafakte-list-container::-webkit-scrollbar-thumb:hover {
-        background: rgba(91, 110, 174, 0.7);
+      .strafakte-back-button:hover {
+        background: rgba(114, 137, 218, 0.1);
+        color: #8ea1e1;
       }
       
       .strafakte-entry {
-        background: var(--surface);
+        padding: 10px 12px;
+        margin-bottom: 10px;
+        background: rgba(255, 255, 255, 0.04);
         border-radius: 8px;
-        padding: 16px;
-        margin-bottom: 12px;
-        cursor: pointer;
-        position: relative;
-        overflow: hidden;
-        transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
         border-left: 4px solid;
-        animation: slideInUp 0.4s ease var(--delay, 0s) both;
-      }
-      
-      @keyframes slideInUp {
-        from {
-          opacity: 0;
-          transform: translateY(20px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-      
-      .strafakte-entry::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
-        transition: left 0.6s ease;
+        font-size: 13px;
+        line-height: 1.5;
+        transition: transform 0.25s ease, background 0.25s ease, box-shadow 0.25s ease;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        cursor: pointer;
       }
       
       .strafakte-entry:hover {
-        transform: translateX(8px) translateY(-2px);
-        background: var(--surface-hover);
-        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+        transform: translateX(3px);
+        background: rgba(255, 255, 255, 0.08);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
       }
       
-      .strafakte-entry:hover::before {
-        left: 100%;
+      .strafakte-entry > div {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
       
-      .strafakte-penalty-category-A { border-left-color: var(--gray); }
-      .strafakte-penalty-category-B { border-left-color: var(--gray); }
-      .strafakte-penalty-category-C { border-left-color: var(--gray); }
-      .strafakte-penalty-category-D { border-left-color: var(--gray); }
-      .strafakte-penalty-category-E { border-left-color: var(--gray); }
-      .strafakte-penalty-category-KICK { border-left-color: var(--orange); }
-      .strafakte-penalty-category-UNKNOWN { border-left-color: var(--gray); }
+      .strafakte-penalty-category-A { border-color: #43b581; }
+      .strafakte-penalty-category-B { border-color: #faa61a; }
+      .strafakte-penalty-category-C { border-color: #f57731; }
+      .strafakte-penalty-category-D { border-color: #f04747; }
+      .strafakte-penalty-category-E { border-color: #593695; }
+      .strafakte-penalty-category-KICK { border-color: #ff9500; }
+      .strafakte-penalty-category-UNKNOWN { border-color: #95a5a6; }
       
-      .strafakte-warning-entry { border-left-color: var(--warning); }
-      .strafakte-unban-entry { border-left-color: var(--success); }
-      .strafakte-watchlist-entry { border-left-color: var(--primary); }
+      .strafakte-warning-entry { border-color: #faa61a; }
+      .strafakte-unban-entry { border-color: #43b581; }
+      .strafakte-watchlist-entry { border-color: #5865F2; }
       
       .strafakte-entry-expired {
-        opacity: 0.6;
+        opacity: 0.7;
         border-left-style: dashed;
-        position: relative;
-      }
-      
-      .strafakte-entry-expired::after {
-        content: 'ABGELAUFEN';
-        position: absolute;
-        top: 8px;
-        right: 12px;
-        font-size: 10px;
-        font-weight: 700;
-        color: var(--danger);
-        background: rgba(242, 63, 67, 0.1);
-        padding: 4px 8px;
-        border-radius: 6px;
-        border: 1px solid var(--danger);
       }
       
       .strafakte-entry-category {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        min-width: 24px;
-        height: 24px;
+        display: inline-block;
         font-size: 11px;
-        font-weight: 700;
-        padding: 0 8px;
-        border-radius: 4px;
-        margin-top: 8px;
-        background: var(--gray);
-        color: white;
+        padding: 3px 8px;
+        border-radius: 12px;
+        margin-top: 6px;
+        background: rgba(255,255,255,0.08);
+        font-weight: 600;
       }
       
       .strafakte-entry-date {
         font-size: 11px;
-        color: var(--text-muted);
-        margin-top: 8px;
-        font-weight: 500;
+        opacity: 0.7;
+        margin-top: 6px;
+        font-style: italic;
       }
       
-      .strafakte-detail-view {
-        background: var(--surface);
-        border-radius: 16px;
-        padding: 20px;
-        margin-top: 16px;
-        animation: slideInUp 0.4s ease;
-      }
-      
-      .strafakte-detail-title {
-        font-size: 16px;
-        font-weight: 700;
-        color: var(--text-primary);
-        margin-bottom: 16px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
-      
-      .strafakte-detail-field {
-        margin-bottom: 16px;
-        padding-bottom: 12px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-      }
-      
-      .strafakte-detail-label {
-        font-size: 12px;
+      .strafakte-section {
+        margin-bottom: 10px;
+        font-size: 15px;
+        color: #7289da;
+        border-bottom: 1px solid rgba(255,255,255,0.08);
+        padding-bottom: 8px;
+        cursor: pointer;
+        transition: all 0.25s ease;
         font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        color: var(--text-secondary);
-        margin-bottom: 4px;
       }
       
-      .strafakte-detail-value {
-        font-size: 14px;
-        color: var(--text-primary);
-        word-break: break-word;
-        line-height: 1.5;
+      .strafakte-section:hover {
+        color: #8ea1e1;
       }
       
       .strafakte-empty-state {
         text-align: center;
-        padding: 40px 20px;
-        color: var(--text-muted);
+        padding: 15px;
+        opacity: 0.6;
         font-style: italic;
-        animation: fadeIn 0.6s ease;
+        font-size: 13px;
+      }
+      
+      .strafakte-tab-content {
+        animation: fadeIn 0.35s ease;
+      }
+      
+      .strafakte-detail-view {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 8px;
+        padding: 12px;
+        margin-top: 10px;
+        animation: fadeIn 0.3s ease;
+      }
+      
+      .strafakte-detail-title {
+        font-weight: 600;
+        font-size: 14px;
+        margin-bottom: 8px;
+        color: #7289da;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      
+      .strafakte-detail-title::before {
+        content: "📋";
+      }
+      
+      .strafakte-detail-field {
+        margin-bottom: 8px;
+        padding: 6px 0;
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+      }
+      
+      .strafakte-detail-label {
+        font-weight: 600;
+        font-size: 12px;
+        color: #a0a5b8;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 3px;
+      }
+      
+      .strafakte-detail-value {
+        font-size: 13px;
+        word-break: break-word;
       }
       
       @keyframes fadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
+        from { opacity: 0; transform: translateY(8px); }
+        to { opacity: 1; transform: translateY(0); }
       }
       
       .loading-indicator {
@@ -737,18 +684,18 @@ export default definePlugin({
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        padding: 60px 40px;
+        padding: 30px;
         text-align: center;
       }
       
       .loading-spinner {
-        width: 60px;
-        height: 60px;
-        margin-bottom: 20px;
-        border: 4px solid rgba(88, 101, 242, 0.2);
+        width: 48px;
+        height: 48px;
+        margin-bottom: 16px;
+        border: 4px solid rgba(114, 137, 218, 0.2);
         border-radius: 50%;
-        border-top-color: var(--primary);
-        animation: spin 1s cubic-bezier(0.68, -0.55, 0.27, 1.55) infinite;
+        border-top-color: #7289da;
+        animation: spin 1.2s cubic-bezier(0.68, -0.55, 0.27, 1.55) infinite;
       }
       
       @keyframes spin {
@@ -757,53 +704,73 @@ export default definePlugin({
       }
       
       .loading-text {
+        font-size: 14px;
+        color: #a0a5b8;
+        margin-top: 10px;
+      }
+
+      /* Minimalistisches Popup */
+      .minimalist-popup .strafakte-header {
+        padding-bottom: 10px;
+        margin-bottom: 10px;
+      }
+      
+      .minimalist-popup .strafakte-avatar {
+        width: 36px;
+        height: 36px;
+      }
+      
+      .minimalist-popup .strafakte-username {
+        font-size: 14px;
+      }
+      
+      .minimalist-popup .strafakte-userid {
+        font-size: 11px;
+      }
+      
+      .minimalist-popup .strafakte-stat {
+        padding: 8px;
+        min-width: 70px;
+      }
+      
+      .minimalist-popup .strafakte-stat-value {
         font-size: 16px;
-        font-weight: 600;
-        color: var(--text-secondary);
-        animation: textPulse 1.5s ease-in-out infinite alternate;
       }
       
-      @keyframes textPulse {
-        from { opacity: 0.6; }
-        to { opacity: 1; }
+      .minimalist-popup .strafakte-stat-label {
+        font-size: 10px;
       }
       
-      /* Einladungsvorschau */
+      .minimalist-popup .strafakte-warning {
+        padding: 8px 10px;
+        font-size: 12px;
+      }
+      
+      .minimalist-popup .strafakte-list-container {
+        max-height: 200px;
+      }
+      
+      .minimalist-popup .strafakte-entry {
+        padding: 8px 10px;
+        font-size: 12px;
+      }
+      
+      /* Einheitliches Design für Einladungsvorschau */
       .r6de-invite-preview {
-        background: ${settings.store.glassEffect 
-          ? `linear-gradient(135deg, ${settings.store.backgroundColor}ee, ${settings.store.backgroundColor}dd)` 
-          : settings.store.backgroundColor} !important;
-        backdrop-filter: ${settings.store.glassEffect ? 'blur(20px) saturate(180%)' : 'none'} !important;
-        -webkit-backdrop-filter: ${settings.store.glassEffect ? 'blur(20px) saturate(180%)' : 'none'} !important;
+        background: ${settings.store.backgroundColor} !important;
+        backdrop-filter: blur(10px) !important;
+        -webkit-backdrop-filter: blur(10px) !important;
         color: ${settings.store.textColor} !important;
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        border-radius: ${settings.store.roundedCorners ? '12px' : '8px'} !important;
-        padding: 20px !important;
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4) !important;
-        font-family: 'Inter', 'Segoe UI', system-ui, sans-serif !important;
+        border: ${settings.store.borderSize}px ${settings.store.borderStyle} ${settings.store.borderColor} !important;
+        border-radius: ${settings.store.roundedCorners ? '12px' : '0'} !important;
+        padding: 14px 16px !important;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.25), 0 4px 12px rgba(0,0,0,0.15) !important;
+        font-family: 'Whitney', 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
         font-weight: 500 !important;
-        max-width: 320px !important;
-        animation: slideInUp 0.3s ease !important;
-      }
-      
-      /* Responsive Design */
-      @media (max-width: 600px) {
-        .r6de-supporter-popup {
-          width: 90vw !important;
-          max-width: 400px !important;
-        }
-        
-        .strafakte-stats {
-          grid-template-columns: repeat(2, 1fr);
-        }
-        
-        .strafakte-header {
-          padding: 20px;
-        }
-        
-        .strafakte-content {
-          padding: 20px;
-        }
+        line-height: 1.5 !important;
+        font-size: 13px !important;
+        max-width: 300px !important;
+        opacity: ${settings.store.popupOpacity} !important;
       }
     `;
     document.head.appendChild(style);
@@ -812,9 +779,10 @@ export default definePlugin({
     let currentUserId: string | null = null;
     let isPinned = settings.store.defaultPinned;
     let currentStrafakteData: StrafakteData | null = null;
+    let strafakteMouseMoveHandler: ((event: MouseEvent) => void) | null = null;
     const inviteRegex = /https?:\/\/(www\.)?(discord\.gg|discord\.com\/invite)\/([\w-]+)/;
     
-    // Interaktionsflags
+    // Verbesserte Interaktionsflags
     let isMouseOverPopup = false;
     let isMouseOverAvatar = false;
     let hoverTimer: ReturnType<typeof setTimeout> | null = null;
@@ -825,135 +793,127 @@ export default definePlugin({
     let detailEntry: PenaltyEntry | WarningEntry | UnbanEntry | WatchlistEntry | null = null;
     let detailSourceView: 'warnings' | 'unbans' | 'penalties' | 'watchlist' | null = null;
     
+    // Variable für letzten Mauszeiger-Event
     let latestAvatarMouseEvent: MouseEvent | null = null;
 
-    // Smooth Dragging ohne Grid-Snapping
-    let isDragging = false;
-    let dragOffsetX = 0;
-    let dragOffsetY = 0;
-    let startX = 0;
-    let startY = 0;
-
-    popup.addEventListener("mousedown", (e) => {
-      if (e.button !== 0) return;
-      if (e.target && (e.target as HTMLElement).closest('.strafakte-button')) return; // Keine Buttons draggen
-      
-      isDragging = true;
-      popup.style.cursor = "grabbing";
-      popup.style.userSelect = "none";
-      popup.style.pointerEvents = "auto";
-      
-      const rect = popup.getBoundingClientRect();
-      dragOffsetX = e.clientX - rect.left;
-      dragOffsetY = e.clientY - rect.top;
-      startX = e.clientX;
-      startY = e.clientY;
-      
-      e.preventDefault();
-      e.stopPropagation();
-    });
-
-    const mouseMoveHandler = (e: MouseEvent) => {
-      if (!isDragging) return;
-      
-      // Smooth movement ohne Snapping
-      const newLeft = e.clientX - dragOffsetX;
-      const newTop = e.clientY - dragOffsetY;
-      
-      const vw = window.innerWidth;
-      const vh = window.innerHeight;
-      const rect = popup.getBoundingClientRect();
-      const margin = 10;
-
-      // Sanfte Begrenzung
-      const clampedLeft = Math.max(margin, Math.min(vw - rect.width - margin, newLeft));
-      const clampedTop = Math.max(margin, Math.min(vh - rect.height - margin, newTop));
-
-      // Direkte Pixel-Positionierung für smooth movement
-      popup.style.left = `${clampedLeft}px`;
-      popup.style.top = `${clampedTop}px`;
-      popup.style.transform = "none"; // Entferne Transform für smooth dragging
-    };
-
-    const mouseUpHandler = (e: MouseEvent) => {
-      if (!isDragging) return;
-      
-      isDragging = false;
-      popup.style.cursor = "grab";
-      popup.style.userSelect = "";
-      
-      // Nur als Drag werten wenn mindestens 5px bewegt
-      const deltaX = Math.abs(e.clientX - startX);
-      const deltaY = Math.abs(e.clientY - startY);
-      
-      if (deltaX < 5 && deltaY < 5) {
-        // War ein Klick, kein Drag
-      }
-    };
-
-    document.addEventListener("mousemove", mouseMoveHandler);
-    document.addEventListener("mouseup", mouseUpHandler);
-
-    // Verbesserte Positionierung ohne aggressives Springen
+    // Positionierungsfunktion mit verbessertem Bildschirmrand-Handling
     function positionPopup(popupElement: HTMLElement, e: MouseEvent, xOffset: number = 15, yOffset: number = 15) {
       const rect = popupElement.getBoundingClientRect();
       const vw = window.innerWidth;
       const vh = window.innerHeight;
-      const margin = 5; // Kleinerer Margin für weniger aggressives Springen
+      const position = settings.store.popupPosition;
+      const margin = 10;
 
       let left = e.pageX + xOffset;
       let top = e.pageY + yOffset;
 
-      // Sanfte Anpassung nur wenn wirklich nötig
-      if (left + rect.width > vw - margin) {
-        left = Math.max(margin, e.pageX - rect.width - xOffset);
-      }
-      if (top + rect.height > vh - margin) {
-        top = Math.max(margin, vh - rect.height - margin);
+      switch (position) {
+        case "bottom-left":
+          left = e.pageX - rect.width - xOffset;
+          break;
+        case "top-right":
+          top = e.pageY - rect.height - yOffset;
+          break;
+        case "top-left":
+          left = e.pageX - rect.width - xOffset;
+          top = e.pageY - rect.height - yOffset;
+          break;
       }
 
-      // Sicherstellen dass es im Viewport bleibt
+      // Randbegrenzung mit Überprüfung der Höhe
       left = Math.max(margin, Math.min(vw - rect.width - margin, left));
       top = Math.max(margin, Math.min(vh - rect.height - margin, top));
 
-      // Smooth positioning
-      requestAnimationFrame(() => {
-        popupElement.style.left = `${Math.round(left)}px`;
-        popupElement.style.top = `${Math.round(top)}px`;
-        popupElement.style.transform = "none";
-      });
+      // Dynamische Höhenanpassung für Listen
+      const maxAllowedHeight = Math.min(
+        settings.store.popupMaxHeight,
+        vh - top - margin
+      );
+      popupElement.style.maxHeight = `${maxAllowedHeight}px`;
+
+      popupElement.style.left = `${left}px`;
+      popupElement.style.top = `${top}px`;
     }
 
-    // Popup Animationen ohne Transform-Conflicts
+    // Popup-Anpassung bei Größenänderung
+    function adjustPopupPosition() {
+      const popupEl = popup;
+      if (!popupEl || popupEl.style.display === 'none') return;
+
+      const rect = popupEl.getBoundingClientRect();
+      const vw = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+      const vh = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+      const margin = 10;
+
+      // Parse die aktuelle Position
+      let left = parseFloat(popupEl.style.left);
+      let top = parseFloat(popupEl.style.top);
+
+      // Falls die Position nicht gesetzt ist (NaN), setzen wir auf 0 und korrigieren dann
+      if (isNaN(left)) left = 0;
+      if (isNaN(top)) top = 0;
+
+      // Korrektur für rechten Rand
+      if (left + rect.width > vw - margin) {
+        left = vw - rect.width - margin;
+      }
+
+      // Korrektur für unteren Rand
+      if (top + rect.height > vh - margin) {
+        top = vh - rect.height - margin;
+      }
+
+      // Korrektur für linken Rand
+      if (left < margin) {
+        left = margin;
+      }
+
+      // Korrektur für oberen Rand
+      if (top < margin) {
+        top = margin;
+      }
+
+      popupEl.style.left = `${left}px`;
+      popupEl.style.top = `${top}px`;
+    }
+
+    // Popup Animationen
     function showPopupWithAnimation() {
       popup.style.display = "block";
-      popup.style.visibility = "visible";
+      popup.style.visibility = "hidden";
       popup.style.opacity = "0";
-      popup.style.transform = "scale(0.9) translateY(20px)";
+      popup.style.transform = "scale(0.98) translateY(10px)";
       
-      requestAnimationFrame(() => {
+      setTimeout(() => {
+        popup.style.visibility = "visible";
         popup.style.opacity = "1";
         popup.style.transform = "scale(1) translateY(0)";
-      });
+      }, 10);
     }
 
     function hidePopupWithAnimation() {
-      popup.style.opacity = "0";
-      popup.style.transform = "scale(0.9) translateY(20px)";
-      
-      setTimeout(() => {
+      if (settings.store.tooltipAnimation) {
+        popup.style.opacity = "0";
+        popup.style.transform = "scale(0.98) translateY(10px)";
+        
+        setTimeout(() => {
+          popup.style.display = "none";
+          popup.style.visibility = "hidden";
+        }, settings.store.animationDuration);
+      } else {
         popup.style.display = "none";
-        popup.style.visibility = "hidden";
-      }, 400);
+      }
     }
 
-    // Benutzer-ID extrahieren
+    // Benutzer-ID aus Element extrahieren
     function getUserIdFromElement(el: HTMLElement): string | null {
+      // React Fiber Methode
       for (const key in el) {
         if (key.startsWith("__reactFiber$")) {
           const fiber = (el as any)[key];
           let fiberNode = fiber;
           
+          // Durch React-Fiber-Baum navigieren
           while (fiberNode) {
             const props = fiberNode?.pendingProps || fiberNode?.memoizedProps;
             const userId = props?.user?.id || props?.userId || 
@@ -965,10 +925,49 @@ export default definePlugin({
         }
       }
 
+      // Speziell für Profile Popup
+      const profilePopup = el.closest('[class*="userProfileOuter"]');
+      if (profilePopup) {
+        const userIdElement = profilePopup.querySelector('[class*="userTag"]');
+        if (userIdElement) {
+          const userIdMatch = userIdElement.textContent?.match(/\d{17,20}/);
+          if (userIdMatch) return userIdMatch[0];
+        }
+      }
+
+      // HTMLImageElement - Extrahiere ID aus Avatar-URL
       if (el instanceof HTMLImageElement && el.classList.toString().includes('avatar')) {
         const src = el.src;
-        const match = src.match(/avatars\/(\d{17,20})\//) || src.match(/users\/(\d{17,20})\//);
+        // Extrahiere Benutzer-ID aus dem Avatar-Pfad
+        const match = src.match(/avatars\/(\d{17,20})\//) || 
+                     src.match(/users\/(\d{17,20})\//);
         if (match) return match[1];
+      }
+      
+      // Div mit Hintergrundbild
+      else if (el instanceof HTMLDivElement) {
+        const bgImage = el.style.backgroundImage;
+        if (bgImage) {
+          const match = bgImage.match(/avatars\/(\d{17,20})\//);
+          if (match) return match[1];
+        }
+      }
+      
+      // SVG-Wrapper
+      else if (el.classList.contains('wrapper__44b0c') || el.classList.contains('voiceUser_efcaf8')) {
+        const img = el.querySelector('img[class*="avatar"]');
+        if (img && img.src) {
+          const match = img.src.match(/avatars\/(\d{17,20})\//);
+          if (match) return match[1];
+        }
+      }
+
+      // Eltern-Elemente durchsuchen
+      const parentElement = el.closest('[data-user-id], [data-author-id], [class*="user"]');
+      if (parentElement) {
+        const userId = parentElement.getAttribute('data-user-id') || 
+                      parentElement.getAttribute('data-author-id');
+        if (userId) return userId;
       }
       
       return null;
@@ -980,7 +979,14 @@ export default definePlugin({
         if (!el) return resolve(null);
 
         const style = document.createElement("style");
-        style.textContent = `[role="menu"] { visibility: hidden !important; }`;
+        style.setAttribute('data-strafakte-plugin-style', 'true');
+        style.textContent = `
+          [role="menu"] {
+            visibility: hidden !important;
+            pointer-events: none !important;
+            user-select: none !important;
+          }
+        `;
         document.head.appendChild(style);
 
         const rect = el.getBoundingClientRect();
@@ -1021,8 +1027,9 @@ export default definePlugin({
       });
     }
 
-    // Strafe kategorisieren
+    // Strafe kategorisieren - FIXED: ** entfernen und bessere Erkennung
     function parseStrafeKategorie(strafe: string): string {
+      // Entferne ** am Anfang und Ende
       const cleanStrafe = strafe.replace(/^\*\*|\*\*$/g, '').trim();
       
       if (/warn/i.test(cleanStrafe)) return "B";
@@ -1038,6 +1045,8 @@ export default definePlugin({
       }
       
       if (/ban/i.test(cleanStrafe)) return "E";
+      
+      // Alles andere als unbekannt markieren
       return "UNKNOWN";
     }
 
@@ -1070,7 +1079,7 @@ export default definePlugin({
       return tokenCache;
     }
 
-    // Strafakte abrufen
+    // Strafakte abrufen mit Watchlist
     async function fetchStrafakte(userId: string): Promise<StrafakteData> {
       try {
         const user = UserStore.getUser(userId);
@@ -1097,11 +1106,11 @@ export default definePlugin({
           warnCount: 0, 
           unbanCount: 0, 
           watchlistCount: 0,
-          penalties: [], 
-          warnings: [],
-          unbans: [],
-          watchlist: [],
-          newestActiveDays: 0, 
+            penalties: [], 
+            warnings: [],
+            unbans: [],
+            watchlist: [],
+            newestActiveDays: 0, 
           error: "Kein Token" 
         };
 
@@ -1156,9 +1165,11 @@ export default definePlugin({
             const content = msg.content as string;
             if (!content.includes(`ID: ${userId}`)) continue;
             
+            // Verbesserte Extraktion des Vorwurfs
             const vorwurfLine = content.split("\n").find(line => line.toLowerCase().includes("vorwurf:")) ||
                               content.split("\n").find(line => line.toLowerCase().includes("grund:"));
             
+            // Extrahiere den Text nach "Vorwurf:" oder "Grund:"
             let vorwurfText = "Kein Vorwurf angegeben";
             if (vorwurfLine) {
               const vorwurfMatch = vorwurfLine.match(/Vorwurf:\s*(.+)|Grund:\s*(.+)/i);
@@ -1190,7 +1201,7 @@ export default definePlugin({
           };
         }
 
-        // Nachrichten verarbeiten
+        // Verarbeitung der Strafakte-Nachrichten
         let warnCount = 0;
         let unbanCount = 0;
         const penalties: PenaltyEntry[] = [];
@@ -1206,10 +1217,12 @@ export default definePlugin({
           const content = msg.content as string;
           if (!content.includes(`ID: ${userId}`)) continue;
           
+          // Entbannungen erkennen
           const unbanPattern = /unbann|entbannung|entban|unban|entbannungsantrag|entbannungsgesuch|entbannungantrag|entbannungs anfrage|unban request|entbitten/i;
           if (unbanPattern.test(content) && !/KEINE CHANCE AUF ENTBANNUNG/i.test(content)) {
             unbanCount++;
             
+            // Grund statt Tat für Entbannungen
             const reasonLine = content.split("\n").find(line => line.toLowerCase().startsWith("grund:"));
             const reason = reasonLine?.replace(/Grund:/i, "").trim() || "Kein Grund angegeben";
             
@@ -1243,6 +1256,7 @@ export default definePlugin({
           const timestamp = new Date(msg.timestamp);
           const ageDays = (Date.now() - timestamp.getTime()) / 86400000;
           
+          // FIXED: Kick-Behandlung - kein Ablaufdatum
           const verfallen = kat !== "E" && kat !== "KICK" && (
             (kat === "A" && ageDays > 1) ||
             (kat === "C" && ageDays > 30) ||
@@ -1252,7 +1266,7 @@ export default definePlugin({
           let days = 0;
           const matchDays = strafeText.match(/(\d+)d/i);
           if (matchDays) days = parseInt(matchDays[1]);
-          
+
           penalties.push({
             text: strafeText,
             category: kat,
@@ -1299,27 +1313,27 @@ export default definePlugin({
     function changeView(view: 'summary' | 'warnings' | 'unbans' | 'penalties' | 'watchlist' | 'detail') {
       activeView = view;
       renderStrafakteContent();
+      adjustPopupPosition(); // Position anpassen nach View-Wechsel
     }
 
-    // Detailansicht
+    // Detailansicht für einen Eintrag anzeigen
     function showEntryDetail(entry: PenaltyEntry | WarningEntry | UnbanEntry | WatchlistEntry, sourceView: 'warnings' | 'unbans' | 'penalties' | 'watchlist') {
       detailEntry = entry;
       detailSourceView = sourceView;
       changeView('detail');
     }
 
-    // Detailansicht rendern
+    // Detailansicht rendern - FIXED: Event-Listener-Registrierung
     function renderDetailView() {
       if (!detailEntry) return '';
 
       let detailHtml = `
-        <div class="strafakte-detail-title">
-          📋 Detailinformationen
-        </div>
+        <div class="strafakte-detail-title">Detailinformationen</div>
         <div class="strafakte-detail-view">
       `;
 
       if ('offense' in detailEntry && 'category' in detailEntry) {
+        // PenaltyEntry
         const penalty = detailEntry as PenaltyEntry;
         detailHtml += `
           <div class="strafakte-detail-field">
@@ -1344,6 +1358,7 @@ export default definePlugin({
           </div>
         `;
       } else if ('offense' in detailEntry) {
+        // WarningEntry
         const warning = detailEntry as WarningEntry;
         detailHtml += `
           <div class="strafakte-detail-field">
@@ -1356,7 +1371,10 @@ export default definePlugin({
           </div>
         `;
       } else if ('reason' in detailEntry) {
+        // UnbanEntry oder WatchlistEntry
         const isUnban = detailSourceView === 'unbans';
+        
+        // Korrekte Beschriftung für Entbannungen
         const labelText = isUnban ? "Grund der Entbannung" : "Vorwurf";
         
         detailHtml += `
@@ -1373,74 +1391,81 @@ export default definePlugin({
 
       detailHtml += `
         </div>
-        <button class="strafakte-back-button" data-view="${detailSourceView || 'summary'}">
-          ← Zurück
-        </button>
+        <button class="strafakte-back-button" data-view="${detailSourceView || 'summary'}">← Zurück</button>
       `;
 
       return detailHtml;
     }
 
-    // Strafakte Inhalt rendern
+    // Strafakte Inhalt rendern mit Tabs
     function renderStrafakteContent() {
       if (!currentStrafakteData) {
-        popup.innerHTML = '<div class="loading-indicator"><div class="loading-spinner"></div><div class="loading-text">Keine Daten verfügbar</div></div>';
+        popup.innerHTML = "Keine Daten verfügbar";
         return;
       }
 
+      // Position vor dem Rendern speichern
       const oldLeft = popup.style.left;
       const oldTop = popup.style.top;
       
+      // Minimalistisches Popup Styling anwenden
+      const minimalistClass = settings.store.minimalistPopup ? "minimalist-popup" : "";
+      
       let contentHtml = `
-        <div class="strafakte-header">
+        <div class="strafakte-header ${minimalistClass}">
           ${settings.store.showAvatars && currentStrafakteData.avatarUrl ? ` 
             <img src="${currentStrafakteData.avatarUrl}" class="strafakte-avatar" />
-          ` : '<div class="strafakte-avatar" style="background:linear-gradient(135deg, var(--primary), var(--purple));display:flex;align-items:center;justify-content:center;font-size:24px;color:white;">👤</div>'}
+          ` : '<div class="strafakte-avatar" style="background:#2c2f33;display:flex;align-items:center;justify-content:center;font-size:20px">👤</div>'}
           <div class="strafakte-user-info">
-            <div class="strafakte-username">
+            <div class="strafakte-username" title="${currentStrafakteData.username}">
               ${currentStrafakteData.username || "Unbekannt"}
             </div>
-            <div class="strafakte-userid">
+            <div class="strafakte-userid" title="${currentUserId}">
               ${currentUserId || "ID unbekannt"}
             </div>
           </div>
           <div class="strafakte-button-container">
             <button id="strafakte-pin" class="strafakte-button ${isPinned ? 'pinned' : 'unpinned'}" title="${isPinned ? 'Angepinnt' : 'Anheften'}">
-              ${isPinned ? '&#x1F512;' : '&#x1F513;'}
+              ${isPinned ? '🔒' : '🔓'}
             </button>
-            <button id="strafakte-copy-id" class="strafakte-button" title="ID kopieren">&#x1F4CB;</button>
-            <button id="strafakte-refresh" class="strafakte-button" title="Aktualisieren">&#x1F504;</button>
+            <button id="strafakte-copy-id" class="strafakte-button" title="ID kopieren">📋</button>
+            <button id="strafakte-refresh" class="strafakte-button" title="Aktualisieren">↻</button>
             <button id="strafakte-close" class="strafakte-button close" title="Schließen">✖</button>
           </div>
         </div>
-        <div class="strafakte-content">
       `;
       
+      // Detailansicht
       if (activeView === 'detail') {
         contentHtml += `
           <div class="strafakte-list-title">
-            <h3>Detailansicht</h3>
+            <span>Detailansicht</span>
           </div>
           ${renderDetailView()}
         `;
-      } else {
+      } 
+      // Tab-Inhalte
+      else {
+        contentHtml += `<div class="strafakte-tab-content ${minimalistClass}">`;
+        
         switch (activeView) {
           case 'summary':
+            // Zusammenfassung
             contentHtml += `
               <div class="strafakte-stats">
-                <div class="strafakte-stat" data-view="warnings" style="--delay: 0.1s">
+                <div class="strafakte-stat" data-view="warnings">
                   <div class="strafakte-stat-value">${currentStrafakteData.warnCount}</div>
                   <div class="strafakte-stat-label">Verwarnungen</div>
                 </div>
-                <div class="strafakte-stat" data-view="unbans" style="--delay: 0.2s">
+                <div class="strafakte-stat" data-view="unbans">
                   <div class="strafakte-stat-value">${currentStrafakteData.unbanCount}</div>
                   <div class="strafakte-stat-label">Entbannungen</div>
                 </div>
-                <div class="strafakte-stat" data-view="penalties" style="--delay: 0.3s">
+                <div class="strafakte-stat" data-view="penalties">
                   <div class="strafakte-stat-value">${currentStrafakteData.penalties.length}</div>
                   <div class="strafakte-stat-label">Strafen</div>
                 </div>
-                <div class="strafakte-stat" data-view="watchlist" style="--delay: 0.4s">
+                <div class="strafakte-stat" data-view="watchlist">
                   <div class="strafakte-stat-value">${currentStrafakteData.watchlistCount}</div>
                   <div class="strafakte-stat-label">Watchlist</div>
                 </div>
@@ -1450,15 +1475,14 @@ export default definePlugin({
             if (currentStrafakteData.newestActiveDays > 0) {
               contentHtml += `
                 <div class="strafakte-warning">
-                  <div class="strafakte-warning-icon">⚠️</div>
-                  <div>Die nächste Bestrafung kann <strong>${currentStrafakteData.newestActiveDays} Tage</strong> hinzufügen!</div>
+                  ⚠️ Die nächste Bestrafung kann ${currentStrafakteData.newestActiveDays} Tage hinzufügen!
                 </div>
               `;
             }
             
             if (currentStrafakteData.error) {
               contentHtml += `
-                <div style="text-align:center;padding:20px;color:var(--danger);font-weight:600;">
+                <div style="text-align:center;padding:10px;color:#f04747">
                   ${currentStrafakteData.error}
                 </div>
               `;
@@ -1466,9 +1490,10 @@ export default definePlugin({
             break;
             
           case 'warnings':
+            // Verwarnungen
             contentHtml += `
               <div class="strafakte-list-title">
-                <h3>Verwarnungen (${currentStrafakteData.warnCount})</h3>
+                <span>Verwarnungen (${currentStrafakteData.warnCount})</span>
                 <button class="strafakte-back-button" data-view="summary">← Zurück</button>
               </div>
               <div class="strafakte-list-container">
@@ -1478,23 +1503,24 @@ export default definePlugin({
               currentStrafakteData.warnings.forEach((w, index) => {
                 const dateStr = w.date ? w.date.toLocaleDateString('de-DE') : 'Unbekanntes Datum';
                 contentHtml += `
-                  <div class="strafakte-entry strafakte-warning-entry" data-index="${index}" style="--delay: ${index * 0.1}s">
-                    <div><strong>Tat:</strong> ${w.offense}</div>
+                  <div class="strafakte-entry strafakte-warning-entry" data-index="${index}">
+                    <div><strong>Tat:</strong> ${w.offense.substring(0, 70)}</div>
                     <div class="strafakte-entry-date">${dateStr}</div>
                   </div>
                 `;
               });
             } else {
-              contentHtml += `<div class="strafakte-empty-state">🎉 Keine Verwarnungen gefunden</div>`;
+              contentHtml += `<div class="strafakte-empty-state">Keine Verwarnungen</div>`;
             }
             
             contentHtml += `</div>`;
             break;
             
           case 'unbans':
+            // Entbannungen
             contentHtml += `
               <div class="strafakte-list-title">
-                <h3>Entbannungen (${currentStrafakteData.unbanCount})</h3>
+                <span>Entbannungen (${currentStrafakteData.unbanCount})</span>
                 <button class="strafakte-back-button" data-view="summary">← Zurück</button>
               </div>
               <div class="strafakte-list-container">
@@ -1504,23 +1530,24 @@ export default definePlugin({
               currentStrafakteData.unbans.forEach((u, index) => {
                 const dateStr = u.date ? u.date.toLocaleDateString('de-DE') : 'Unbekanntes Datum';
                 contentHtml += `
-                  <div class="strafakte-entry strafakte-unban-entry" data-index="${index}" style="--delay: ${index * 0.1}s">
-                    <div><strong>Grund:</strong> ${u.reason}</div>
+                  <div class="strafakte-entry strafakte-unban-entry" data-index="${index}">
+                    <div><strong>Grund:</strong> ${u.reason.substring(0, 70)}</div>
                     <div class="strafakte-entry-date">${dateStr}</div>
                   </div>
                 `;
               });
             } else {
-              contentHtml += `<div class="strafakte-empty-state">✨ Keine Entbannungen gefunden</div>`;
+              contentHtml += `<div class="strafakte-empty-state">Keine Entbannungen</div>`;
             }
             
             contentHtml += `</div>`;
             break;
             
           case 'penalties':
+            // Strafen
             contentHtml += `
               <div class="strafakte-list-title">
-                <h3>Strafen (${currentStrafakteData.penalties.length})</h3>
+                <span>Strafen (${currentStrafakteData.penalties.length})</span>
                 <button class="strafakte-back-button" data-view="summary">← Zurück</button>
               </div>
               <div class="strafakte-list-container">
@@ -1531,25 +1558,26 @@ export default definePlugin({
                 const dateStr = p.date ? p.date.toLocaleDateString('de-DE') : 'Unbekanntes Datum';
                 const categoryDisplay = p.category === 'KICK' ? 'Kick' : p.category === 'UNKNOWN' ? '?' : p.category;
                 contentHtml += `
-                  <div class="strafakte-entry strafakte-penalty-category-${p.category} ${p.expired ? 'strafakte-entry-expired' : ''}" data-index="${index}" style="--delay: ${index * 0.1}s">
-                    <div><strong>Tat:</strong> ${p.offense || "Keine Tat angegeben"}</div>
-                    <div><strong>Strafe:</strong> ${p.text}</div>
-                    <div class="strafakte-entry-category">${categoryDisplay}</div>
+                  <div class="strafakte-entry strafakte-penalty-category-${p.category} ${p.expired ? 'strafakte-entry-expired' : ''}" data-index="${index}">
+                    <div><strong>Tat:</strong> ${p.offense?.substring(0, 70) || "Keine Tat angegeben"}</div>
+                    <div><strong>Strafe:</strong> ${p.text.substring(0, 50)}</div>
+                    <div class="strafakte-entry-category">${categoryDisplay}${p.expired ? ' (Abgelaufen)' : ''}</div>
                     <div class="strafakte-entry-date">${dateStr}</div>
                   </div>
                 `;
               });
             } else {
-              contentHtml += `<div class="strafakte-empty-state">🎉 Keine Strafen gefunden</div>`;
+              contentHtml += `<div class="strafakte-empty-state">Keine Strafen</div>`;
             }
             
             contentHtml += `</div>`;
             break;
             
           case 'watchlist':
+            // Watchlist
             contentHtml += `
               <div class="strafakte-list-title">
-                <h3>Watchlist (${currentStrafakteData.watchlistCount})</h3>
+                <span>Watchlist (${currentStrafakteData.watchlistCount})</span>
                 <button class="strafakte-back-button" data-view="summary">← Zurück</button>
               </div>
               <div class="strafakte-list-container">
@@ -1559,28 +1587,30 @@ export default definePlugin({
               currentStrafakteData.watchlist.forEach((w, index) => {
                 const dateStr = w.date ? w.date.toLocaleDateString('de-DE') : 'Unbekanntes Datum';
                 contentHtml += `
-                  <div class="strafakte-entry strafakte-watchlist-entry" data-index="${index}" style="--delay: ${index * 0.1}s">
-                    <div><strong>Vorwurf:</strong> ${w.reason}</div>
+                  <div class="strafakte-entry strafakte-watchlist-entry" data-index="${index}">
+                    <div><strong>Vorwurf:</strong> ${w.reason.substring(0, 70)}</div>
                     <div class="strafakte-entry-date">${dateStr}</div>
                   </div>
                 `;
               });
             } else {
-              contentHtml += `<div class="strafakte-empty-state">✨ Keine Watchlist-Einträge gefunden</div>`;
+              contentHtml += `<div class="strafakte-empty-state">Keine Watchlist-Einträge</div>`;
             }
             
             contentHtml += `</div>`;
             break;
         }
+        
+        contentHtml += `</div>`; // Ende .strafakte-tab-content
       }
 
-      contentHtml += `</div>`;
       popup.innerHTML = contentHtml;
       
+      // Gespeicherte Position wiederherstellen
       popup.style.left = oldLeft;
       popup.style.top = oldTop;
 
-      // Event Listener
+      // Event Listener für Tabs und Navigation
       document.querySelectorAll('.strafakte-stat, .strafakte-back-button').forEach(el => {
         const view = el.getAttribute('data-view');
         if (view) {
@@ -1588,6 +1618,7 @@ export default definePlugin({
         }
       });
 
+      // Event Listener für Einträge in Listenansichten
       if (activeView !== 'detail' && activeView !== 'summary') {
         document.querySelectorAll('.strafakte-entry').forEach((el, index) => {
           el.addEventListener('click', () => {
@@ -1611,13 +1642,14 @@ export default definePlugin({
         });
       }
 
-      // Button Event Listener
+      // Event Listener für Buttons
       document.getElementById("strafakte-close")?.addEventListener("click", () => {
         hidePopupWithAnimation();
         isPinned = false;
         isMouseOverPopup = false;
         isMouseOverAvatar = false;
         activeView = 'summary';
+        detailSourceView = null;
       });
 
       document.getElementById("strafakte-copy-id")?.addEventListener("click", () => {
@@ -1625,15 +1657,8 @@ export default definePlugin({
           navigator.clipboard.writeText(currentUserId);
           const btn = document.getElementById("strafakte-copy-id");
           if (btn) {
-            const originalText = btn.textContent;
             btn.textContent = "✓";
-            btn.style.color = "var(--success)";
-            setTimeout(() => {
-              if (btn) {
-                btn.textContent = originalText;
-                btn.style.color = "";
-              }
-            }, 2000);
+            setTimeout(() => btn.textContent = "📋", 2000);
           }
         }
       });
@@ -1643,21 +1668,21 @@ export default definePlugin({
         
         const refreshBtn = document.getElementById("strafakte-refresh");
         if (refreshBtn) {
-          refreshBtn.style.animation = "spin 1s linear infinite";
-          
-          const oldLeft = popup.style.left;
-          const oldTop = popup.style.top;
-          
-          currentStrafakteData = await fetchStrafakte(currentUserId);
-          renderStrafakteContent();
-          
-          popup.style.left = oldLeft;
-          popup.style.top = oldTop;
-          
+          refreshBtn.style.transition = "transform 0.5s ease";
+          refreshBtn.style.transform = "rotate(360deg)";
           setTimeout(() => {
-            if (refreshBtn) refreshBtn.style.animation = "";
-          }, 1000);
+            if (refreshBtn) refreshBtn.style.transform = "rotate(0deg)";
+          }, 500);
         }
+        
+        const oldLeft = popup.style.left;
+        const oldTop = popup.style.top;
+        
+        currentStrafakteData = await fetchStrafakte(currentUserId);
+        renderStrafakteContent();
+        
+        popup.style.left = oldLeft;
+        popup.style.top = oldTop;
       });
 
       document.getElementById("strafakte-pin")?.addEventListener("click", () => {
@@ -1665,8 +1690,18 @@ export default definePlugin({
         const pinBtn = document.getElementById("strafakte-pin");
         if (pinBtn) {
           pinBtn.className = `strafakte-button ${isPinned ? 'pinned' : 'unpinned'}`;
-          pinBtn.innerHTML = isPinned ? '&#x1F512;' : '&#x1F513;';
+          pinBtn.innerHTML = isPinned ? '🔒' : '🔓';
           pinBtn.title = isPinned ? 'Angepinnt' : 'Anheften';
+        }
+      });
+
+      // Position nach dem Rendern anpassen
+      adjustPopupPosition();
+      
+      // Automatische Anpassung bei Größenänderung
+      window.addEventListener('resize', () => {
+        if (popup.style.display === 'block') {
+          adjustPopupPosition();
         }
       });
     }
@@ -1691,18 +1726,23 @@ export default definePlugin({
           hoverTimer = setTimeout(() => {
             hidePopupWithAnimation();
             activeView = 'summary';
-          }, 500);
+            detailSourceView = null;
+          }, 300); // Verkürzt auf 300ms
         }
       }
     });
 
-    // Avatar Hover Handler
+    // Hover Logik für Avatare
     const handleAvatarHover = (el: HTMLElement) => {
-      if (el.closest("#r6de-supporter-popup")) return;
+      if (el.closest("#r6de-supporter-popup")) {
+        return;
+      }
+      
       if (el.hasAttribute("data-r6de-processed")) return;
       el.setAttribute("data-r6de-processed", "true");
       
       let openTimer: ReturnType<typeof setTimeout> | null = null;
+      let tempMouseMoveListener: ((event: MouseEvent) => void) | null = null;
 
       const handleMouseEnter = (e: MouseEvent) => {
         isMouseOverAvatar = true;
@@ -1713,6 +1753,7 @@ export default definePlugin({
           if (guildId !== GUILD_ID) return;
         }
 
+        // Lösche Timer
         if (hoverTimer) {
           clearTimeout(hoverTimer);
           hoverTimer = null;
@@ -1725,9 +1766,13 @@ export default definePlugin({
         clearTimeout(openTimer!);
         latestAvatarMouseEvent = e;
 
+        tempMouseMoveListener = (event: MouseEvent) => latestAvatarMouseEvent = event;
+        window.addEventListener("mousemove", tempMouseMoveListener);
+
         openTimer = setTimeout(async () => {
           if (isPinned) return;
           
+          // Verbesserte Ladeanzeige
           const userId = getUserIdFromElement(el) || "?";
           
           popup.innerHTML = `
@@ -1739,39 +1784,39 @@ export default definePlugin({
           
           showPopupWithAnimation();
           if (latestAvatarMouseEvent) positionPopup(popup, latestAvatarMouseEvent);
+          adjustPopupPosition(); // Position anpassen
 
           const finalUserId = userId === "?" ? await getUserIdFromContextMenu(el) : userId;
           
           if (!finalUserId) {
             popup.innerHTML = `
               <div class="strafakte-header">
-                <div class="strafakte-avatar" style="background:linear-gradient(135deg, var(--danger), var(--orange));display:flex;align-items:center;justify-content:center;font-size:24px;color:white;">❌</div>
+                <div class="strafakte-avatar" style="background:#2c2f33;display:flex;align-items:center;justify-content:center;font-size:20px">👤</div>
                 <div class="strafakte-user-info">
                   <div class="strafakte-username">Fehler</div>
-                  <div class="strafakte-userid">ID nicht extrahierbar</div>
                 </div>
                 <div class="strafakte-button-container">
                   <button id="strafakte-close" class="strafakte-button close" title="Schließen">✖</button>
                 </div>
               </div>
-              <div class="strafakte-content">
-                <div style="text-align:center;padding:40px;color:var(--danger);font-weight:600;">
-                  Benutzer-ID konnte nicht extrahiert werden
-                </div>
+              <div style="padding:20px;text-align:center;color:#f04747">
+                Benutzer-ID konnte nicht extrahiert werden
               </div>
             `;
             
+            // Event-Listener für Schließen-Button hinzufügen
             document.getElementById("strafakte-close")?.addEventListener("click", () => {
               hidePopupWithAnimation();
             });
             return;
           }
           
+          // FIX: Bot-Fälle mit Schließen-Button
           const user = UserStore.getUser(finalUserId);
           if (user?.bot) {
             popup.innerHTML = `
               <div class="strafakte-header">
-                <div class="strafakte-avatar" style="background:linear-gradient(135deg, var(--gray), var(--text-muted));display:flex;align-items:center;justify-content:center;font-size:24px;color:white;">🤖</div>
+                <div class="strafakte-avatar" style="background:#2c2f33;display:flex;align-items:center;justify-content:center;font-size:20px">👤</div>
                 <div class="strafakte-user-info">
                   <div class="strafakte-username">Bot</div>
                   <div class="strafakte-userid">${finalUserId}</div>
@@ -1780,13 +1825,12 @@ export default definePlugin({
                   <button id="strafakte-close" class="strafakte-button close" title="Schließen">✖</button>
                 </div>
               </div>
-              <div class="strafakte-content">
-                <div style="text-align:center;padding:40px;color:var(--text-secondary);font-weight:600;">
-                  🤖 Bots haben keine Strafakte
-                </div>
+              <div style="padding:20px;text-align:center">
+                Bots haben keine Strafakte
               </div>
             `;
             
+            // Event-Listener für Schließen-Button hinzufügen
             document.getElementById("strafakte-close")?.addEventListener("click", () => {
               hidePopupWithAnimation();
             });
@@ -1797,28 +1841,42 @@ export default definePlugin({
           currentStrafakteData = await fetchStrafakte(finalUserId);
           renderStrafakteContent();
           if (latestAvatarMouseEvent) positionPopup(popup, latestAvatarMouseEvent);
+          adjustPopupPosition(); // Position anpassen
+
+          if (tempMouseMoveListener) {
+            window.removeEventListener("mousemove", tempMouseMoveListener);
+            tempMouseMoveListener = null;
+          }
         }, settings.store.avatarHoverDelay);
       };
 
       const handleMouseLeave = () => {
         isMouseOverAvatar = false;
         clearTimeout(openTimer!);
+        if (tempMouseMoveListener) {
+          window.removeEventListener("mousemove", tempMouseMoveListener);
+          tempMouseMoveListener = null;
+        }
         
+        // Verzögertes Schließen
         if (!isMouseOverPopup) {
           avatarLeaveTimer = setTimeout(() => {
             if (!isMouseOverPopup && !isPinned) {
               hidePopupWithAnimation();
               activeView = 'summary';
+              detailSourceView = null;
             }
-          }, 500);
+          }, 300); // Verkürzt auf 300ms
         }
       };
 
+      // Schließen bei Klick auf Avatar
       const handleMouseDown = () => {
         if (!isPinned) {
           setTimeout(() => {
             hidePopupWithAnimation();
             activeView = 'summary';
+            detailSourceView = null;
           }, 100);
         }
       };
@@ -1836,6 +1894,7 @@ export default definePlugin({
       const code = link.href.match(inviteRegex)?.[3];
       if (!code) return;
 
+      // Unterdrücke das Discord-Tooltip
       link.title = "";
       link.removeAttribute("title");
 
@@ -1843,8 +1902,10 @@ export default definePlugin({
         .then(res => res.json())
         .then(data => {
           let tooltip: HTMLElement | null = null;
+          let tooltipMouseMoveHandler: ((event: MouseEvent) => void) | null = null;
 
           link.addEventListener("mouseenter", (e) => {
+            // Verhindere das Standard-Discord-Tooltip
             e.stopPropagation();
             e.preventDefault();
             
@@ -1852,8 +1913,8 @@ export default definePlugin({
             tooltip.className = "r6de-invite-preview";
             Object.assign(tooltip.style, {
               position: "fixed",
-              zIndex: "999999",
-              maxWidth: "320px",
+              zIndex: "10000",
+              maxWidth: "300px",
               pointerEvents: "none",
               display: "none"
             });
@@ -1861,48 +1922,50 @@ export default definePlugin({
 
             const g = data.guild || {}, c = data.channel || {};
             const icon = g.id && g.icon
-              ? `<img src="https://cdn.discordapp.com/icons/${g.id}/${g.icon}.png?size=64" style="width:56px;height:56px;border-radius:12px;margin-bottom:12px;border:2px solid var(--primary);">`
+              ? `<img src="https://cdn.discordapp.com/icons/${g.id}/${g.icon}.png?size=64" style="width:48px;height:48px;border-radius:6px;margin-bottom:8px;">`
               : "";
             const channelTypes = ["Text", "DM", "Voice", "Gruppen-DM", "Kategorie", "Neuigkeiten", "Shop", "Bühne", "Forum"];
 
             tooltip.innerHTML = `
               ${icon}
-              <div style="font-weight:700;font-size:16px;margin-bottom:8px;">🏷️ ${g.name || "Unbekannt oder abgelaufen"}</div>
-              <div style="margin-bottom:4px;">💬 #${c.name || "?"} (${channelTypes[c.type] || "Unbekannt"})</div>
-              <div style="color:var(--text-secondary);">👥 ${data.approximate_member_count || "?"} Mitglieder</div>
+              <div><strong>🏷️ ${g.name || "Unbekannt oder abgelaufen"}</strong></div>
+              <div>💬 #${c.name || "?"} (${channelTypes[c.type] || "Unbekannt"})</div>
+              <div>👥 Mitglieder: ${data.approximate_member_count || "Unbekannt"}</div>
             `;
 
+            // Zeige Tooltip mit Animation
             tooltip.style.display = "block";
             tooltip.style.visibility = "hidden";
             tooltip.style.opacity = "0";
-            tooltip.style.transform = "scale(0.9) translateY(10px)";
+            tooltip.style.transform = "scale(0.98)";
             
             setTimeout(() => {
               if (tooltip) {
                 tooltip.style.visibility = "visible";
                 tooltip.style.opacity = "1";
-                tooltip.style.transform = "scale(1) translateY(0)";
+                tooltip.style.transform = "scale(1)";
               }
             }, 10);
 
-            positionPopup(tooltip, e as MouseEvent, 15, 15);
+            positionPopup(tooltip, e as MouseEvent, 12, 12);
           });
 
           link.addEventListener("mousemove", (e) => {
-            if (tooltip) positionPopup(tooltip, e as MouseEvent, 15, 15);
+            if (tooltip) positionPopup(tooltip, e as MouseEvent, 12, 12);
           });
 
           link.addEventListener("mouseleave", () => {
             if (tooltip) {
+              // Animation für Schließen
               tooltip.style.opacity = "0";
-              tooltip.style.transform = "scale(0.9) translateY(10px)";
+              tooltip.style.transform = "scale(0.98)";
               
               setTimeout(() => {
                 if (tooltip) {
                   tooltip.remove();
                   tooltip = null;
                 }
-              }, 300);
+              }, settings.store.animationDuration);
             }
           });
         })
@@ -1917,7 +1980,7 @@ export default definePlugin({
         for (const node of mutation.addedNodes) {
           if (!(node instanceof HTMLElement)) continue;
 
-          // Avatar-Hover
+          // Avatar-Hover (alle Typen)
           const avatars = node.querySelectorAll(`
             img[class*="avatar"], 
             .wrapper__44b0c, 
@@ -1942,7 +2005,7 @@ export default definePlugin({
       }
     });
 
-    // Initiale Verarbeitung
+    // Initiale Verarbeitung vorhandener Elemente
     const initialAvatars = document.querySelectorAll(`
       img[class*="avatar"], 
       .wrapper__44b0c, 
