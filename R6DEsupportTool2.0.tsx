@@ -1925,40 +1925,23 @@ export default definePlugin({
         }
       });
 
-      // FIXED: Event-Listener für Beweise in Detailansicht - Verbesserte Registrierung
-      if (activeView === 'detail') {
-        // Timeout um sicherzustellen, dass DOM vollständig gerendert ist
-        setTimeout(() => {
-          const evidenceItems = document.querySelectorAll('.strafakte-evidence-item');
-          console.log(`Found ${evidenceItems.length} evidence items`); // Debug
+      // Event-Delegation für Beweise - FIXED: Einfache und robuste Lösung
+      popup.onclick = (e) => {
+        const target = e.target as HTMLElement;
+        const evidenceItem = target.closest('.strafakte-evidence-item');
+        
+        if (evidenceItem) {
+          e.stopPropagation();
+          e.preventDefault();
           
-          evidenceItems.forEach((item, index) => {
-            const url = item.getAttribute('data-url');
-            const type = item.getAttribute('data-type') as 'image' | 'video';
-            
-            console.log(`Evidence item ${index}: URL=${url}, Type=${type}`); // Debug
-            
-            if (url && type) {
-              // Event-Handler für Klick
-              const clickHandler = (e: Event) => {
-                e.stopPropagation();
-                e.preventDefault();
-                console.log(`Opening lightbox for: ${url}`); // Debug
-                openLightbox(url, type);
-              };
-              
-              // Event-Listener hinzufügen
-              item.addEventListener('click', clickHandler);
-              
-              // Auch auf img/video-Element direkt
-              const mediaElement = item.querySelector('img, video');
-              if (mediaElement) {
-                mediaElement.addEventListener('click', clickHandler);
-              }
-            }
-          });
-        }, 100); // 100ms Verzögerung
-      }
+          const url = evidenceItem.getAttribute('data-url');
+          const type = evidenceItem.getAttribute('data-type') as 'image' | 'video';
+          
+          if (url && type) {
+            openLightbox(url, type);
+          }
+        }
+      };
     }
 
     // Popup-Interaktion
