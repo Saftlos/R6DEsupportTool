@@ -158,7 +158,7 @@ export default definePlugin({
       WebkitBackdropFilter: glassEffect ? "blur(20px) saturate(180%)" : "none",
       color: settings.store.textColor,
       padding: "0",
-      borderRadius: settings.store.roundedCorners ? "8px" : "4px",
+      borderRadius: settings.store.roundedCorners ? "4px" : "2px",
       fontSize: "14px",
       fontWeight: "500",
       zIndex: "999999",
@@ -168,7 +168,7 @@ export default definePlugin({
       maxWidth: "90vw",
       maxHeight: `${settings.store.popupMaxHeight}px`,
       minWidth: "320px",
-      overflowY: "hidden",
+      overflowY: "auto",
       boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05)",
       fontFamily: "'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif",
       cursor: "grab",
@@ -656,9 +656,9 @@ export default definePlugin({
         font-size: 11px;
         font-weight: 700;
         padding: 0 8px;
-        border-radius: 6px;
+        border-radius: 4px;
         margin-top: 8px;
-        background: var(--primary);
+        background: var(--gray);
         color: white;
       }
       
