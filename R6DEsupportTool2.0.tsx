@@ -580,6 +580,7 @@ export default definePlugin({
       .strafakte-penalty-category-C { border-color: #f57731; }
       .strafakte-penalty-category-D { border-color: #f04747; }
       .strafakte-penalty-category-E { border-color: #593695; }
+      .strafakte-penalty-category-KICK { border-color: #ff9500; }
       
       .strafakte-warning-entry { border-color: #faa61a; }
       .strafakte-unban-entry { border-color: #43b581; }
@@ -1165,9 +1166,10 @@ export default definePlugin({
       });
     }
 
-    // Strafe kategorisieren
+    // Strafe kategorisieren - FIXED: Kick-Erkennung hinzugefügt
     function parseStrafeKategorie(strafe: string): string {
       if (/warn/i.test(strafe)) return "B";
+      if (/kick/i.test(strafe)) return "KICK"; // NEUE KICK-ERKENNUNG
       if (/1h|1 h|1 Stunde/i.test(strafe)) return "A";
       
       const match = strafe.match(/(\d+)d/i);
@@ -1416,7 +1418,9 @@ export default definePlugin({
 
           const timestamp = new Date(msg.timestamp);
           const ageDays = (Date.now() - timestamp.getTime()) / 86400000;
-          const verfallen = kat !== "E" && (
+          
+          // FIXED: Kick-Behandlung - kein Ablaufdatum
+          const verfallen = kat !== "E" && kat !== "KICK" && (
             (kat === "A" && ageDays > 1) ||
             (kat === "C" && ageDays > 30) ||
             (kat === "D" && ageDays > 60)
@@ -1492,7 +1496,7 @@ export default definePlugin({
       changeView('detail');
     }
 
-    // Detailansicht rendern
+    // Detailansicht rendern - FIXED: Event-Listener-Registrierung
     function renderDetailView() {
       if (!detailEntry) return '';
 
@@ -1507,7 +1511,7 @@ export default definePlugin({
         detailHtml += `
           <div class="strafakte-detail-field">
             <div class="strafakte-detail-label">Kategorie</div>
-            <div class="strafakte-detail-value">${penalty.category}</div>
+            <div class="strafakte-detail-value">${penalty.category === 'KICK' ? 'Kick' : penalty.category}</div>
           </div>
           <div class="strafakte-detail-field">
             <div class="strafakte-detail-label">Strafe</div>
@@ -1558,22 +1562,22 @@ export default definePlugin({
         `;
       }
 
-      // Beweise anzeigen
+      // Beweise anzeigen - FIXED: Verbesserte Rendering-Logik
       if (detailEntry.evidence && detailEntry.evidence.length > 0) {
         detailHtml += `
           <div class="strafakte-detail-field">
-            <div class="strafakte-detail-label">Beweise</div>
+            <div class="strafakte-detail-label">Beweise (${detailEntry.evidence.length})</div>
             <div class="strafakte-evidence-grid">
         `;
         
-        detailEntry.evidence.forEach(url => {
+        detailEntry.evidence.forEach((url, index) => {
           const isImage = /\.(jpeg|jpg|png|gif|webp)$/i.test(url);
           const isVideo = /\.(mp4|webm|mov)$/i.test(url);
           
           if (isImage) {
             detailHtml += `
-              <div class="strafakte-evidence-item" data-url="${url}" data-type="image">
-                <img src="${url}" class="strafakte-evidence-img" />
+              <div class="strafakte-evidence-item" data-url="${url}" data-type="image" data-index="${index}">
+                <img src="${url}" class="strafakte-evidence-img" alt="Beweis ${index + 1}" />
                 <div class="strafakte-evidence-overlay">
                   <div class="strafakte-evidence-play">🔍</div>
                 </div>
@@ -1581,8 +1585,8 @@ export default definePlugin({
             `;
           } else if (isVideo) {
             detailHtml += `
-              <div class="strafakte-evidence-item" data-url="${url}" data-type="video">
-                <video src="${url}" class="strafakte-evidence-video"></video>
+              <div class="strafakte-evidence-item" data-url="${url}" data-type="video" data-index="${index}">
+                <video src="${url}" class="strafakte-evidence-video" preload="metadata"></video>
                 <div class="strafakte-evidence-overlay">
                   <div class="strafakte-evidence-play">▶️</div>
                 </div>
@@ -1590,7 +1594,11 @@ export default definePlugin({
             `;
           } else {
             detailHtml += `
-              <a href="${url}" target="_blank" style="color: #7289da; grid-column: span 2;">${url}</a>
+              <div style="grid-column: span 2; padding: 8px;">
+                <a href="${url}" target="_blank" style="color: #7289da; text-decoration: none; font-size: 12px; word-break: break-all;">
+                  🔗 ${url.length > 50 ? url.substring(0, 50) + '...' : url}
+                </a>
+              </div>
             `;
           }
         });
@@ -1768,11 +1776,12 @@ export default definePlugin({
             if (currentStrafakteData.penalties.length > 0) {
               currentStrafakteData.penalties.forEach((p, index) => {
                 const dateStr = p.date ? p.date.toLocaleDateString('de-DE') : 'Unbekanntes Datum';
+                const categoryDisplay = p.category === 'KICK' ? 'Kick' : p.category;
                 contentHtml += `
                   <div class="strafakte-entry strafakte-penalty-category-${p.category} ${p.expired ? 'strafakte-entry-expired' : ''}" data-index="${index}">
                     <div><strong>Tat:</strong> ${p.offense?.substring(0, 70) || "Keine Tat angegeben"}</div>
                     <div><strong>Strafe:</strong> ${p.text.substring(0, 50)}</div>
-                    <div class="strafakte-entry-category">${p.category}${p.expired ? ' (Abgelaufen)' : ''}</div>
+                    <div class="strafakte-entry-category">${categoryDisplay}${p.expired ? ' (Abgelaufen)' : ''}</div>
                     <div class="strafakte-entry-date">${dateStr}</div>
                   </div>
                 `;
@@ -1916,18 +1925,39 @@ export default definePlugin({
         }
       });
 
-      // Event-Listener für Beweise in Detailansicht
+      // FIXED: Event-Listener für Beweise in Detailansicht - Verbesserte Registrierung
       if (activeView === 'detail') {
-        document.querySelectorAll('.strafakte-evidence-item').forEach(item => {
-          item.addEventListener('click', (e) => {
-            e.stopPropagation();
+        // Timeout um sicherzustellen, dass DOM vollständig gerendert ist
+        setTimeout(() => {
+          const evidenceItems = document.querySelectorAll('.strafakte-evidence-item');
+          console.log(`Found ${evidenceItems.length} evidence items`); // Debug
+          
+          evidenceItems.forEach((item, index) => {
             const url = item.getAttribute('data-url');
             const type = item.getAttribute('data-type') as 'image' | 'video';
+            
+            console.log(`Evidence item ${index}: URL=${url}, Type=${type}`); // Debug
+            
             if (url && type) {
-              openLightbox(url, type);
+              // Event-Handler für Klick
+              const clickHandler = (e: Event) => {
+                e.stopPropagation();
+                e.preventDefault();
+                console.log(`Opening lightbox for: ${url}`); // Debug
+                openLightbox(url, type);
+              };
+              
+              // Event-Listener hinzufügen
+              item.addEventListener('click', clickHandler);
+              
+              // Auch auf img/video-Element direkt
+              const mediaElement = item.querySelector('img, video');
+              if (mediaElement) {
+                mediaElement.addEventListener('click', clickHandler);
+              }
             }
           });
-        });
+        }, 100); // 100ms Verzögerung
       }
     }
 
