@@ -161,11 +161,13 @@ export default definePlugin({
       borderRadius: settings.store.roundedCorners ? "20px" : "8px",
       fontSize: "14px",
       fontWeight: "500",
-      zIndex: "10000",
+      zIndex: "999999",
       pointerEvents: "auto",
       display: "none",
       width: `${settings.store.popupWidth}px`,
+      maxWidth: "90vw",
       maxHeight: `${settings.store.popupMaxHeight}px`,
+      minWidth: "320px",
       overflowY: "hidden",
       boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05)",
       fontFamily: "'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif",
@@ -224,11 +226,13 @@ export default definePlugin({
       .strafakte-header {
         display: flex;
         align-items: center;
-        padding: 24px;
+        padding: 20px;
         background: linear-gradient(135deg, var(--surface), transparent);
         border-bottom: 1px solid rgba(255, 255, 255, 0.08);
         position: relative;
         overflow: hidden;
+        min-height: 80px;
+        gap: 12px;
       }
       
       .strafakte-header::before {
@@ -283,12 +287,13 @@ export default definePlugin({
       .strafakte-user-info {
         flex: 1;
         min-width: 0;
-        margin-right: 16px;
+        margin-right: 8px;
+        overflow: hidden;
       }
       
       .strafakte-username {
         font-weight: 700;
-        font-size: 18px;
+        font-size: 16px;
         color: var(--text-primary);
         margin-bottom: 4px;
         background: linear-gradient(135deg, var(--text-primary), var(--primary));
@@ -296,6 +301,10 @@ export default definePlugin({
         -webkit-text-fill-color: transparent;
         background-clip: text;
         animation: textGlow 3s ease-in-out infinite alternate;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 100%;
       }
       
       @keyframes textGlow {
@@ -304,28 +313,34 @@ export default definePlugin({
       }
       
       .strafakte-userid {
-        font-size: 12px;
+        font-size: 11px;
         color: var(--text-muted);
         font-family: 'JetBrains Mono', 'Fira Code', monospace;
         font-weight: 500;
         letter-spacing: 0.5px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 100%;
       }
       
       .strafakte-button-container {
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: 6px;
+        flex-shrink: 0;
+        margin-left: auto;
       }
       
       .strafakte-button {
-        width: 36px;
-        height: 36px;
+        width: 32px;
+        height: 32px;
         border: none;
-        border-radius: 12px;
+        border-radius: 10px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 16px;
+        font-size: 14px;
         cursor: pointer;
         position: relative;
         overflow: hidden;
@@ -333,6 +348,7 @@ export default definePlugin({
         transform-origin: center;
         background: var(--surface);
         color: var(--text-primary);
+        flex-shrink: 0;
       }
       
       .strafakte-button::before {
@@ -795,55 +811,84 @@ export default definePlugin({
     
     let latestAvatarMouseEvent: MouseEvent | null = null;
 
-    // Dragging Logik
+    // Smooth Dragging ohne Grid-Snapping
     let isDragging = false;
     let dragOffsetX = 0;
     let dragOffsetY = 0;
+    let startX = 0;
+    let startY = 0;
 
     popup.addEventListener("mousedown", (e) => {
       if (e.button !== 0) return;
+      if (e.target && (e.target as HTMLElement).closest('.strafakte-button')) return; // Keine Buttons draggen
+      
       isDragging = true;
       popup.style.cursor = "grabbing";
-      dragOffsetX = e.clientX - popup.getBoundingClientRect().left;
-      dragOffsetY = e.clientY - popup.getBoundingClientRect().top;
+      popup.style.userSelect = "none";
+      popup.style.pointerEvents = "auto";
+      
+      const rect = popup.getBoundingClientRect();
+      dragOffsetX = e.clientX - rect.left;
+      dragOffsetY = e.clientY - rect.top;
+      startX = e.clientX;
+      startY = e.clientY;
+      
       e.preventDefault();
+      e.stopPropagation();
     });
 
     const mouseMoveHandler = (e: MouseEvent) => {
       if (!isDragging) return;
       
-      let newLeft = e.clientX - dragOffsetX;
-      let newTop = e.clientY - dragOffsetY;
-      const rect = popup.getBoundingClientRect();
+      // Smooth movement ohne Snapping
+      const newLeft = e.clientX - dragOffsetX;
+      const newTop = e.clientY - dragOffsetY;
+      
       const vw = window.innerWidth;
       const vh = window.innerHeight;
-      const margin = 20;
+      const rect = popup.getBoundingClientRect();
+      const margin = 10;
 
-      newLeft = Math.max(margin, Math.min(vw - rect.width - margin, newLeft));
-      newTop = Math.max(margin, Math.min(vh - rect.height - margin, newTop));
+      // Sanfte Begrenzung
+      const clampedLeft = Math.max(margin, Math.min(vw - rect.width - margin, newLeft));
+      const clampedTop = Math.max(margin, Math.min(vh - rect.height - margin, newTop));
 
-      popup.style.left = `${newLeft}px`;
-      popup.style.top = `${newTop}px`;
+      // Direkte Pixel-Positionierung für smooth movement
+      popup.style.left = `${clampedLeft}px`;
+      popup.style.top = `${clampedTop}px`;
+      popup.style.transform = "none"; // Entferne Transform für smooth dragging
     };
 
-    const mouseUpHandler = () => {
+    const mouseUpHandler = (e: MouseEvent) => {
+      if (!isDragging) return;
+      
       isDragging = false;
       popup.style.cursor = "grab";
+      popup.style.userSelect = "";
+      
+      // Nur als Drag werten wenn mindestens 5px bewegt
+      const deltaX = Math.abs(e.clientX - startX);
+      const deltaY = Math.abs(e.clientY - startY);
+      
+      if (deltaX < 5 && deltaY < 5) {
+        // War ein Klick, kein Drag
+      }
     };
 
     document.addEventListener("mousemove", mouseMoveHandler);
     document.addEventListener("mouseup", mouseUpHandler);
 
-    // Positionierung
-    function positionPopup(popupElement: HTMLElement, e: MouseEvent, xOffset: number = 20, yOffset: number = 20) {
+    // Positionierung ohne Grid-Snapping
+    function positionPopup(popupElement: HTMLElement, e: MouseEvent, xOffset: number = 15, yOffset: number = 15) {
       const rect = popupElement.getBoundingClientRect();
       const vw = window.innerWidth;
       const vh = window.innerHeight;
-      const margin = 20;
+      const margin = 15;
 
       let left = e.pageX + xOffset;
       let top = e.pageY + yOffset;
 
+      // Smart positioning
       if (left + rect.width > vw - margin) {
         left = e.pageX - rect.width - xOffset;
       }
@@ -851,17 +896,22 @@ export default definePlugin({
         top = e.pageY - rect.height - yOffset;
       }
 
+      // Clamp to screen with margin
       left = Math.max(margin, Math.min(vw - rect.width - margin, left));
       top = Math.max(margin, Math.min(vh - rect.height - margin, top));
 
-      popupElement.style.left = `${left}px`;
-      popupElement.style.top = `${top}px`;
+      // Pixel-perfect positioning
+      popupElement.style.left = `${Math.round(left)}px`;
+      popupElement.style.top = `${Math.round(top)}px`;
+      popupElement.style.transform = "none";
     }
 
-    // Popup Animationen
+    // Popup Animationen ohne Transform-Conflicts
     function showPopupWithAnimation() {
       popup.style.display = "block";
       popup.style.visibility = "visible";
+      popup.style.opacity = "0";
+      popup.style.transform = "scale(0.9) translateY(20px)";
       
       requestAnimationFrame(() => {
         popup.style.opacity = "1";
@@ -1338,11 +1388,11 @@ export default definePlugin({
           </div>
           <div class="strafakte-button-container">
             <button id="strafakte-pin" class="strafakte-button ${isPinned ? 'pinned' : 'unpinned'}" title="${isPinned ? 'Angepinnt' : 'Anheften'}">
-              ${isPinned ? '🔒' : '📌'}
+              ${isPinned ? '&#x1F512;' : '&#x1F4CC;'}
             </button>
-            <button id="strafakte-copy-id" class="strafakte-button" title="ID kopieren">📋</button>
-            <button id="strafakte-refresh" class="strafakte-button" title="Aktualisieren">🔄</button>
-            <button id="strafakte-close" class="strafakte-button close" title="Schließen">✖</button>
+            <button id="strafakte-copy-id" class="strafakte-button" title="ID kopieren">&#x1F4CB;</button>
+            <button id="strafakte-refresh" class="strafakte-button" title="Aktualisieren">&#x1F504;</button>
+            <button id="strafakte-close" class="strafakte-button close" title="Schließen">&times;</button>
           </div>
         </div>
         <div class="strafakte-content">
@@ -1597,7 +1647,7 @@ export default definePlugin({
         const pinBtn = document.getElementById("strafakte-pin");
         if (pinBtn) {
           pinBtn.className = `strafakte-button ${isPinned ? 'pinned' : 'unpinned'}`;
-          pinBtn.innerHTML = isPinned ? '🔒' : '📌';
+          pinBtn.innerHTML = isPinned ? '&#x1F512;' : '&#x1F4CC;';
           pinBtn.title = isPinned ? 'Angepinnt' : 'Anheften';
         }
       });
@@ -1784,7 +1834,7 @@ export default definePlugin({
             tooltip.className = "r6de-invite-preview";
             Object.assign(tooltip.style, {
               position: "fixed",
-              zIndex: "10001",
+              zIndex: "999999",
               maxWidth: "320px",
               pointerEvents: "none",
               display: "none"
