@@ -28,26 +28,26 @@ const settings = definePluginSettings({
   backgroundColor: {
     type: OptionType.STRING,
     description: "Hintergrundfarbe (Hex)",
-    default: "#0e0f12"
+    default: "#0a0a0f"
   },
   popupWidth: {
     type: OptionType.NUMBER,
     description: "Popup-Breite (px)",
-    default: 450,
+    default: 380,
     min: 100,
     max: 800
   },
   popupMaxHeight: {
     type: OptionType.NUMBER,
     description: "Maximale Höhe (px)",
-    default: 500,
+    default: 420,
     min: 0,
     max: 1000
   },
   restrictToServer: {
     type: OptionType.BOOLEAN,
     description: "Nur auf R6DE Server anzeigen",
-    default: true // Default auf true gesetzt
+    default: true
   },
   defaultPinned: {
     type: OptionType.BOOLEAN,
@@ -57,7 +57,7 @@ const settings = definePluginSettings({
   textColor: {
     type: OptionType.STRING,
     description: "Textfarbe (Hex)",
-    default: "#e0e7ff"
+    default: "#e1e7ff"
   },
   borderSize: {
     type: OptionType.NUMBER,
@@ -69,7 +69,7 @@ const settings = definePluginSettings({
   borderColor: {
     type: OptionType.STRING,
     description: "Rahmenfarbe (Hex)",
-    default: "#4e5d94"
+    default: "#2563eb"
   },
   borderStyle: {
     type: OptionType.SELECT,
@@ -85,7 +85,7 @@ const settings = definePluginSettings({
   popupOpacity: {
     type: OptionType.NUMBER,
     description: "Deckkraft (0.0 - 1.0)",
-    default: 1.0,
+    default: 0.98,
     min: 0.0,
     max: 1.0,
     step: 0.05
@@ -98,7 +98,7 @@ const settings = definePluginSettings({
   animationDuration: {
     type: OptionType.NUMBER,
     description: "Animationsdauer (ms)",
-    default: 200,
+    default: 250,
     min: 0,
     max: 1000
   },
@@ -192,84 +192,82 @@ export default definePlugin({
     const GUILD_ID = "787620905269854259";
     const WATCHLIST_CHANNEL_ID = "843185952122077224";
     
-    // Popup Container
+    // Popup Container mit modernem Design
     const popup = document.createElement("div");
     popup.id = "r6de-supporter-popup";
     popup.classList.add("r6de-supporter-popup");
     
-    // Modernes Design mit Glas-Effekt
-    Object.assign(popup.style, {
-      position: "fixed",
-      background: settings.store.backgroundColor,
-      backdropFilter: "blur(10px)",
-      WebkitBackdropFilter: "blur(10px)",
-      color: settings.store.textColor,
-      padding: "14px 16px",
-      borderRadius: settings.store.roundedCorners ? "12px" : "0",
-      fontSize: "13px",
-      zIndex: "9999",
-      pointerEvents: "auto",
-      display: "none",
-      width: `${settings.store.popupWidth}px`,
-      maxHeight: settings.store.popupMaxHeight > 0 ? `${settings.store.popupMaxHeight}px` : 'none',
-      overflowY: "auto",
-      boxShadow: "0 8px 24px rgba(0,0,0,0.25), 0 4px 12px rgba(0,0,0,0.15)",
-      fontFamily: "'Whitney', 'Helvetica Neue', Helvetica, Arial, sans-serif",
-      fontWeight: "500",
-      lineHeight: "1.5",
-      cursor: "grab",
-      border: `${settings.store.borderSize}px ${settings.store.borderStyle} ${settings.store.borderColor}`,
-      opacity: settings.store.popupOpacity.toString(),
-      visibility: "hidden",
-      transform: "scale(0.98)",
-      transition: settings.store.tooltipAnimation 
-        ? `opacity ${settings.store.animationDuration}ms cubic-bezier(0.16, 1, 0.3, 1),
-           transform ${settings.store.animationDuration}ms cubic-bezier(0.16, 1, 0.3, 1),
-           visibility ${settings.store.animationDuration}ms ease,
-           backdrop-filter 0.3s ease,
-           background 0.3s ease`
-        : "none"
-    });
+// Modernes schwarzes Design mit blauen Akzenten
+Object.assign(popup.style, {
+  position: "fixed",
+  background: `linear-gradient(135deg, rgba(10, 10, 15, 0.95), rgba(15, 15, 25, 0.90))`,
+  backdropFilter: "blur(20px) saturate(180%)",
+  WebkitBackdropFilter: "blur(20px) saturate(180%)",
+  color: settings.store.textColor,
+  padding: "18px",
+  borderRadius: settings.store.roundedCorners ? "14px" : "0",
+  fontSize: "13px",
+  zIndex: "9999",
+  pointerEvents: "auto",
+  display: "none",
+  width: settings.store.popupWidth + "px",
+  maxHeight: settings.store.popupMaxHeight > 0 ? settings.store.popupMaxHeight + "px" : 'none',
+  overflowY: "auto",
+  boxShadow: `
+    0 25px 50px rgba(0,0,0,0.7),
+    0 10px 25px rgba(37, 99, 235, 0.2),
+    inset 0 1px 0 rgba(255,255,255,0.1),
+    0 0 0 1px rgba(255,255,255,0.05)
+  `,
+  fontFamily: "'Inter', 'SF Pro Display', 'Whitney', 'Helvetica Neue', Helvetica, Arial, sans-serif",
+  fontWeight: "500",
+  lineHeight: "1.6",
+  cursor: "grab",
+  border: `1px solid rgba(255,255,255,0.08)`,
+  opacity: settings.store.popupOpacity.toString(),
+  visibility: "hidden",
+  transform: "scale(0.95) translateY(10px)",
+  transition: settings.store.tooltipAnimation 
+    ? `all ${settings.store.animationDuration}ms cubic-bezier(0.34, 1.56, 0.64, 1)`
+    : "none",
+  willChange: "transform, opacity"
+});
     
     document.body.appendChild(popup);
 
-    // Scrollbar Styling - verbesserte Usability
+    // Erweiterte CSS-Styles für modernes Design mit Animationen
     const scrollFixStyle = document.createElement("style");
     scrollFixStyle.textContent = `
       .r6de-supporter-popup::-webkit-scrollbar {
-        width: 8px;
+        width: 6px;
       }
       .r6de-supporter-popup::-webkit-scrollbar-track {
-        background: rgba(0, 0, 0, 0.1);
-        border-radius: 4px;
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 3px;
       }
       .r6de-supporter-popup::-webkit-scrollbar-thumb {
-        background: rgba(114, 137, 218, 0.6);
-        border-radius: 4px;
-        cursor: pointer;
+        background: linear-gradient(180deg, #2563eb, #1d4ed8);
+        border-radius: 3px;
+        transition: background 0.3s ease;
       }
       .r6de-supporter-popup::-webkit-scrollbar-thumb:hover {
-        background: rgba(91, 110, 174, 0.8);
+        background: linear-gradient(180deg, #3b82f6, #2563eb);
       }
       .strafakte-list-container::-webkit-scrollbar {
-        width: 6px;
+        width: 4px;
       }
       .strafakte-list-container::-webkit-scrollbar-track {
         background: rgba(0, 0, 0, 0.1);
-        border-radius: 3px;
+        border-radius: 2px;
       }
       .strafakte-list-container::-webkit-scrollbar-thumb {
-        background: rgba(114, 137, 218, 0.5);
-        border-radius: 3px;
-        cursor: pointer;
-      }
-      .strafakte-list-container::-webkit-scrollbar-thumb:hover {
-        background: rgba(91, 110, 174, 0.7);
+        background: linear-gradient(180deg, #2563eb80, #1d4ed880);
+        border-radius: 2px;
       }
     `;
     document.head.appendChild(scrollFixStyle);
 
-    // Dragging Logik
+    // Verbesserte Dragging-Logik mit Performance-Optimierung
     let isDragging = false;
     let dragOffsetX = 0;
     let dragOffsetY = 0;
@@ -281,6 +279,7 @@ export default definePlugin({
       isDragging = true;
       userHasDragged = true;
       popup.style.cursor = "grabbing";
+      popup.style.transition = "none";
       dragOffsetX = e.clientX - popup.getBoundingClientRect().left;
       dragOffsetY = e.clientY - popup.getBoundingClientRect().top;
       dragStartPosition = { x: e.clientX, y: e.clientY };
@@ -290,104 +289,192 @@ export default definePlugin({
     const mouseMoveHandler = (e: MouseEvent) => {
       if (!isDragging) return;
       
-      // Minimum-Bewegungsschwelle (5px)
-      const moveThreshold = 5;
+      const moveThreshold = 3;
       const dx = Math.abs(e.clientX - dragStartPosition.x);
       const dy = Math.abs(e.clientY - dragStartPosition.y);
       
       if (dx < moveThreshold && dy < moveThreshold) return;
       
-      let newLeft = e.clientX - dragOffsetX;
-      let newTop = e.clientY - dragOffsetY;
-      const rect = popup.getBoundingClientRect();
-      const vw = window.innerWidth;
-      const vh = window.innerHeight;
-      const margin = 5;
+      requestAnimationFrame(() => {
+        let newLeft = e.clientX - dragOffsetX;
+        let newTop = e.clientY - dragOffsetY;
+        const rect = popup.getBoundingClientRect();
+        const vw = window.innerWidth;
+        const vh = window.innerHeight;
+        const margin = 10;
 
-      // Begrenze die Position auf den Bildschirm
-      newLeft = Math.max(margin, Math.min(vw - rect.width - margin, newLeft));
-      newTop = Math.max(margin, Math.min(vh - rect.height - margin, newTop));
+        newLeft = Math.max(margin, Math.min(vw - rect.width - margin, newLeft));
+        newTop = Math.max(margin, Math.min(vh - rect.height - margin, newTop));
 
-      popup.style.left = `${newLeft}px`;
-      popup.style.top = `${newTop}px`;
+        popup.style.left = newLeft + "px";
+        popup.style.top = newTop + "px";
+      });
     };
 
     const mouseUpHandler = () => {
-      isDragging = false;
-      popup.style.cursor = "grab";
+      if (isDragging) {
+        isDragging = false;
+        popup.style.cursor = "grab";
+        popup.style.transition = settings.store.tooltipAnimation 
+          ? `all ${settings.store.animationDuration}ms cubic-bezier(0.4, 0.0, 0.2, 1)`
+          : "none";
+      }
     };
 
     document.addEventListener("mousemove", mouseMoveHandler);
     document.addEventListener("mouseup", mouseUpHandler);
     document.addEventListener("mouseleave", mouseUpHandler);
 
-    // CSS für modernes Design mit Animationen
+    // Erweitertes CSS für ultra-modernes Design
     const style = document.createElement("style");
     style.textContent = `
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+      
       .r6de-supporter-popup {
-        transition: 
-          opacity ${settings.store.animationDuration}ms cubic-bezier(0.16, 1, 0.3, 1), 
-          transform ${settings.store.animationDuration}ms cubic-bezier(0.16, 1, 0.3, 1), 
-          visibility ${settings.store.animationDuration}ms ease,
-          backdrop-filter 0.3s ease,
-          background 0.3s ease;
+        --primary-blue: #2563eb;
+        --primary-blue-dark: #1d4ed8;
+        --primary-blue-light: #3b82f6;
+        --primary-blue-glow: rgba(37, 99, 235, 0.4);
+        --surface-color: rgba(15, 15, 25, 0.95);
+        --surface-hover: rgba(25, 25, 40, 0.8);
+        --text-primary: #e1e7ff;
+        --text-secondary: #9ca3af;
+        --success-color: #10b981;
+        --warning-color: #f59e0b;
+        --error-color: #ef4444;
+        --shadow-glow: 0 0 20px var(--primary-blue-glow);
+      }
+      
+      /* Einladungsvorschau Styling */
+      .r6de-invite-preview {
+        background: linear-gradient(135deg, rgba(10, 10, 15, 0.95), rgba(15, 15, 25, 0.90)) !important;
+        backdrop-filter: blur(20px) saturate(180%) !important;
+        -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+        color: var(--text-primary) !important;
+        padding: 18px !important;
+        border-radius: ${settings.store.roundedCorners ? "14px" : "0"} !important;
+        font-size: 13px !important;
+        font-family: 'Inter', 'SF Pro Display', 'Whitney', 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
+        font-weight: 500 !important;
+        line-height: 1.6 !important;
+        box-shadow: 
+          0 25px 50px rgba(0,0,0,0.7),
+          0 10px 25px rgba(37, 99, 235, 0.2),
+          inset 0 1px 0 rgba(255,255,255,0.1),
+          0 0 0 1px rgba(255,255,255,0.05) !important;
+        border: 1px solid rgba(255,255,255,0.08) !important;
+        opacity: ${settings.store.popupOpacity} !important;
+        transition: ${settings.store.tooltipAnimation 
+          ? `all ${settings.store.animationDuration}ms cubic-bezier(0.34, 1.56, 0.64, 1)`
+          : "none"} !important;
+        will-change: transform, opacity !important;
+      }
+      
+      .r6de-invite-preview img {
+        border: 2px solid rgba(37, 99, 235, 0.4) !important;
+        transition: all 0.4s cubic-bezier(0.4, 0.0, 0.2, 1) !important;
+        box-shadow: 0 3px 12px rgba(0,0,0,0.3) !important;
+      }
+      
+      .r6de-invite-preview img:hover {
+        transform: scale(1.05) !important;
+        border-color: var(--primary-blue) !important;
+        box-shadow: 0 8px 24px rgba(37, 99, 235, 0.4) !important;
       }
       
       .strafakte-button {
-        background: rgba(88, 101, 242, 0.9);
+        background: linear-gradient(135deg, var(--primary-blue), var(--primary-blue-dark));
         color: white;
         border: none;
         padding: 0;
-        border-radius: 6px;
-        font-size: 15px;
+        border-radius: 8px;
+        font-size: 13px;
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
         width: 28px;
         height: 28px;
-        transition: all 0.2s ease;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+        box-shadow: 0 3px 8px rgba(37, 99, 235, 0.3);
+        position: relative;
+        overflow: hidden;
+        transform-origin: center;
+      }
+      
+      .strafakte-button::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: left 0.5s ease;
       }
       
       .strafakte-button:hover {
-        transform: scale(1.08);
-        background: rgba(71, 82, 196, 0.9);
-        box-shadow: 0 3px 6px rgba(0,0,0,0.25);
+        transform: scale(1.08) translateY(-1px);
+        box-shadow: 0 6px 16px rgba(37, 99, 235, 0.4), var(--shadow-glow);
+        background: linear-gradient(135deg, var(--primary-blue-light), var(--primary-blue));
+      }
+      
+      .strafakte-button:hover::before {
+        left: 100%;
+      }
+      
+      .strafakte-button:active {
+        transform: scale(1.05) translateY(-1px);
+        transition: all 0.1s ease;
       }
       
       .strafakte-button:disabled {
         opacity: 0.5;
         cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
       }
       
       .strafakte-button.pinned {
-        background: rgba(67, 181, 129, 0.9);
+        background: linear-gradient(135deg, var(--success-color), #059669);
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
       }
       
       .strafakte-button.pinned:hover {
-        background: rgba(61, 163, 112, 0.9);
+        background: linear-gradient(135deg, #34d399, var(--success-color));
+        box-shadow: 0 8px 20px rgba(16, 185, 129, 0.5);
       }
       
       .strafakte-button.unpinned {
-        background: rgba(240, 71, 71, 0.9);
+        background: linear-gradient(135deg, var(--error-color), #dc2626);
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
       }
       
       .strafakte-button.unpinned:hover {
-        background: rgba(216, 64, 64, 0.9);
+        background: linear-gradient(135deg, #f87171, var(--error-color));
+        box-shadow: 0 8px 20px rgba(239, 68, 68, 0.5);
       }
 
       .strafakte-button.close {
         background: none !important;
-        color: #f04747;
-        font-size: 17px;
-        line-height: 1;
+        color: var(--error-color);
+        font-size: 20px;
         box-shadow: none;
+        transition: all 0.3s ease;
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
       }
       
       .strafakte-button.close:hover {
-        transform: scale(1.15);
-        color: #ff5c5c;
+        transform: scale(1.2) rotate(90deg);
+        color: #ff6b6b;
+        text-shadow: 0 0 10px rgba(255, 107, 107, 0.5);
+        background: rgba(255, 107, 107, 0.1) !important;
+        border-radius: 50%;
       }
       
       .strafakte-button-container {
@@ -398,285 +485,513 @@ export default definePlugin({
       }
       
       .strafakte-avatar {
-        width: 46px;
-        height: 46px;
+        width: 44px;
+        height: 44px;
         border-radius: 50%;
         margin-right: 12px;
         object-fit: cover;
-        border: 1px solid rgba(78, 93, 148, 0.3);
-        transition: transform 0.3s ease;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        border: 2px solid rgba(37, 99, 235, 0.4);
+        transition: all 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
+        box-shadow: 0 3px 12px rgba(0,0,0,0.3);
+        position: relative;
+      }
+      
+      .strafakte-avatar::before {
+        content: '';
+        position: absolute;
+        inset: -2px;
+        border-radius: 50%;
+        background: linear-gradient(45deg, var(--primary-blue), var(--primary-blue-light), var(--primary-blue));
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        z-index: -1;
       }
       
       .strafakte-avatar:hover {
-        transform: scale(1.08);
+        transform: scale(1.15) rotate(5deg);
+        border-color: var(--primary-blue);
+        box-shadow: 0 8px 24px rgba(37, 99, 235, 0.4);
+      }
+      
+      .strafakte-avatar:hover::before {
+        opacity: 1;
       }
       
       .strafakte-header {
         display: flex;
         align-items: center;
-        margin-bottom: 14px;
-        padding-bottom: 14px;
-        border-bottom: 1px solid rgba(255,255,255,0.08);
+        margin-bottom: 16px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid rgba(37, 99, 235, 0.2);
         position: relative;
+      }
+      
+      .strafakte-header::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, var(--primary-blue), transparent);
+        opacity: 0.6;
       }
       
       .strafakte-user-info {
         flex: 1;
         min-width: 0;
-        margin-right: 10px;
+        margin-right: 12px;
       }
       
       .strafakte-username {
-        font-weight: 600;
+        font-weight: 700;
         font-size: 16px;
         color: #fff;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
         letter-spacing: 0.2px;
-        text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        background: linear-gradient(135deg, #fff, #e1e7ff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        transition: all 0.3s ease;
+      }
+      
+      .strafakte-username:hover {
+        transform: translateX(2px);
       }
       
       .strafakte-userid {
         font-size: 12px;
-        color: #a0a5b8;
-        margin-top: 5px;
+        color: var(--text-secondary);
+        margin-top: 6px;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-        font-family: 'Consolas', 'Courier New', monospace;
+        font-family: 'JetBrains Mono', 'Consolas', monospace;
         opacity: 0.8;
+        transition: color 0.3s ease;
+      }
+      
+      .strafakte-userid:hover {
+        color: var(--primary-blue-light);
       }
       
       .strafakte-stats {
-        display: flex;
-        flex-wrap: wrap;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(85px, 1fr));
         gap: 10px;
-        margin-bottom: 14px;
-        justify-content: space-between;
+        margin-bottom: 16px;
       }
       
       .strafakte-stat {
-        background: rgba(255, 255, 255, 0.06);
-        border-radius: 8px;
-        padding: 10px;
+        background: linear-gradient(135deg, var(--surface-color), rgba(25, 25, 40, 0.6));
+        border-radius: 10px;
+        padding: 12px 8px;
         text-align: center;
         cursor: pointer;
-        transition: all 0.25s ease;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        border: 1px solid rgba(255,255,255,0.05);
-        flex: 1;
-        min-width: 80px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
+        transition: all 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
+        box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+        border: 1px solid rgba(37, 99, 235, 0.1);
+        position: relative;
+        overflow: hidden;
+        backdrop-filter: blur(10px);
+      }
+      
+      .strafakte-stat::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, var(--primary-blue), var(--primary-blue-light));
+        transform: scaleX(0);
+        transition: transform 0.3s ease;
       }
       
       .strafakte-stat:hover {
-        background: rgba(255, 255, 255, 0.1);
-        transform: translateY(-3px);
-        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        background: linear-gradient(135deg, var(--surface-hover), rgba(37, 99, 235, 0.1));
+        transform: translateY(-4px) scale(1.02);
+        box-shadow: 0 12px 28px rgba(0,0,0,0.3), 0 0 20px rgba(37, 99, 235, 0.2);
+        border-color: var(--primary-blue);
+      }
+      
+      .strafakte-stat:hover::before {
+        transform: scaleX(1);
+      }
+      
+      .strafakte-stat:active {
+        transform: translateY(-2px) scale(1.01);
       }
       
       .strafakte-stat-value {
-        font-weight: 700;
-        font-size: 18px;
-        color: #7289da;
-        line-height: 1.2;
-        text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        font-weight: 800;
+        font-size: 20px;
+        color: var(--primary-blue-light);
+        line-height: 1;
+        text-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+        transition: all 0.3s ease;
+      }
+      
+      .strafakte-stat:hover .strafakte-stat-value {
+        color: #fff;
+        text-shadow: 0 0 15px var(--primary-blue-glow);
+        transform: scale(1.08);
       }
       
       .strafakte-stat-label {
-        font-size: 11px;
-        color: #a0a5b8;
-        margin-top: 5px;
-        letter-spacing: 0.5px;
+        font-size: 10px;
+        color: var(--text-secondary);
+        margin-top: 6px;
+        letter-spacing: 0.8px;
         text-transform: uppercase;
-        opacity: 0.8;
+        font-weight: 600;
+        transition: color 0.3s ease;
+      }
+      
+      .strafakte-stat:hover .strafakte-stat-label {
+        color: var(--text-primary);
       }
       
       .strafakte-warning {
-        background: linear-gradient(90deg, rgba(255, 204, 0, 0.15), rgba(255, 184, 0, 0.1));
-        border-radius: 8px;
-        padding: 10px 12px;
-        margin-bottom: 14px;
-        font-size: 13px;
+        background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(245, 158, 11, 0.05));
+        border-radius: 10px;
+        padding: 12px 14px;
+        margin-bottom: 16px;
+        font-size: 12px;
         display: flex;
         align-items: center;
-        border-left: 3px solid #ffcc00;
+        border-left: 3px solid var(--warning-color);
+        backdrop-filter: blur(10px);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+      }
+      
+      .strafakte-warning::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(45deg, transparent, rgba(245, 158, 11, 0.1), transparent);
+        transform: translateX(-100%);
+        transition: transform 0.6s ease;
+      }
+      
+      .strafakte-warning:hover::before {
+        transform: translateX(100%);
       }
       
       .strafakte-list-container {
-        max-height: 250px;
+        max-height: 240px;
         overflow-y: auto;
-        padding-right: 5px;
+        padding-right: 6px;
         scroll-behavior: smooth;
-        margin-top: 5px;
+        margin-top: 6px;
       }
       
       .strafakte-list-title {
-        margin-bottom: 10px;
+        margin-bottom: 12px;
         font-size: 15px;
-        color: #7289da;
-        border-bottom: 1px solid rgba(255,255,255,0.08);
-        padding-bottom: 8px;
+        color: var(--primary-blue-light);
+        border-bottom: 2px solid rgba(37, 99, 235, 0.2);
+        padding-bottom: 10px;
         display: flex;
         align-items: center;
         justify-content: space-between;
-        font-weight: 600;
+        font-weight: 700;
+        position: relative;
+      }
+      
+      .strafakte-list-title::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        width: 40px;
+        height: 2px;
+        background: var(--primary-blue);
+        transition: width 0.3s ease;
+      }
+      
+      .strafakte-list-title:hover::after {
+        width: 100%;
       }
       
       .strafakte-back-button {
-        background: none;
-        border: none;
-        color: #7289da;
+        background: linear-gradient(135deg, rgba(37, 99, 235, 0.1), rgba(37, 99, 235, 0.05));
+        border: 1px solid rgba(37, 99, 235, 0.3);
+        color: var(--primary-blue-light);
         cursor: pointer;
-        font-size: 15px;
+        font-size: 13px;
         display: flex;
         align-items: center;
-        padding: 4px 8px;
-        border-radius: 4px;
-        transition: all 0.2s ease;
+        padding: 8px 12px;
+        border-radius: 8px;
+        transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+        font-weight: 600;
+        backdrop-filter: blur(10px);
       }
       
       .strafakte-back-button:hover {
-        background: rgba(114, 137, 218, 0.1);
-        color: #8ea1e1;
+        background: linear-gradient(135deg, rgba(37, 99, 235, 0.2), rgba(37, 99, 235, 0.1));
+        color: #fff;
+        transform: translateX(-3px);
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
       }
       
       .strafakte-entry {
         padding: 10px 12px;
-        margin-bottom: 10px;
-        background: rgba(255, 255, 255, 0.04);
-        border-radius: 8px;
-        border-left: 4px solid;
-        font-size: 13px;
+        margin-bottom: 8px;
+        background: linear-gradient(135deg, var(--surface-color), rgba(25, 25, 40, 0.4));
+        border-radius: 10px;
+        border-left: 3px solid;
+        font-size: 12px;
         line-height: 1.5;
-        transition: transform 0.25s ease, background 0.25s ease, box-shadow 0.25s ease;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        transition: all 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
+        box-shadow: 0 3px 8px rgba(0,0,0,0.2);
         cursor: pointer;
+        position: relative;
+        overflow: hidden;
+        backdrop-filter: blur(10px);
+      }
+      
+      .strafakte-entry::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, rgba(37, 99, 235, 0.05), transparent);
+        opacity: 0;
+        transition: opacity 0.3s ease;
       }
       
       .strafakte-entry:hover {
-        transform: translateX(3px);
-        background: rgba(255, 255, 255, 0.08);
-        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        transform: translateX(6px) translateY(-2px);
+        background: linear-gradient(135deg, var(--surface-hover), rgba(37, 99, 235, 0.1));
+        box-shadow: 0 8px 24px rgba(0,0,0,0.3), 0 0 20px rgba(37, 99, 235, 0.15);
+      }
+      
+      .strafakte-entry:hover::before {
+        opacity: 1;
       }
       
       .strafakte-entry > div {
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+        transition: color 0.3s ease;
       }
       
-      .strafakte-penalty-category-A { border-color: #43b581; }
-      .strafakte-penalty-category-B { border-color: #faa61a; }
-      .strafakte-penalty-category-C { border-color: #f57731; }
-      .strafakte-penalty-category-D { border-color: #f04747; }
-      .strafakte-penalty-category-E { border-color: #593695; }
-      .strafakte-penalty-category-KICK { border-color: #ff9500; }
-      .strafakte-penalty-category-UNKNOWN { border-color: #95a5a6; }
+      .strafakte-entry:hover > div {
+        color: var(--text-primary);
+      }
       
-      .strafakte-warning-entry { border-color: #faa61a; }
-      .strafakte-unban-entry { border-color: #43b581; }
-      .strafakte-watchlist-entry { border-color: #5865F2; }
+      /* Kategorie-Farben mit Glow-Effekten */
+      .strafakte-penalty-category-A { 
+        border-color: var(--success-color);
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+      }
+      .strafakte-penalty-category-B { 
+        border-color: var(--warning-color);
+        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
+      }
+      .strafakte-penalty-category-C { 
+        border-color: #f97316;
+        box-shadow: 0 4px 12px rgba(249, 115, 22, 0.2);
+      }
+      .strafakte-penalty-category-D { 
+        border-color: var(--error-color);
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+      }
+      .strafakte-penalty-category-E { 
+        border-color: #8b5cf6;
+        box-shadow: 0 4px 12px rgba(139, 92, 246, 0.2);
+      }
+      .strafakte-penalty-category-KICK { 
+        border-color: #ff9500;
+        box-shadow: 0 4px 12px rgba(255, 149, 0, 0.2);
+      }
+      .strafakte-penalty-category-UNKNOWN { 
+        border-color: #6b7280;
+        box-shadow: 0 4px 12px rgba(107, 114, 128, 0.2);
+      }
+      
+      .strafakte-warning-entry { 
+        border-color: var(--warning-color);
+        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
+      }
+      .strafakte-unban-entry { 
+        border-color: var(--success-color);
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+      }
+      .strafakte-watchlist-entry { 
+        border-color: var(--primary-blue);
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+      }
       
       .strafakte-entry-expired {
-        opacity: 0.7;
+        opacity: 0.6;
         border-left-style: dashed;
+        filter: grayscale(40%);
       }
       
       .strafakte-entry-category {
         display: inline-block;
-        font-size: 11px;
-        padding: 3px 8px;
-        border-radius: 12px;
-        margin-top: 6px;
-        background: rgba(255,255,255,0.08);
-        font-weight: 600;
+        font-size: 10px;
+        padding: 4px 10px;
+        border-radius: 16px;
+        margin-top: 8px;
+        background: linear-gradient(135deg, rgba(37, 99, 235, 0.2), rgba(37, 99, 235, 0.1));
+        border: 1px solid rgba(37, 99, 235, 0.3);
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        transition: all 0.3s ease;
+      }
+      
+      .strafakte-entry:hover .strafakte-entry-category {
+        background: linear-gradient(135deg, var(--primary-blue), var(--primary-blue-dark));
+        color: white;
+        transform: scale(1.05);
       }
       
       .strafakte-entry-date {
         font-size: 11px;
         opacity: 0.7;
-        margin-top: 6px;
+        margin-top: 8px;
         font-style: italic;
+        color: var(--text-secondary);
+        transition: color 0.3s ease;
+      }
+      
+      .strafakte-entry:hover .strafakte-entry-date {
+        color: var(--primary-blue-light);
       }
       
       .strafakte-section {
-        margin-bottom: 10px;
-        font-size: 15px;
-        color: #7289da;
-        border-bottom: 1px solid rgba(255,255,255,0.08);
-        padding-bottom: 8px;
+        margin-bottom: 12px;
+        font-size: 16px;
+        color: var(--primary-blue-light);
+        border-bottom: 2px solid rgba(37, 99, 235, 0.2);
+        padding-bottom: 12px;
         cursor: pointer;
-        transition: all 0.25s ease;
-        font-weight: 600;
+        transition: all 0.3s ease;
+        font-weight: 700;
+        position: relative;
       }
       
       .strafakte-section:hover {
-        color: #8ea1e1;
+        color: #fff;
+        text-shadow: 0 0 10px var(--primary-blue-glow);
+        transform: translateX(4px);
       }
       
       .strafakte-empty-state {
         text-align: center;
-        padding: 15px;
+        padding: 24px;
         opacity: 0.6;
         font-style: italic;
-        font-size: 13px;
+        font-size: 14px;
+        color: var(--text-secondary);
+        transition: all 0.3s ease;
+      }
+      
+      .strafakte-empty-state:hover {
+        opacity: 0.8;
+        color: var(--text-primary);
       }
       
       .strafakte-tab-content {
-        animation: fadeIn 0.35s ease;
+        animation: slideInUp 0.5s cubic-bezier(0.4, 0.0, 0.2, 1);
       }
       
       .strafakte-detail-view {
-        background: rgba(255, 255, 255, 0.05);
-        border-radius: 8px;
-        padding: 12px;
-        margin-top: 10px;
-        animation: fadeIn 0.3s ease;
+        background: linear-gradient(135deg, rgba(37, 99, 235, 0.1), rgba(37, 99, 235, 0.05));
+        border-radius: 12px;
+        padding: 16px;
+        margin-top: 12px;
+        animation: slideInUp 0.4s ease;
+        border: 1px solid rgba(37, 99, 235, 0.2);
+        backdrop-filter: blur(10px);
       }
       
       .strafakte-detail-title {
-        font-weight: 600;
-        font-size: 14px;
-        margin-bottom: 8px;
-        color: #7289da;
+        font-weight: 700;
+        font-size: 16px;
+        margin-bottom: 12px;
+        color: var(--primary-blue-light);
         display: flex;
         align-items: center;
-        gap: 6px;
+        gap: 8px;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.3);
       }
       
       .strafakte-detail-title::before {
         content: "📋";
+        filter: drop-shadow(0 0 5px rgba(37, 99, 235, 0.5));
       }
       
       .strafakte-detail-field {
-        margin-bottom: 8px;
-        padding: 6px 0;
-        border-bottom: 1px solid rgba(255,255,255,0.05);
+        margin-bottom: 12px;
+        padding: 12px 0;
+        border-bottom: 1px solid rgba(37, 99, 235, 0.1);
+        transition: all 0.3s ease;
+      }
+      
+      .strafakte-detail-field:hover {
+        background: rgba(37, 99, 235, 0.05);
+        border-radius: 8px;
+        padding: 12px;
+        margin: 4px 0;
       }
       
       .strafakte-detail-label {
-        font-weight: 600;
+        font-weight: 700;
         font-size: 12px;
-        color: #a0a5b8;
+        color: var(--text-secondary);
         text-transform: uppercase;
-        letter-spacing: 0.5px;
-        margin-bottom: 3px;
+        letter-spacing: 1px;
+        margin-bottom: 6px;
+        transition: color 0.3s ease;
+      }
+      
+      .strafakte-detail-field:hover .strafakte-detail-label {
+        color: var(--primary-blue-light);
       }
       
       .strafakte-detail-value {
-        font-size: 13px;
+        font-size: 14px;
         word-break: break-word;
+        color: var(--text-primary);
+        transition: color 0.3s ease;
       }
       
-      @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(8px); }
-        to { opacity: 1; transform: translateY(0); }
+      .strafakte-detail-field:hover .strafakte-detail-value {
+        color: #fff;
+      }
+      
+      @keyframes slideInUp {
+        from { 
+          opacity: 0; 
+          transform: translateY(20px); 
+        }
+        to { 
+          opacity: 1; 
+          transform: translateY(0); 
+        }
+      }
+      
+      @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
       }
       
       .loading-indicator {
@@ -684,18 +999,19 @@ export default definePlugin({
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        padding: 30px;
+        padding: 40px;
         text-align: center;
       }
       
       .loading-spinner {
-        width: 48px;
-        height: 48px;
-        margin-bottom: 16px;
-        border: 4px solid rgba(114, 137, 218, 0.2);
+        width: 56px;
+        height: 56px;
+        margin-bottom: 20px;
+        border: 4px solid rgba(37, 99, 235, 0.2);
         border-radius: 50%;
-        border-top-color: #7289da;
-        animation: spin 1.2s cubic-bezier(0.68, -0.55, 0.27, 1.55) infinite;
+        border-top-color: var(--primary-blue);
+        animation: spin 1s cubic-bezier(0.68, -0.55, 0.27, 1.55) infinite;
+        filter: drop-shadow(0 0 10px var(--primary-blue-glow));
       }
       
       @keyframes spin {
@@ -704,45 +1020,46 @@ export default definePlugin({
       }
       
       .loading-text {
-        font-size: 14px;
-        color: #a0a5b8;
-        margin-top: 10px;
+        font-size: 15px;
+        color: var(--text-secondary);
+        margin-top: 12px;
+        animation: pulse 2s ease-in-out infinite;
       }
 
-      /* Minimalistisches Popup */
+      /* Minimalistisches Design */
       .minimalist-popup .strafakte-header {
-        padding-bottom: 10px;
-        margin-bottom: 10px;
+        padding-bottom: 16px;
+        margin-bottom: 16px;
       }
       
       .minimalist-popup .strafakte-avatar {
-        width: 36px;
-        height: 36px;
+        width: 40px;
+        height: 40px;
       }
       
       .minimalist-popup .strafakte-username {
-        font-size: 14px;
+        font-size: 15px;
       }
       
       .minimalist-popup .strafakte-userid {
-        font-size: 11px;
-      }
-      
-      .minimalist-popup .strafakte-stat {
-        padding: 8px;
-        min-width: 70px;
-      }
-      
-      .minimalist-popup .strafakte-stat-value {
-        font-size: 16px;
-      }
-      
-      .minimalist-popup .strafakte-stat-label {
         font-size: 10px;
       }
       
+      .minimalist-popup .strafakte-stat {
+        padding: 12px 6px;
+        min-width: 75px;
+      }
+      
+      .minimalist-popup .strafakte-stat-value {
+        font-size: 18px;
+      }
+      
+      .minimalist-popup .strafakte-stat-label {
+        font-size: 9px;
+      }
+      
       .minimalist-popup .strafakte-warning {
-        padding: 8px 10px;
+        padding: 10px 12px;
         font-size: 12px;
       }
       
@@ -751,26 +1068,8 @@ export default definePlugin({
       }
       
       .minimalist-popup .strafakte-entry {
-        padding: 8px 10px;
+        padding: 10px 12px;
         font-size: 12px;
-      }
-      
-      /* Einheitliches Design für Einladungsvorschau */
-      .r6de-invite-preview {
-        background: ${settings.store.backgroundColor} !important;
-        backdrop-filter: blur(10px) !important;
-        -webkit-backdrop-filter: blur(10px) !important;
-        color: ${settings.store.textColor} !important;
-        border: ${settings.store.borderSize}px ${settings.store.borderStyle} ${settings.store.borderColor} !important;
-        border-radius: ${settings.store.roundedCorners ? '12px' : '0'} !important;
-        padding: 14px 16px !important;
-        box-shadow: 0 8px 24px rgba(0,0,0,0.25), 0 4px 12px rgba(0,0,0,0.15) !important;
-        font-family: 'Whitney', 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
-        font-weight: 500 !important;
-        line-height: 1.5 !important;
-        font-size: 13px !important;
-        max-width: 300px !important;
-        opacity: ${settings.store.popupOpacity} !important;
       }
     `;
     document.head.appendChild(style);
@@ -796,105 +1095,138 @@ export default definePlugin({
     // Variable für letzten Mauszeiger-Event
     let latestAvatarMouseEvent: MouseEvent | null = null;
 
-    // Positionierungsfunktion mit verbessertem Bildschirmrand-Handling
+    // Verbesserte Positionierung mit Performance-Optimierung
     function positionPopup(popupElement: HTMLElement, e: MouseEvent, xOffset: number = 15, yOffset: number = 15) {
-      const rect = popupElement.getBoundingClientRect();
-      const vw = window.innerWidth;
-      const vh = window.innerHeight;
-      const position = settings.store.popupPosition;
-      const margin = 10;
+      requestAnimationFrame(() => {
+        const rect = popupElement.getBoundingClientRect();
+        const vw = window.innerWidth;
+        const vh = window.innerHeight;
+        const position = settings.store.popupPosition;
+        const margin = 15;
 
-      let left = e.pageX + xOffset;
-      let top = e.pageY + yOffset;
+        let left = e.pageX + xOffset;
+        let top = e.pageY + yOffset;
 
-      switch (position) {
-        case "bottom-left":
-          left = e.pageX - rect.width - xOffset;
-          break;
-        case "top-right":
-          top = e.pageY - rect.height - yOffset;
-          break;
-        case "top-left":
-          left = e.pageX - rect.width - xOffset;
-          top = e.pageY - rect.height - yOffset;
-          break;
-      }
+        switch (position) {
+          case "bottom-left":
+            left = e.pageX - rect.width - xOffset;
+            break;
+          case "top-right":
+            top = e.pageY - rect.height - yOffset;
+            break;
+          case "top-left":
+            left = e.pageX - rect.width - xOffset;
+            top = e.pageY - rect.height - yOffset;
+            break;
+        }
 
-      // Randbegrenzung mit Überprüfung der Höhe
-      left = Math.max(margin, Math.min(vw - rect.width - margin, left));
-      top = Math.max(margin, Math.min(vh - rect.height - margin, top));
+        left = Math.max(margin, Math.min(vw - rect.width - margin, left));
+        top = Math.max(margin, Math.min(vh - rect.height - margin, top));
 
-      // Dynamische Höhenanpassung für Listen
-      const maxAllowedHeight = Math.min(
-        settings.store.popupMaxHeight,
-        vh - top - margin
-      );
-      popupElement.style.maxHeight = `${maxAllowedHeight}px`;
+        const maxAllowedHeight = Math.min(
+          settings.store.popupMaxHeight,
+          vh - top - margin
+        );
+        popupElement.style.maxHeight = maxAllowedHeight + "px";
 
-      popupElement.style.left = `${left}px`;
-      popupElement.style.top = `${top}px`;
+        popupElement.style.left = left + "px";
+        popupElement.style.top = top + "px";
+      });
     }
 
-    // Popup-Anpassung bei Größenänderung
+    // Positionsanpassung nur bei Bedarf - keine kontinuierliche Überwachung
     function adjustPopupPosition() {
-      const popupEl = popup;
-      if (!popupEl || popupEl.style.display === 'none') return;
+      if (!popup || popup.style.display === 'none') return;
 
-      const rect = popupEl.getBoundingClientRect();
+      requestAnimationFrame(() => {
+        const rect = popup.getBoundingClientRect();
+        const vw = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+        const vh = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+        const margin = 10;
+
+        let left = parseFloat(popup.style.left) || 0;
+        let top = parseFloat(popup.style.top) || 0;
+        let needsUpdate = false;
+
+        // Prüfe rechten Rand
+        if (left + rect.width > vw - margin) {
+          left = vw - rect.width - margin;
+          needsUpdate = true;
+        }
+        
+        // Prüfe unteren Rand  
+        if (top + rect.height > vh - margin) {
+          top = vh - rect.height - margin;
+          needsUpdate = true;
+        }
+        
+        // Prüfe linken Rand
+        if (left < margin) {
+          left = margin;
+          needsUpdate = true;
+        }
+        
+        // Prüfe oberen Rand
+        if (top < margin) {
+          top = margin;
+          needsUpdate = true;
+        }
+
+        // Nur updaten wenn nötig
+        if (needsUpdate) {
+          popup.style.left = left + "px";
+          popup.style.top = top + "px";
+        }
+
+        // Dynamische Höhenanpassung
+        const maxAllowedHeight = Math.min(
+          settings.store.popupMaxHeight,
+          vh - top - margin
+        );
+        
+        if (parseInt(popup.style.maxHeight) !== maxAllowedHeight) {
+          popup.style.maxHeight = maxAllowedHeight + "px";
+        }
+      });
+    }
+
+    // Monitor-Check vor Content-Updates
+    function isPopupInViewport(): boolean {
+      if (!popup || popup.style.display === 'none') return true;
+      
+      const rect = popup.getBoundingClientRect();
       const vw = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
       const vh = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
-      const margin = 10;
-
-      // Parse die aktuelle Position
-      let left = parseFloat(popupEl.style.left);
-      let top = parseFloat(popupEl.style.top);
-
-      // Falls die Position nicht gesetzt ist (NaN), setzen wir auf 0 und korrigieren dann
-      if (isNaN(left)) left = 0;
-      if (isNaN(top)) top = 0;
-
-      // Korrektur für rechten Rand
-      if (left + rect.width > vw - margin) {
-        left = vw - rect.width - margin;
-      }
-
-      // Korrektur für unteren Rand
-      if (top + rect.height > vh - margin) {
-        top = vh - rect.height - margin;
-      }
-
-      // Korrektur für linken Rand
-      if (left < margin) {
-        left = margin;
-      }
-
-      // Korrektur für oberen Rand
-      if (top < margin) {
-        top = margin;
-      }
-
-      popupEl.style.left = `${left}px`;
-      popupEl.style.top = `${top}px`;
+      
+      return (
+        rect.left >= 0 &&
+        rect.top >= 0 &&
+        rect.right <= vw &&
+        rect.bottom <= vh
+      );
     }
 
-    // Popup Animationen
+    // Popup-Animationen ohne kontinuierliche Überwachung
     function showPopupWithAnimation() {
       popup.style.display = "block";
       popup.style.visibility = "hidden";
       popup.style.opacity = "0";
-      popup.style.transform = "scale(0.98) translateY(10px)";
+      popup.style.transform = "scale(0.95) translateY(10px)";
       
-      setTimeout(() => {
+      requestAnimationFrame(() => {
         popup.style.visibility = "visible";
-        popup.style.opacity = "1";
+        popup.style.opacity = settings.store.popupOpacity.toString();
         popup.style.transform = "scale(1) translateY(0)";
-      }, 10);
+        
+        // Position nach Animation anpassen
+        setTimeout(() => adjustPopupPosition(), settings.store.animationDuration);
+      });
     }
 
     function hidePopupWithAnimation() {
       if (settings.store.tooltipAnimation) {
         popup.style.opacity = "0";
-        popup.style.transform = "scale(0.98) translateY(10px)";
+        popup.style.transform = "scale(0.95) translateY(10px)";
         
         setTimeout(() => {
           popup.style.display = "none";
@@ -905,15 +1237,13 @@ export default definePlugin({
       }
     }
 
-    // Benutzer-ID aus Element extrahieren
+    // Benutzer-ID Extraktion (unverändert)
     function getUserIdFromElement(el: HTMLElement): string | null {
-      // React Fiber Methode
       for (const key in el) {
         if (key.startsWith("__reactFiber$")) {
           const fiber = (el as any)[key];
           let fiberNode = fiber;
           
-          // Durch React-Fiber-Baum navigieren
           while (fiberNode) {
             const props = fiberNode?.pendingProps || fiberNode?.memoizedProps;
             const userId = props?.user?.id || props?.userId || 
@@ -925,7 +1255,6 @@ export default definePlugin({
         }
       }
 
-      // Speziell für Profile Popup
       const profilePopup = el.closest('[class*="userProfileOuter"]');
       if (profilePopup) {
         const userIdElement = profilePopup.querySelector('[class*="userTag"]');
@@ -935,16 +1264,13 @@ export default definePlugin({
         }
       }
 
-      // HTMLImageElement - Extrahiere ID aus Avatar-URL
       if (el instanceof HTMLImageElement && el.classList.toString().includes('avatar')) {
         const src = el.src;
-        // Extrahiere Benutzer-ID aus dem Avatar-Pfad
         const match = src.match(/avatars\/(\d{17,20})\//) || 
                      src.match(/users\/(\d{17,20})\//);
         if (match) return match[1];
       }
       
-      // Div mit Hintergrundbild
       else if (el instanceof HTMLDivElement) {
         const bgImage = el.style.backgroundImage;
         if (bgImage) {
@@ -953,7 +1279,6 @@ export default definePlugin({
         }
       }
       
-      // SVG-Wrapper
       else if (el.classList.contains('wrapper__44b0c') || el.classList.contains('voiceUser_efcaf8')) {
         const img = el.querySelector('img[class*="avatar"]');
         if (img && img.src) {
@@ -962,7 +1287,6 @@ export default definePlugin({
         }
       }
 
-      // Eltern-Elemente durchsuchen
       const parentElement = el.closest('[data-user-id], [data-author-id], [class*="user"]');
       if (parentElement) {
         const userId = parentElement.getAttribute('data-user-id') || 
@@ -973,7 +1297,7 @@ export default definePlugin({
       return null;
     }
 
-    // Kontextmenü-Methode
+    // Kontextmenü-Methode (unverändert)
     async function getUserIdFromContextMenu(el: HTMLElement): Promise<string | null> {
       return new Promise((resolve) => {
         if (!el) return resolve(null);
@@ -1027,30 +1351,38 @@ export default definePlugin({
       });
     }
 
-    // Strafe kategorisieren - FIXED: ** entfernen und bessere Erkennung
+    // VERBESSERTE Strafe-Kategorisierung mit korrekter Ban-Erkennung
     function parseStrafeKategorie(strafe: string): string {
-      // Entferne ** am Anfang und Ende
-      const cleanStrafe = strafe.replace(/^\*\*|\*\*$/g, '').trim();
+      const cleanStrafe = strafe.replace(/^\*\*|\*\*$/g, '').trim().toLowerCase();
       
-      if (/warn/i.test(cleanStrafe)) return "B";
-      if (/kick/i.test(cleanStrafe)) return "KICK";
-      if (/1h|1 h|1 Stunde/i.test(cleanStrafe)) return "A";
+      // CRITICAL FIX: Ban-Erkennung hat höchste Priorität
+      if (cleanStrafe.includes('ban') && !cleanStrafe.includes('unban') && !cleanStrafe.includes('entban')) {
+        return "E"; // Alle Bans sind Kategorie E
+      }
       
+      // Warn-Erkennung
+      if (cleanStrafe.includes('warn')) return "B";
+      
+      // Kick-Erkennung
+      if (cleanStrafe.includes('kick')) return "KICK";
+      
+      // Zeit-basierte Strafen (nur wenn kein Ban erkannt wurde)
+      if (cleanStrafe.includes('1h') || cleanStrafe.includes('1 h') || cleanStrafe.includes('1 stunde')) return "A";
+      
+      // Tage-basierte Strafen (nur wenn kein Ban erkannt wurde)
       const match = cleanStrafe.match(/(\d+)d/i);
       if (match) {
         const days = parseInt(match[1]);
         if (days <= 3) return "C";
         if (days <= 7) return "D";
-        return "E";
+        return "E"; // Längere Zeitstrafen sind auch E
       }
       
-      if (/ban/i.test(cleanStrafe)) return "E";
-      
-      // Alles andere als unbekannt markieren
-      return "UNKNOWN";
+      // Alles andere was nicht erkannt wird
+      return "?";
     }
 
-    // Token-Helper
+    // Token-Helper (unverändert)
     let tokenCache: string | undefined;
     async function getToken(): Promise<string | undefined> {
       if (tokenCache) return tokenCache;
@@ -1079,7 +1411,7 @@ export default definePlugin({
       return tokenCache;
     }
 
-    // Strafakte abrufen mit Watchlist
+    // Verbesserte Strafakte-Abrufung mit korrekter Ban/Unban-Unterscheidung
     async function fetchStrafakte(userId: string): Promise<StrafakteData> {
       try {
         const user = UserStore.getUser(userId);
@@ -1106,11 +1438,11 @@ export default definePlugin({
           warnCount: 0, 
           unbanCount: 0, 
           watchlistCount: 0,
-            penalties: [], 
-            warnings: [],
-            unbans: [],
-            watchlist: [],
-            newestActiveDays: 0, 
+          penalties: [], 
+          warnings: [],
+          unbans: [],
+          watchlist: [],
+          newestActiveDays: 0, 
           error: "Kein Token" 
         };
 
@@ -1165,11 +1497,9 @@ export default definePlugin({
             const content = msg.content as string;
             if (!content.includes(`ID: ${userId}`)) continue;
             
-            // Verbesserte Extraktion des Vorwurfs
             const vorwurfLine = content.split("\n").find(line => line.toLowerCase().includes("vorwurf:")) ||
                               content.split("\n").find(line => line.toLowerCase().includes("grund:"));
             
-            // Extrahiere den Text nach "Vorwurf:" oder "Grund:"
             let vorwurfText = "Kein Vorwurf angegeben";
             if (vorwurfLine) {
               const vorwurfMatch = vorwurfLine.match(/Vorwurf:\s*(.+)|Grund:\s*(.+)/i);
@@ -1201,7 +1531,7 @@ export default definePlugin({
           };
         }
 
-        // Verarbeitung der Strafakte-Nachrichten
+        // Verarbeitung der Strafakte-Nachrichten mit verbesserter Ban/Unban-Logik
         let warnCount = 0;
         let unbanCount = 0;
         const penalties: PenaltyEntry[] = [];
@@ -1217,12 +1547,20 @@ export default definePlugin({
           const content = msg.content as string;
           if (!content.includes(`ID: ${userId}`)) continue;
           
-          // Entbannungen erkennen
-          const unbanPattern = /unbann|entbannung|entban|unban|entbannungsantrag|entbannungsgesuch|entbannungantrag|entbannungs anfrage|unban request|entbitten/i;
-          if (unbanPattern.test(content) && !/KEINE CHANCE AUF ENTBANNUNG/i.test(content)) {
+          // VERBESSERTE Entbannungs-Erkennung: Prüfe explizit auf Entbannungs-Keywords
+          const unbanKeywords = [
+            'unbann', 'entbannung', 'entban', 'unban', 
+            'entbannungsantrag', 'entbannungsgesuch', 'entbannungantrag',
+            'entbannungs anfrage', 'unban request', 'entbitten'
+          ];
+          
+          const isUnbanRequest = unbanKeywords.some(keyword => 
+            content.toLowerCase().includes(keyword.toLowerCase())
+          ) && !content.toLowerCase().includes('keine chance auf entbannung');
+          
+          if (isUnbanRequest) {
             unbanCount++;
             
-            // Grund statt Tat für Entbannungen
             const reasonLine = content.split("\n").find(line => line.toLowerCase().startsWith("grund:"));
             const reason = reasonLine?.replace(/Grund:/i, "").trim() || "Kein Grund angegeben";
             
@@ -1233,6 +1571,7 @@ export default definePlugin({
             continue;
           }
 
+          // Verarbeite normale Strafen
           const offenseLine = content.split("\n").find(line => line.toLowerCase().startsWith("tat:"));
           const offense = offenseLine?.replace(/Tat:/i, "").trim() || "Keine Tat angegeben";
           
@@ -1242,21 +1581,24 @@ export default definePlugin({
           if (!strafeText) continue;
 
           const kat = parseStrafeKategorie(strafeText);
+          
+          // Verwarnungen separat behandeln
           if (kat === "B") {
             warnCount++;
-            
             warnings.push({
               offense,
               date: new Date(msg.timestamp)
             });
             continue;
           }
-          if (kat === "UNKNOWN") continue;
+          
+          // Unbekannte Kategorien überspringen
+          if (kat === "?") continue;
 
           const timestamp = new Date(msg.timestamp);
           const ageDays = (Date.now() - timestamp.getTime()) / 86400000;
           
-          // FIXED: Kick-Behandlung - kein Ablaufdatum
+          // Ablauf-Logik: Kicks und Bans (E) laufen nie ab
           const verfallen = kat !== "E" && kat !== "KICK" && (
             (kat === "A" && ageDays > 1) ||
             (kat === "C" && ageDays > 30) ||
@@ -1309,21 +1651,20 @@ export default definePlugin({
       }
     }
 
-    // Ansicht wechseln
+    // View-Management (unverändert)
     function changeView(view: 'summary' | 'warnings' | 'unbans' | 'penalties' | 'watchlist' | 'detail') {
       activeView = view;
       renderStrafakteContent();
-      adjustPopupPosition(); // Position anpassen nach View-Wechsel
+      adjustPopupPosition();
     }
 
-    // Detailansicht für einen Eintrag anzeigen
     function showEntryDetail(entry: PenaltyEntry | WarningEntry | UnbanEntry | WatchlistEntry, sourceView: 'warnings' | 'unbans' | 'penalties' | 'watchlist') {
       detailEntry = entry;
       detailSourceView = sourceView;
       changeView('detail');
     }
 
-    // Detailansicht rendern - FIXED: Event-Listener-Registrierung
+    // Detailansicht rendern (unverändert aber mit verbessertem Styling)
     function renderDetailView() {
       if (!detailEntry) return '';
 
@@ -1333,12 +1674,13 @@ export default definePlugin({
       `;
 
       if ('offense' in detailEntry && 'category' in detailEntry) {
-        // PenaltyEntry
         const penalty = detailEntry as PenaltyEntry;
+        const categoryDisplay = penalty.category === 'KICK' ? 'Kick' : 
+                               penalty.category === '?' ? 'Unbekannt' : penalty.category;
         detailHtml += `
           <div class="strafakte-detail-field">
             <div class="strafakte-detail-label">Kategorie</div>
-            <div class="strafakte-detail-value">${penalty.category === 'KICK' ? 'Kick' : penalty.category === 'UNKNOWN' ? '?' : penalty.category}</div>
+            <div class="strafakte-detail-value">${categoryDisplay}</div>
           </div>
           <div class="strafakte-detail-field">
             <div class="strafakte-detail-label">Strafe</div>
@@ -1358,7 +1700,6 @@ export default definePlugin({
           </div>
         `;
       } else if ('offense' in detailEntry) {
-        // WarningEntry
         const warning = detailEntry as WarningEntry;
         detailHtml += `
           <div class="strafakte-detail-field">
@@ -1371,10 +1712,7 @@ export default definePlugin({
           </div>
         `;
       } else if ('reason' in detailEntry) {
-        // UnbanEntry oder WatchlistEntry
         const isUnban = detailSourceView === 'unbans';
-        
-        // Korrekte Beschriftung für Entbannungen
         const labelText = isUnban ? "Grund der Entbannung" : "Vorwurf";
         
         detailHtml += `
@@ -1397,25 +1735,28 @@ export default definePlugin({
       return detailHtml;
     }
 
-    // Strafakte Inhalt rendern mit Tabs
+    // Hauptrender-Funktion mit verbessertem Design
     function renderStrafakteContent() {
       if (!currentStrafakteData) {
         popup.innerHTML = "Keine Daten verfügbar";
         return;
       }
 
-      // Position vor dem Rendern speichern
+      // Monitor-Check vor Content-Update
+      if (!isPopupInViewport()) {
+        adjustPopupPosition();
+      }
+
       const oldLeft = popup.style.left;
       const oldTop = popup.style.top;
       
-      // Minimalistisches Popup Styling anwenden
       const minimalistClass = settings.store.minimalistPopup ? "minimalist-popup" : "";
       
       let contentHtml = `
         <div class="strafakte-header ${minimalistClass}">
           ${settings.store.showAvatars && currentStrafakteData.avatarUrl ? ` 
             <img src="${currentStrafakteData.avatarUrl}" class="strafakte-avatar" />
-          ` : '<div class="strafakte-avatar" style="background:#2c2f33;display:flex;align-items:center;justify-content:center;font-size:20px">👤</div>'}
+          ` : '<div class="strafakte-avatar" style="background:linear-gradient(135deg,#2c2f33,#1a1d21);display:flex;align-items:center;justify-content:center;font-size:24px;color:#7289da">👤</div>'}
           <div class="strafakte-user-info">
             <div class="strafakte-username" title="${currentStrafakteData.username}">
               ${currentStrafakteData.username || "Unbekannt"}
@@ -1426,16 +1767,15 @@ export default definePlugin({
           </div>
           <div class="strafakte-button-container">
             <button id="strafakte-pin" class="strafakte-button ${isPinned ? 'pinned' : 'unpinned'}" title="${isPinned ? 'Angepinnt' : 'Anheften'}">
-              ${isPinned ? '🔒' : '🔓'}
+              ${isPinned ? '🔒' : '📌'}
             </button>
             <button id="strafakte-copy-id" class="strafakte-button" title="ID kopieren">📋</button>
-            <button id="strafakte-refresh" class="strafakte-button" title="Aktualisieren">↻</button>
-            <button id="strafakte-close" class="strafakte-button close" title="Schließen">✖</button>
+            <button id="strafakte-refresh" class="strafakte-button" title="Aktualisieren">🔄</button>
+            <button id="strafakte-close" class="strafakte-button close" title="Schließen">×</button>
           </div>
         </div>
       `;
       
-      // Detailansicht
       if (activeView === 'detail') {
         contentHtml += `
           <div class="strafakte-list-title">
@@ -1443,14 +1783,11 @@ export default definePlugin({
           </div>
           ${renderDetailView()}
         `;
-      } 
-      // Tab-Inhalte
-      else {
+      } else {
         contentHtml += `<div class="strafakte-tab-content ${minimalistClass}">`;
         
         switch (activeView) {
           case 'summary':
-            // Zusammenfassung
             contentHtml += `
               <div class="strafakte-stats">
                 <div class="strafakte-stat" data-view="warnings">
@@ -1482,7 +1819,7 @@ export default definePlugin({
             
             if (currentStrafakteData.error) {
               contentHtml += `
-                <div style="text-align:center;padding:10px;color:#f04747">
+                <div style="text-align:center;padding:15px;color:var(--error-color);background:rgba(239,68,68,0.1);border-radius:12px;border:1px solid rgba(239,68,68,0.3)">
                   ${currentStrafakteData.error}
                 </div>
               `;
@@ -1490,7 +1827,6 @@ export default definePlugin({
             break;
             
           case 'warnings':
-            // Verwarnungen
             contentHtml += `
               <div class="strafakte-list-title">
                 <span>Verwarnungen (${currentStrafakteData.warnCount})</span>
@@ -1517,7 +1853,6 @@ export default definePlugin({
             break;
             
           case 'unbans':
-            // Entbannungen
             contentHtml += `
               <div class="strafakte-list-title">
                 <span>Entbannungen (${currentStrafakteData.unbanCount})</span>
@@ -1544,7 +1879,6 @@ export default definePlugin({
             break;
             
           case 'penalties':
-            // Strafen
             contentHtml += `
               <div class="strafakte-list-title">
                 <span>Strafen (${currentStrafakteData.penalties.length})</span>
@@ -1556,9 +1890,10 @@ export default definePlugin({
             if (currentStrafakteData.penalties.length > 0) {
               currentStrafakteData.penalties.forEach((p, index) => {
                 const dateStr = p.date ? p.date.toLocaleDateString('de-DE') : 'Unbekanntes Datum';
-                const categoryDisplay = p.category === 'KICK' ? 'Kick' : p.category === 'UNKNOWN' ? '?' : p.category;
+                const categoryDisplay = p.category === 'KICK' ? 'Kick' : 
+                                       p.category === '?' ? 'Unbekannt' : p.category;
                 contentHtml += `
-                  <div class="strafakte-entry strafakte-penalty-category-${p.category} ${p.expired ? 'strafakte-entry-expired' : ''}" data-index="${index}">
+                  <div class="strafakte-entry strafakte-penalty-category-${p.category === '?' ? 'UNKNOWN' : p.category} ${p.expired ? 'strafakte-entry-expired' : ''}" data-index="${index}">
                     <div><strong>Tat:</strong> ${p.offense?.substring(0, 70) || "Keine Tat angegeben"}</div>
                     <div><strong>Strafe:</strong> ${p.text.substring(0, 50)}</div>
                     <div class="strafakte-entry-category">${categoryDisplay}${p.expired ? ' (Abgelaufen)' : ''}</div>
@@ -1574,7 +1909,6 @@ export default definePlugin({
             break;
             
           case 'watchlist':
-            // Watchlist
             contentHtml += `
               <div class="strafakte-list-title">
                 <span>Watchlist (${currentStrafakteData.watchlistCount})</span>
@@ -1601,112 +1935,119 @@ export default definePlugin({
             break;
         }
         
-        contentHtml += `</div>`; // Ende .strafakte-tab-content
+        contentHtml += `</div>`;
       }
 
       popup.innerHTML = contentHtml;
       
-      // Gespeicherte Position wiederherstellen
       popup.style.left = oldLeft;
       popup.style.top = oldTop;
 
-      // Event Listener für Tabs und Navigation
-      document.querySelectorAll('.strafakte-stat, .strafakte-back-button').forEach(el => {
-        const view = el.getAttribute('data-view');
-        if (view) {
-          el.addEventListener('click', () => changeView(view as any));
-        }
-      });
-
-      // Event Listener für Einträge in Listenansichten
-      if (activeView !== 'detail' && activeView !== 'summary') {
-        document.querySelectorAll('.strafakte-entry').forEach((el, index) => {
-          el.addEventListener('click', () => {
-            let entry = null;
-            switch (activeView) {
-              case 'warnings':
-                entry = currentStrafakteData?.warnings[index];
-                break;
-              case 'unbans':
-                entry = currentStrafakteData?.unbans[index];
-                break;
-              case 'penalties':
-                entry = currentStrafakteData?.penalties[index];
-                break;
-              case 'watchlist':
-                entry = currentStrafakteData?.watchlist[index];
-                break;
-            }
-            if (entry) showEntryDetail(entry, activeView);
-          });
-        });
-      }
-
-      // Event Listener für Buttons
-      document.getElementById("strafakte-close")?.addEventListener("click", () => {
-        hidePopupWithAnimation();
-        isPinned = false;
-        isMouseOverPopup = false;
-        isMouseOverAvatar = false;
-        activeView = 'summary';
-        detailSourceView = null;
-      });
-
-      document.getElementById("strafakte-copy-id")?.addEventListener("click", () => {
-        if (currentUserId) {
-          navigator.clipboard.writeText(currentUserId);
-          const btn = document.getElementById("strafakte-copy-id");
-          if (btn) {
-            btn.textContent = "✓";
-            setTimeout(() => btn.textContent = "📋", 2000);
+      // Event Listener hinzufügen mit verbesserter Performance
+      const addEventListeners = () => {
+        document.querySelectorAll('.strafakte-stat, .strafakte-back-button').forEach(el => {
+          const view = el.getAttribute('data-view');
+          if (view) {
+            el.addEventListener('click', () => changeView(view as any), { passive: true });
           }
-        }
-      });
+        });
 
-      document.getElementById("strafakte-refresh")?.addEventListener("click", async () => {
-        if (!currentUserId) return;
-        
+        if (activeView !== 'detail' && activeView !== 'summary') {
+          document.querySelectorAll('.strafakte-entry').forEach((el, index) => {
+            el.addEventListener('click', () => {
+              let entry = null;
+              switch (activeView) {
+                case 'warnings':
+                  entry = currentStrafakteData?.warnings[index];
+                  break;
+                case 'unbans':
+                  entry = currentStrafakteData?.unbans[index];
+                  break;
+                case 'penalties':
+                  entry = currentStrafakteData?.penalties[index];
+                  break;
+                case 'watchlist':
+                  entry = currentStrafakteData?.watchlist[index];
+                  break;
+              }
+              if (entry) showEntryDetail(entry, activeView);
+            }, { passive: true });
+          });
+        }
+
+        // Button Event Listeners
+        const closeBtn = document.getElementById("strafakte-close");
+        const copyBtn = document.getElementById("strafakte-copy-id");
         const refreshBtn = document.getElementById("strafakte-refresh");
-        if (refreshBtn) {
-          refreshBtn.style.transition = "transform 0.5s ease";
-          refreshBtn.style.transform = "rotate(360deg)";
-          setTimeout(() => {
-            if (refreshBtn) refreshBtn.style.transform = "rotate(0deg)";
-          }, 500);
-        }
-        
-        const oldLeft = popup.style.left;
-        const oldTop = popup.style.top;
-        
-        currentStrafakteData = await fetchStrafakte(currentUserId);
-        renderStrafakteContent();
-        
-        popup.style.left = oldLeft;
-        popup.style.top = oldTop;
-      });
-
-      document.getElementById("strafakte-pin")?.addEventListener("click", () => {
-        isPinned = !isPinned;
         const pinBtn = document.getElementById("strafakte-pin");
-        if (pinBtn) {
-          pinBtn.className = `strafakte-button ${isPinned ? 'pinned' : 'unpinned'}`;
-          pinBtn.innerHTML = isPinned ? '🔒' : '🔓';
-          pinBtn.title = isPinned ? 'Angepinnt' : 'Anheften';
-        }
-      });
 
-      // Position nach dem Rendern anpassen
-      adjustPopupPosition();
+        closeBtn?.addEventListener("click", () => {
+          hidePopupWithAnimation();
+          isPinned = false;
+          isMouseOverPopup = false;
+          isMouseOverAvatar = false;
+          activeView = 'summary';
+          detailSourceView = null;
+        });
+
+        copyBtn?.addEventListener("click", async () => {
+          if (currentUserId) {
+            try {
+              await navigator.clipboard.writeText(currentUserId);
+              copyBtn.textContent = "✓";
+              copyBtn.style.background = "linear-gradient(135deg, var(--success-color), #059669)";
+              setTimeout(() => {
+                copyBtn.textContent = "📋";
+                copyBtn.style.background = "";
+              }, 2000);
+            } catch (err) {
+              console.error('Copy failed:', err);
+            }
+          }
+        });
+
+        refreshBtn?.addEventListener("click", async () => {
+          if (!currentUserId) return;
+          
+          refreshBtn.style.transform = "rotate(360deg)";
+          refreshBtn.style.transition = "transform 0.6s cubic-bezier(0.4, 0.0, 0.2, 1)";
+          
+          setTimeout(() => {
+            if (refreshBtn) {
+              refreshBtn.style.transform = "rotate(0deg)";
+              refreshBtn.style.transition = "";
+            }
+          }, 600);
+          
+          const oldLeft = popup.style.left;
+          const oldTop = popup.style.top;
+          
+          currentStrafakteData = await fetchStrafakte(currentUserId);
+          renderStrafakteContent();
+          
+          popup.style.left = oldLeft;
+          popup.style.top = oldTop;
+        });
+
+        pinBtn?.addEventListener("click", () => {
+          isPinned = !isPinned;
+          if (pinBtn) {
+            pinBtn.className = `strafakte-button ${isPinned ? 'pinned' : 'unpinned'}`;
+            pinBtn.innerHTML = isPinned ? '🔒' : '📌';
+            pinBtn.title = isPinned ? 'Angepinnt' : 'Anheften';
+          }
+        });
+      };
+
+      requestAnimationFrame(addEventListeners);
       
-      // Automatische Anpassung bei Größenänderung
-      window.addEventListener('resize', () => {
-        if (popup.style.display === 'block') {
-          adjustPopupPosition();
-        }
+      // Sofortige Positionsanpassung nach Content-Update
+      requestAnimationFrame(() => {
+        adjustPopupPosition();
       });
     }
 
-    // Popup-Interaktion
+    // Verbesserte Popup-Interaktionen
     popup.addEventListener("mouseenter", () => {
       isMouseOverPopup = true;
       if (hoverTimer) {
@@ -1727,18 +2068,16 @@ export default definePlugin({
             hidePopupWithAnimation();
             activeView = 'summary';
             detailSourceView = null;
-          }, 300); // Verkürzt auf 300ms
+          }, 200);
         }
       }
     });
 
-    // Hover Logik für Avatare
+    // Verbesserte Avatar-Hover-Logik
     const handleAvatarHover = (el: HTMLElement) => {
-      if (el.closest("#r6de-supporter-popup")) {
-        return;
-      }
-      
+      if (el.closest("#r6de-supporter-popup")) return;
       if (el.hasAttribute("data-r6de-processed")) return;
+      
       el.setAttribute("data-r6de-processed", "true");
       
       let openTimer: ReturnType<typeof setTimeout> | null = null;
@@ -1753,7 +2092,6 @@ export default definePlugin({
           if (guildId !== GUILD_ID) return;
         }
 
-        // Lösche Timer
         if (hoverTimer) {
           clearTimeout(hoverTimer);
           hoverTimer = null;
@@ -1767,12 +2105,11 @@ export default definePlugin({
         latestAvatarMouseEvent = e;
 
         tempMouseMoveListener = (event: MouseEvent) => latestAvatarMouseEvent = event;
-        window.addEventListener("mousemove", tempMouseMoveListener);
+        window.addEventListener("mousemove", tempMouseMoveListener, { passive: true });
 
         openTimer = setTimeout(async () => {
           if (isPinned) return;
           
-          // Verbesserte Ladeanzeige
           const userId = getUserIdFromElement(el) || "?";
           
           popup.innerHTML = `
@@ -1784,53 +2121,49 @@ export default definePlugin({
           
           showPopupWithAnimation();
           if (latestAvatarMouseEvent) positionPopup(popup, latestAvatarMouseEvent);
-          adjustPopupPosition(); // Position anpassen
 
           const finalUserId = userId === "?" ? await getUserIdFromContextMenu(el) : userId;
           
           if (!finalUserId) {
             popup.innerHTML = `
               <div class="strafakte-header">
-                <div class="strafakte-avatar" style="background:#2c2f33;display:flex;align-items:center;justify-content:center;font-size:20px">👤</div>
+                <div class="strafakte-avatar" style="background:linear-gradient(135deg,#2c2f33,#1a1d21);display:flex;align-items:center;justify-content:center;font-size:24px;color:#7289da">❌</div>
                 <div class="strafakte-user-info">
                   <div class="strafakte-username">Fehler</div>
                 </div>
                 <div class="strafakte-button-container">
-                  <button id="strafakte-close" class="strafakte-button close" title="Schließen">✖</button>
+                  <button id="strafakte-close" class="strafakte-button close" title="Schließen">×</button>
                 </div>
               </div>
-              <div style="padding:20px;text-align:center;color:#f04747">
+              <div style="padding:24px;text-align:center;color:var(--error-color);background:rgba(239,68,68,0.1);border-radius:12px;border:1px solid rgba(239,68,68,0.3)">
                 Benutzer-ID konnte nicht extrahiert werden
               </div>
             `;
             
-            // Event-Listener für Schließen-Button hinzufügen
             document.getElementById("strafakte-close")?.addEventListener("click", () => {
               hidePopupWithAnimation();
             });
             return;
           }
           
-          // FIX: Bot-Fälle mit Schließen-Button
           const user = UserStore.getUser(finalUserId);
           if (user?.bot) {
             popup.innerHTML = `
               <div class="strafakte-header">
-                <div class="strafakte-avatar" style="background:#2c2f33;display:flex;align-items:center;justify-content:center;font-size:20px">👤</div>
+                <div class="strafakte-avatar" style="background:linear-gradient(135deg,#2c2f33,#1a1d21);display:flex;align-items:center;justify-content:center;font-size:24px;color:#7289da">🤖</div>
                 <div class="strafakte-user-info">
                   <div class="strafakte-username">Bot</div>
                   <div class="strafakte-userid">${finalUserId}</div>
                 </div>
                 <div class="strafakte-button-container">
-                  <button id="strafakte-close" class="strafakte-button close" title="Schließen">✖</button>
+                  <button id="strafakte-close" class="strafakte-button close" title="Schließen">×</button>
                 </div>
               </div>
-              <div style="padding:20px;text-align:center">
+              <div style="padding:24px;text-align:center;color:var(--text-secondary)">
                 Bots haben keine Strafakte
               </div>
             `;
             
-            // Event-Listener für Schließen-Button hinzufügen
             document.getElementById("strafakte-close")?.addEventListener("click", () => {
               hidePopupWithAnimation();
             });
@@ -1841,7 +2174,6 @@ export default definePlugin({
           currentStrafakteData = await fetchStrafakte(finalUserId);
           renderStrafakteContent();
           if (latestAvatarMouseEvent) positionPopup(popup, latestAvatarMouseEvent);
-          adjustPopupPosition(); // Position anpassen
 
           if (tempMouseMoveListener) {
             window.removeEventListener("mousemove", tempMouseMoveListener);
@@ -1858,7 +2190,6 @@ export default definePlugin({
           tempMouseMoveListener = null;
         }
         
-        // Verzögertes Schließen
         if (!isMouseOverPopup) {
           avatarLeaveTimer = setTimeout(() => {
             if (!isMouseOverPopup && !isPinned) {
@@ -1866,11 +2197,10 @@ export default definePlugin({
               activeView = 'summary';
               detailSourceView = null;
             }
-          }, 300); // Verkürzt auf 300ms
+          }, 200);
         }
       };
 
-      // Schließen bei Klick auf Avatar
       const handleMouseDown = () => {
         if (!isPinned) {
           setTimeout(() => {
@@ -1881,12 +2211,12 @@ export default definePlugin({
         }
       };
 
-      el.addEventListener("mouseenter", handleMouseEnter);
-      el.addEventListener("mouseleave", handleMouseLeave);
-      el.addEventListener("mousedown", handleMouseDown);
+      el.addEventListener("mouseenter", handleMouseEnter, { passive: true });
+      el.addEventListener("mouseleave", handleMouseLeave, { passive: true });
+      el.addEventListener("mousedown", handleMouseDown, { passive: true });
     };
 
-    // Einladungsvorschau
+    // Verbesserte Einladungsvorschau mit komplettem Styling und Anti-Stuck-Mechanismus
     const handleInvitePreview = (link: HTMLAnchorElement) => {
       if (link.hasAttribute("data-r6de-invite-processed")) return;
       link.setAttribute("data-r6de-invite-processed", "true");
@@ -1894,148 +2224,325 @@ export default definePlugin({
       const code = link.href.match(inviteRegex)?.[3];
       if (!code) return;
 
-      // Unterdrücke das Discord-Tooltip
       link.title = "";
       link.removeAttribute("title");
 
+      let isDataLoaded = false;
+      let cachedData: any = null;
+      let currentTooltip: HTMLElement | null = null;
+      let hoverTimeout: ReturnType<typeof setTimeout> | null = null;
+      let leaveTimeout: ReturnType<typeof setTimeout> | null = null;
+
+      // Daten vorab laden
       fetch(`https://discord.com/api/v9/invites/${code}?with_counts=true&with_expiration=true`)
         .then(res => res.json())
         .then(data => {
-          let tooltip: HTMLElement | null = null;
-          let tooltipMouseMoveHandler: ((event: MouseEvent) => void) | null = null;
-
-          link.addEventListener("mouseenter", (e) => {
-            // Verhindere das Standard-Discord-Tooltip
-            e.stopPropagation();
-            e.preventDefault();
-            
-            tooltip = document.createElement("div");
-            tooltip.className = "r6de-invite-preview";
-            Object.assign(tooltip.style, {
-              position: "fixed",
-              zIndex: "10000",
-              maxWidth: "300px",
-              pointerEvents: "none",
-              display: "none"
-            });
-            document.body.appendChild(tooltip);
-
-            const g = data.guild || {}, c = data.channel || {};
-            const icon = g.id && g.icon
-              ? `<img src="https://cdn.discordapp.com/icons/${g.id}/${g.icon}.png?size=64" style="width:48px;height:48px;border-radius:6px;margin-bottom:8px;">`
-              : "";
-            const channelTypes = ["Text", "DM", "Voice", "Gruppen-DM", "Kategorie", "Neuigkeiten", "Shop", "Bühne", "Forum"];
-
-            tooltip.innerHTML = `
-              ${icon}
-              <div><strong>🏷️ ${g.name || "Unbekannt oder abgelaufen"}</strong></div>
-              <div>💬 #${c.name || "?"} (${channelTypes[c.type] || "Unbekannt"})</div>
-              <div>👥 Mitglieder: ${data.approximate_member_count || "Unbekannt"}</div>
-            `;
-
-            // Zeige Tooltip mit Animation
-            tooltip.style.display = "block";
-            tooltip.style.visibility = "hidden";
-            tooltip.style.opacity = "0";
-            tooltip.style.transform = "scale(0.98)";
-            
-            setTimeout(() => {
-              if (tooltip) {
-                tooltip.style.visibility = "visible";
-                tooltip.style.opacity = "1";
-                tooltip.style.transform = "scale(1)";
-              }
-            }, 10);
-
-            positionPopup(tooltip, e as MouseEvent, 12, 12);
-          });
-
-          link.addEventListener("mousemove", (e) => {
-            if (tooltip) positionPopup(tooltip, e as MouseEvent, 12, 12);
-          });
-
-          link.addEventListener("mouseleave", () => {
-            if (tooltip) {
-              // Animation für Schließen
-              tooltip.style.opacity = "0";
-              tooltip.style.transform = "scale(0.98)";
-              
-              setTimeout(() => {
-                if (tooltip) {
-                  tooltip.remove();
-                  tooltip = null;
-                }
-              }, settings.store.animationDuration);
-            }
-          });
+          isDataLoaded = true;
+          cachedData = data;
         })
         .catch(error => {
           console.error("Fehler beim Abrufen der Einladung:", error);
         });
+
+      const cleanupTooltip = () => {
+        if (currentTooltip) {
+          if (settings.store.tooltipAnimation) {
+            currentTooltip.style.opacity = "0";
+            currentTooltip.style.transform = "scale(0.95) translateY(10px)";
+            
+            setTimeout(() => {
+              if (currentTooltip) {
+                currentTooltip.remove();
+                currentTooltip = null;
+              }
+            }, settings.store.animationDuration);
+          } else {
+            currentTooltip.remove();
+            currentTooltip = null;
+          }
+        }
+      };
+
+      const showTooltip = (e: MouseEvent) => {
+        // Cleanup existing tooltip
+        if (currentTooltip) {
+          cleanupTooltip();
+        }
+
+        if (!isDataLoaded || !cachedData) return;
+
+        currentTooltip = document.createElement("div");
+        currentTooltip.className = "r6de-invite-preview";
+        
+        Object.assign(currentTooltip.style, {
+          position: "fixed",
+          zIndex: "10001",
+          maxWidth: "320px",
+          pointerEvents: "none",
+          display: "block",
+          visibility: "hidden",
+          opacity: "0",
+          transform: "scale(0.95) translateY(10px)"
+        });
+        
+        document.body.appendChild(currentTooltip);
+
+        const g = cachedData.guild || {}, c = cachedData.channel || {};
+        const icon = g.id && g.icon
+          ? `<img src="https://cdn.discordapp.com/icons/${g.id}/${g.icon}.png?size=64" style="width:52px;height:52px;border-radius:12px;margin-bottom:12px;">`
+          : `<div style="width:52px;height:52px;border-radius:12px;margin-bottom:12px;background:linear-gradient(135deg,#2c2f33,#1a1d21);display:flex;align-items:center;justify-content:center;font-size:24px;color:#7289da;border:2px solid rgba(37, 99, 235, 0.4);">🏷️</div>`;
+        
+        const channelTypes = ["Text", "DM", "Voice", "Gruppen-DM", "Kategorie", "Neuigkeiten", "Shop", "Bühne", "Forum"];
+
+        currentTooltip.innerHTML = `
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+            ${icon}
+            <div>
+              <div style="font-weight:700;font-size:16px;color:#fff;margin-bottom:4px;background: linear-gradient(135deg, #fff, #e1e7ff);-webkit-background-clip: text;-webkit-text-fill-color: transparent;background-clip: text;">🏷️ ${g.name || "Unbekannt oder abgelaufen"}</div>
+              <div style="color:var(--text-secondary);font-size:13px;opacity:0.8;">💬 #${c.name || "?"} (${channelTypes[c.type] || "Unbekannt"})</div>
+            </div>
+          </div>
+          <div style="color:var(--primary-blue-light);font-weight:600;font-size:14px;text-shadow: 0 2px 4px rgba(0,0,0,0.3);">👥 ${cachedData.approximate_member_count || "Unbekannt"} Mitglieder</div>
+        `;
+
+        // Animation
+        requestAnimationFrame(() => {
+          if (currentTooltip) {
+            currentTooltip.style.visibility = "visible";
+            currentTooltip.style.opacity = settings.store.popupOpacity.toString();
+            currentTooltip.style.transform = "scale(1) translateY(0)";
+          }
+        });
+
+        positionPopup(currentTooltip, e as MouseEvent, 15, 15);
+      };
+
+      link.addEventListener("mouseenter", (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        
+        // Clear any existing timeouts
+        if (hoverTimeout) clearTimeout(hoverTimeout);
+        if (leaveTimeout) clearTimeout(leaveTimeout);
+        
+        // Debounce hover
+        hoverTimeout = setTimeout(() => {
+          showTooltip(e);
+        }, 100);
+      });
+
+      link.addEventListener("mousemove", (e) => {
+        if (currentTooltip && currentTooltip.style.opacity !== "0") {
+          positionPopup(currentTooltip, e as MouseEvent, 15, 15);
+        }
+      });
+
+      link.addEventListener("mouseleave", () => {
+        // Clear hover timeout
+        if (hoverTimeout) {
+          clearTimeout(hoverTimeout);
+          hoverTimeout = null;
+        }
+        
+        // Debounced cleanup
+        leaveTimeout = setTimeout(() => {
+          cleanupTooltip();
+        }, 50);
+      });
+
+      // Emergency cleanup on click
+      link.addEventListener("click", () => {
+        if (hoverTimeout) clearTimeout(hoverTimeout);
+        if (leaveTimeout) clearTimeout(leaveTimeout);
+        cleanupTooltip();
+      });
     };
 
-    // Mutation Observer
+    // Performance-optimierte Mutation Observer
     const observer = new MutationObserver(mutations => {
+      const nodesToProcess: HTMLElement[] = [];
+      
       for (const mutation of mutations) {
         for (const node of mutation.addedNodes) {
           if (!(node instanceof HTMLElement)) continue;
+          nodesToProcess.push(node);
+        }
+      }
 
-          // Avatar-Hover (alle Typen)
-          const avatars = node.querySelectorAll(`
-            img[class*="avatar"], 
-            .wrapper__44b0c, 
-            .voiceUser_efcaf8 .userAvatar__55bab,
-            .voiceUser_efcaf8 .avatar__07f91,
-            .avatarContainer__6b330,
-            div[class*="avatar"][style*="background-image"],
-            [class*="userPopout"] img[class*="avatar"],
-            [class*="userProfile"] img[class*="avatar"]
-          `);
-          
+      if (nodesToProcess.length === 0) return;
+
+      requestAnimationFrame(() => {
+        const avatarSelectors = [
+          'img[class*="avatar"]', 
+          '.wrapper__44b0c', 
+          '.voiceUser_efcaf8 .userAvatar__55bab',
+          '.voiceUser_efcaf8 .avatar__07f91',
+          '.avatarContainer__6b330',
+          'div[class*="avatar"][style*="background-image"]',
+          '[class*="userPopout"] img[class*="avatar"]',
+          '[class*="userProfile"] img[class*="avatar"]'
+        ].join(', ');
+
+        for (const node of nodesToProcess) {
+          // Avatar-Hover verarbeiten
+          const avatars = node.querySelectorAll(avatarSelectors);
           avatars.forEach((avatar: Element) => {
             if (avatar instanceof HTMLElement) {
               handleAvatarHover(avatar);
             }
           });
 
-          // Einladungsvorschau
+          // Einladungslinks verarbeiten
           const links = node.querySelectorAll<HTMLAnchorElement>("a[href*='discord.gg'], a[href*='discord.com/invite']");
           links.forEach(handleInvitePreview);
         }
-      }
+      });
     });
 
     // Initiale Verarbeitung vorhandener Elemente
-    const initialAvatars = document.querySelectorAll(`
-      img[class*="avatar"], 
-      .wrapper__44b0c, 
-      .voiceUser_efcaf8 .userAvatar__55bab,
-      .voiceUser_efcaf8 .avatar__07f91,
-      .avatarContainer__6b330,
-      div[class*="avatar"][style*="background-image"],
-      [class*="userPopout"] img[class*="avatar"],
-      [class*="userProfile"] img[class*="avatar"]
-    `);
+    requestAnimationFrame(() => {
+      const initialAvatars = document.querySelectorAll(`
+        img[class*="avatar"], 
+        .wrapper__44b0c, 
+        .voiceUser_efcaf8 .userAvatar__55bab,
+        .voiceUser_efcaf8 .avatar__07f91,
+        .avatarContainer__6b330,
+        div[class*="avatar"][style*="background-image"],
+        [class*="userPopout"] img[class*="avatar"],
+        [class*="userProfile"] img[class*="avatar"]
+      `);
+      
+      initialAvatars.forEach((avatar: Element) => {
+        if (avatar instanceof HTMLElement) {
+          handleAvatarHover(avatar);
+        }
+      });
+
+      const initialLinks = document.querySelectorAll<HTMLAnchorElement>("a[href*='discord.gg'], a[href*='discord.com/invite']");
+      initialLinks.forEach(handleInvitePreview);
+    });
+
+    // Performance-optimierte Observer-Konfiguration
+    observer.observe(document.body, { 
+      childList: true, 
+      subtree: true,
+      attributeFilter: ['class', 'style'] // Nur relevante Attribute überwachen
+    });
     
-    initialAvatars.forEach((avatar: Element) => {
-      if (avatar instanceof HTMLElement) {
-        handleAvatarHover(avatar);
+    this.observers.push(observer);
+
+    // Resize-Handler mit Throttling
+    let resizeTimeout: ReturnType<typeof setTimeout> | null = null;
+    const handleResize = () => {
+      if (resizeTimeout) clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(() => {
+        if (popup.style.display === 'block') {
+          adjustPopupPosition();
+        }
+      }, 100);
+    };
+
+    window.addEventListener('resize', handleResize, { passive: true });
+
+    // Scroll-Handler für bessere Positionierung
+    let scrollTimeout: ReturnType<typeof setTimeout> | null = null;
+    const handleScroll = () => {
+      if (scrollTimeout) clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(() => {
+        if (popup.style.display === 'block' && !isPinned && !isDragging) {
+          // Popup bei Scrollen leicht ausblenden
+          popup.style.opacity = (settings.store.popupOpacity * 0.7).toString();
+          
+          clearTimeout(scrollTimeout!);
+          scrollTimeout = setTimeout(() => {
+            if (popup.style.display === 'block') {
+              popup.style.opacity = settings.store.popupOpacity.toString();
+            }
+          }, 500);
+        }
+      }, 50);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+
+    // Cleanup bei Page-Unload mit verbesserter Invite-Cleanup
+    const cleanup = () => {
+      if (resizeTimeout) clearTimeout(resizeTimeout);
+      if (scrollTimeout) clearTimeout(scrollTimeout);
+      if (hoverTimer) clearTimeout(hoverTimer);
+      if (avatarLeaveTimer) clearTimeout(avatarLeaveTimer);
+      
+      // Force-cleanup aller Invite-Tooltips
+      document.querySelectorAll('.r6de-invite-preview').forEach(el => {
+        el.remove();
+      });
+      
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('scroll', handleScroll);
+    };
+
+    // Cleanup bei Page-Unload und auch bei Visibility-Change
+    window.addEventListener('beforeunload', cleanup, { once: true });
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        // Cleanup wenn Tab nicht sichtbar
+        document.querySelectorAll('.r6de-invite-preview').forEach(el => {
+          el.remove();
+        });
       }
     });
 
-    const initialLinks = document.querySelectorAll<HTMLAnchorElement>("a[href*='discord.gg'], a[href*='discord.com/invite']");
-    initialLinks.forEach(handleInvitePreview);
-
-    observer.observe(document.body, { childList: true, subtree: true });
-    this.observers.push(observer);
+    // Globaler Escape-Key Handler für Cleanup
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        document.querySelectorAll('.r6de-invite-preview').forEach(el => {
+          el.remove();
+        });
+        if (!isPinned) {
+          hidePopupWithAnimation();
+          activeView = 'summary';
+          detailSourceView = null;
+        }
+      }
+    });
   },
 
   stop() {
+    // Cleanup alle Observer
     this.observers.forEach(obs => obs.disconnect());
+    this.observers = [];
+    
+    // Entferne alle Plugin-Elemente
     const popup = document.getElementById("r6de-supporter-popup");
     if (popup) popup.remove();
-    document.querySelectorAll('.r6de-invite-preview').forEach(el => el.remove());
-    document.querySelectorAll('[data-r6de-processed]').forEach(el => el.removeAttribute("data-r6de-processed"));
-    document.querySelectorAll('[data-r6de-invite-processed]').forEach(el => el.removeAttribute("data-r6de-invite-processed"));
+    
+    // FORCE-CLEANUP: Entferne alle hängenden Invite-Previews
+    document.querySelectorAll('.r6de-invite-preview').forEach(el => {
+      el.remove();
+    });
+    
+    // Clear alle Timeouts global
+    let timeoutId = setTimeout(() => {}, 0);
+    for (let i = 0; i <= timeoutId; i++) {
+      clearTimeout(i);
+    }
+    
+    // Reset alle Attribute
+    document.querySelectorAll('[data-r6de-processed]').forEach(el => {
+      el.removeAttribute("data-r6de-processed");
+    });
+    document.querySelectorAll('[data-r6de-invite-processed]').forEach(el => {
+      el.removeAttribute("data-r6de-invite-processed");
+    });
+    
+    // Entferne Plugin-Styles
+    document.querySelectorAll('style[data-strafakte-plugin-style]').forEach(el => el.remove());
+    
+    // Cleanup Event-Listener
+    window.removeEventListener('resize', () => {});
+    window.removeEventListener('scroll', () => {});
+    window.removeEventListener('beforeunload', () => {});
+    
+    console.log("R6DE Plugin erfolgreich gestoppt - Alle Tooltips entfernt");
   }
 });
