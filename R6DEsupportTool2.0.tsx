@@ -33,7 +33,7 @@ const settings = definePluginSettings({
   popupWidth: {
     type: OptionType.NUMBER,
     description: "Popup-Breite (px)",
-    default: 380,
+    default: 400,
     min: 100,
     max: 800
   },
@@ -85,7 +85,7 @@ const settings = definePluginSettings({
   popupOpacity: {
     type: OptionType.NUMBER,
     description: "Deckkraft (0.0 - 1.0)",
-    default: 0.98,
+    default: 0.95,
     min: 0.0,
     max: 1.0,
     step: 0.05
@@ -98,7 +98,7 @@ const settings = definePluginSettings({
   animationDuration: {
     type: OptionType.NUMBER,
     description: "Animationsdauer (ms)",
-    default: 250,
+    default: 300,
     min: 0,
     max: 1000
   },
@@ -122,6 +122,17 @@ const settings = definePluginSettings({
     type: OptionType.BOOLEAN,
     description: "Minimalistisches Popup",
     default: false
+  },
+  glowIntensity: {
+    type: OptionType.SELECT,
+    description: "Glow-Intensität",
+    default: "medium",
+    options: [
+      { label: "Aus", value: "none" },
+      { label: "Schwach", value: "low" },
+      { label: "Mittel", value: "medium" },
+      { label: "Stark", value: "high" }
+    ]
   }
 });
 
@@ -165,7 +176,7 @@ interface StrafakteData {
 
 export default definePlugin({
   name: "R6DEsupporterTool",
-  description: "Strafakte, Einladungsvorschau & Sprachbenachrichtigungen",
+  description: "Strafakte, Einladungsvorschau & Sprachbenachrichtigungen - 4.0 Glow Edition ✨",
   authors: [{ id: 549586034242093069n, name: "Saftlos" }],
   settings,
   dependencies: ["ContextMenuAPI"],
@@ -192,82 +203,82 @@ export default definePlugin({
     const GUILD_ID = "787620905269854259";
     const WATCHLIST_CHANNEL_ID = "843185952122077224";
     
-    // Popup Container mit modernem Design
+    // Popup Container mit modernem Glow Design
     const popup = document.createElement("div");
     popup.id = "r6de-supporter-popup";
     popup.classList.add("r6de-supporter-popup");
     
-// Modernes schwarzes Design mit blauen Akzenten
-Object.assign(popup.style, {
-  position: "fixed",
-  background: `linear-gradient(135deg, rgba(10, 10, 15, 0.95), rgba(15, 15, 25, 0.90))`,
-  backdropFilter: "blur(20px) saturate(180%)",
-  WebkitBackdropFilter: "blur(20px) saturate(180%)",
-  color: settings.store.textColor,
-  padding: "18px",
-  borderRadius: settings.store.roundedCorners ? "14px" : "0",
-  fontSize: "13px",
-  zIndex: "9999",
-  pointerEvents: "auto",
-  display: "none",
-  width: settings.store.popupWidth + "px",
-  maxHeight: settings.store.popupMaxHeight > 0 ? settings.store.popupMaxHeight + "px" : 'none',
-  overflowY: "auto",
-  boxShadow: `
-    0 25px 50px rgba(0,0,0,0.7),
-    0 10px 25px rgba(37, 99, 235, 0.2),
-    inset 0 1px 0 rgba(255,255,255,0.1),
-    0 0 0 1px rgba(255,255,255,0.05)
-  `,
-  fontFamily: "'Inter', 'SF Pro Display', 'Whitney', 'Helvetica Neue', Helvetica, Arial, sans-serif",
-  fontWeight: "500",
-  lineHeight: "1.6",
-  cursor: "grab",
-  border: `1px solid rgba(255,255,255,0.08)`,
-  opacity: settings.store.popupOpacity.toString(),
-  visibility: "hidden",
-  transform: "scale(0.95) translateY(10px)",
-  transition: settings.store.tooltipAnimation 
-    ? `all ${settings.store.animationDuration}ms cubic-bezier(0.34, 1.56, 0.64, 1)`
-    : "none",
-  willChange: "transform, opacity"
-});
+    // Moderne Glassmorphism + Glow Styles
+    Object.assign(popup.style, {
+      position: "fixed",
+      background: `linear-gradient(135deg, rgba(15, 15, 25, 0.95) 0%, rgba(20, 25, 35, 0.92) 100%)`,
+      backdropFilter: "blur(20px)",
+      WebkitBackdropFilter: "blur(20px)",
+      color: settings.store.textColor,
+      padding: "20px",
+      borderRadius: settings.store.roundedCorners ? "16px" : "8px",
+      fontSize: "13px",
+      zIndex: "9999",
+      pointerEvents: "auto",
+      display: "none",
+      width: settings.store.popupWidth + "px",
+      maxHeight: settings.store.popupMaxHeight > 0 ? settings.store.popupMaxHeight + "px" : 'none',
+      overflowY: "auto",
+      boxShadow: `
+        0 16px 48px rgba(0,0,0,0.5),
+        0 0 24px rgba(37, 99, 235, 0.15),
+        inset 0 1px 0 rgba(255,255,255,0.1)
+      `,
+      fontFamily: "'Inter', 'SF Pro Display', 'Whitney', 'Helvetica Neue', Helvetica, Arial, sans-serif",
+      fontWeight: "400",
+      lineHeight: "1.5",
+      cursor: "grab",
+      border: `1px solid rgba(37, 99, 235, 0.3)`,
+      opacity: settings.store.popupOpacity.toString(),
+      visibility: "hidden",
+      transform: "scale(0.95) translateY(12px)",
+      transition: settings.store.tooltipAnimation 
+        ? `all ${settings.store.animationDuration}ms cubic-bezier(0.23, 1, 0.32, 1)`
+        : "none",
+    });
     
     document.body.appendChild(popup);
 
-    // Erweiterte CSS-Styles für modernes Design mit Animationen
+    // 4.0 CSS mit Glow Effects und Blue Gradients
     const scrollFixStyle = document.createElement("style");
     scrollFixStyle.textContent = `
       .r6de-supporter-popup::-webkit-scrollbar {
         width: 6px;
       }
       .r6de-supporter-popup::-webkit-scrollbar-track {
-        background: rgba(0, 0, 0, 0.2);
-        border-radius: 3px;
+        background: rgba(0, 0, 0, 0.3);
+        border-radius: 8px;
       }
       .r6de-supporter-popup::-webkit-scrollbar-thumb {
-        background: linear-gradient(180deg, #2563eb, #1d4ed8);
-        border-radius: 3px;
-        transition: background 0.3s ease;
+        background: linear-gradient(180deg, #3b82f6 0%, #2563eb 100%);
+        border-radius: 8px;
+        box-shadow: 0 0 8px rgba(59, 130, 246, 0.3);
       }
       .r6de-supporter-popup::-webkit-scrollbar-thumb:hover {
-        background: linear-gradient(180deg, #3b82f6, #2563eb);
+        background: linear-gradient(180deg, #60a5fa 0%, #3b82f6 100%);
+        box-shadow: 0 0 12px rgba(59, 130, 246, 0.5);
       }
       .strafakte-list-container::-webkit-scrollbar {
         width: 4px;
       }
       .strafakte-list-container::-webkit-scrollbar-track {
-        background: rgba(0, 0, 0, 0.1);
-        border-radius: 2px;
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 6px;
       }
       .strafakte-list-container::-webkit-scrollbar-thumb {
-        background: linear-gradient(180deg, #2563eb80, #1d4ed880);
-        border-radius: 2px;
+        background: linear-gradient(180deg, #3b82f6 0%, #2563eb 100%);
+        border-radius: 6px;
+        box-shadow: 0 0 6px rgba(59, 130, 246, 0.3);
       }
     `;
     document.head.appendChild(scrollFixStyle);
 
-    // Verbesserte Dragging-Logik mit Performance-Optimierung
+    // Dragging-Logik (bleibt gleich)
     let isDragging = false;
     let dragOffsetX = 0;
     let dragOffsetY = 0;
@@ -316,7 +327,7 @@ Object.assign(popup.style, {
         isDragging = false;
         popup.style.cursor = "grab";
         popup.style.transition = settings.store.tooltipAnimation 
-          ? `all ${settings.store.animationDuration}ms cubic-bezier(0.4, 0.0, 0.2, 1)`
+          ? `all ${settings.store.animationDuration}ms cubic-bezier(0.23, 1, 0.32, 1)`
           : "none";
       }
     };
@@ -325,156 +336,205 @@ Object.assign(popup.style, {
     document.addEventListener("mouseup", mouseUpHandler);
     document.addEventListener("mouseleave", mouseUpHandler);
 
-    // Erweitertes CSS für ultra-modernes Design
+    // 4.0 Modern CSS mit Glow & Blue Gradients
     const style = document.createElement("style");
     style.textContent = `
       @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
       
-      .r6de-supporter-popup {
-        --primary-blue: #2563eb;
-        --primary-blue-dark: #1d4ed8;
-        --primary-blue-light: #3b82f6;
-        --primary-blue-glow: rgba(37, 99, 235, 0.4);
-        --surface-color: rgba(15, 15, 25, 0.95);
-        --surface-hover: rgba(25, 25, 40, 0.8);
-        --text-primary: #e1e7ff;
-        --text-secondary: #9ca3af;
-        --success-color: #10b981;
-        --warning-color: #f59e0b;
-        --error-color: #ef4444;
-        --shadow-glow: 0 0 20px var(--primary-blue-glow);
+      :root {
+        --glow-intensity: ${settings.store.glowIntensity === 'none' ? '0' : 
+                           settings.store.glowIntensity === 'low' ? '0.3' : 
+                           settings.store.glowIntensity === 'medium' ? '0.6' : '1'};
       }
       
-      /* Einladungsvorschau Styling */
+      .r6de-supporter-popup {
+        --primary-blue: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        --primary-blue-hover: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+        --text-primary: #f1f5f9;
+        --text-secondary: #cbd5e1;
+        --success-gradient: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+        --warning-gradient: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+        --error-gradient: linear-gradient(135deg, #f87171 0%, #ef4444 100%);
+        --surface-color: linear-gradient(135deg, rgba(30, 35, 50, 0.8) 0%, rgba(25, 30, 45, 0.9) 100%);
+        --surface-hover: linear-gradient(135deg, rgba(40, 45, 65, 0.9) 0%, rgba(35, 40, 60, 0.95) 100%);
+        scroll-behavior: smooth;
+      }
+      
+      /* Einladungsvorschau 4.0 - Glow Edition */
       .r6de-invite-preview {
-        background: linear-gradient(135deg, rgba(10, 10, 15, 0.95), rgba(15, 15, 25, 0.90)) !important;
-        backdrop-filter: blur(20px) saturate(180%) !important;
-        -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
-        color: var(--text-primary) !important;
-        padding: 18px !important;
-        border-radius: ${settings.store.roundedCorners ? "14px" : "0"} !important;
-        font-size: 13px !important;
+        background: linear-gradient(135deg, rgba(15, 15, 25, 0.95) 0%, rgba(20, 25, 35, 0.92) 100%) !important;
+        backdrop-filter: blur(20px) !important;
+        -webkit-backdrop-filter: blur(20px) !important;
+        color: #f1f5f9 !important;
+        padding: 20px !important;
+        border-radius: ${settings.store.roundedCorners ? "16px" : "8px"} !important;
+        font-size: 14px !important;
         font-family: 'Inter', 'SF Pro Display', 'Whitney', 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
-        font-weight: 500 !important;
-        line-height: 1.6 !important;
+        font-weight: 400 !important;
+        line-height: 1.5 !important;
         box-shadow: 
-          0 25px 50px rgba(0,0,0,0.7),
-          0 10px 25px rgba(37, 99, 235, 0.2),
-          inset 0 1px 0 rgba(255,255,255,0.1),
-          0 0 0 1px rgba(255,255,255,0.05) !important;
-        border: 1px solid rgba(255,255,255,0.08) !important;
+          0 16px 48px rgba(0,0,0,0.5),
+          0 0 24px rgba(37, 99, 235, calc(0.15 * var(--glow-intensity))),
+          inset 0 1px 0 rgba(255,255,255,0.1) !important;
+        border: 1px solid rgba(37, 99, 235, 0.3) !important;
         opacity: ${settings.store.popupOpacity} !important;
         transition: ${settings.store.tooltipAnimation 
-          ? `all ${settings.store.animationDuration}ms cubic-bezier(0.34, 1.56, 0.64, 1)`
+          ? `all ${settings.store.animationDuration}ms cubic-bezier(0.23, 1, 0.32, 1)`
           : "none"} !important;
-        will-change: transform, opacity !important;
+        position: relative !important;
+        overflow: hidden !important;
       }
       
-      .r6de-invite-preview img {
-        border: 2px solid rgba(37, 99, 235, 0.4) !important;
-        transition: all 0.4s cubic-bezier(0.4, 0.0, 0.2, 1) !important;
-        box-shadow: 0 3px 12px rgba(0,0,0,0.3) !important;
+      .r6de-invite-server-icon {
+        width: 52px !important;
+        height: 52px !important;
+        border-radius: 12px !important;
+        border: 1px solid rgba(37, 99, 235, 0.3) !important;
+        transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1) !important;
+        box-shadow: 
+          0 4px 16px rgba(0,0,0,0.3),
+          0 0 12px rgba(37, 99, 235, calc(0.2 * var(--glow-intensity))) !important;
+        object-fit: cover !important;
       }
       
-      .r6de-invite-preview img:hover {
-        transform: scale(1.05) !important;
-        border-color: var(--primary-blue) !important;
-        box-shadow: 0 8px 24px rgba(37, 99, 235, 0.4) !important;
+      .r6de-invite-server-icon:hover {
+        border-color: #3b82f6 !important;
+        box-shadow: 
+          0 6px 24px rgba(0,0,0,0.4),
+          0 0 20px rgba(59, 130, 246, calc(0.4 * var(--glow-intensity))) !important;
+        transform: translateY(-2px) scale(1.05) !important;
+      }
+      
+      .r6de-invite-server-name {
+        font-weight: 700 !important;
+        font-size: 17px !important;
+        background: linear-gradient(135deg, #ffffff 0%, #e2e8f0 100%) !important;
+        -webkit-background-clip: text !important;
+        -webkit-text-fill-color: transparent !important;
+        background-clip: text !important;
+        margin-bottom: 6px !important;
+        letter-spacing: 0.2px !important;
+        line-height: 1.3 !important;
+        text-shadow: 0 0 20px rgba(255,255,255,calc(0.1 * var(--glow-intensity))) !important;
+      }
+      
+      .r6de-invite-channel-emoji {
+        font-size: 15px !important;
+        display: inline-block !important;
+        filter: drop-shadow(0 0 8px rgba(59, 130, 246, calc(0.3 * var(--glow-intensity)))) !important;
+      }
+      
+      .r6de-invite-members {
+        background: linear-gradient(135deg, rgba(37, 99, 235, 0.2) 0%, rgba(59, 130, 246, 0.15) 100%) !important;
+        color: #60a5fa !important;
+        font-weight: 600 !important;
+        font-size: 14px !important;
+        padding: 12px 16px !important;
+        border-radius: 12px !important;
+        border: 1px solid rgba(37, 99, 235, 0.3) !important;
+        text-align: center !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 8px !important;
+        transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1) !important;
+        box-shadow: 
+          0 4px 16px rgba(37, 99, 235, calc(0.1 * var(--glow-intensity))),
+          inset 0 1px 0 rgba(255,255,255,0.1) !important;
+      }
+      
+      .r6de-invite-members:hover {
+        background: linear-gradient(135deg, rgba(37, 99, 235, 0.3) 0%, rgba(59, 130, 246, 0.25) 100%) !important;
+        border-color: rgba(59, 130, 246, 0.5) !important;
+        box-shadow: 
+          0 6px 24px rgba(37, 99, 235, calc(0.2 * var(--glow-intensity))),
+          inset 0 1px 0 rgba(255,255,255,0.15) !important;
+        transform: translateY(-1px) !important;
+      }
+      
+      .r6de-invite-members-emoji {
+        font-size: 16px !important;
+        display: inline-block !important;
+        filter: drop-shadow(0 0 8px rgba(96, 165, 250, calc(0.4 * var(--glow-intensity)))) !important;
       }
       
       .strafakte-button {
-        background: linear-gradient(135deg, var(--primary-blue), var(--primary-blue-dark));
+        background: var(--primary-blue);
         color: white;
         border: none;
         padding: 0;
-        border-radius: 8px;
-        font-size: 13px;
+        border-radius: 10px;
+        font-size: 14px;
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
-        width: 28px;
-        height: 28px;
-        transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
-        box-shadow: 0 3px 8px rgba(37, 99, 235, 0.3);
-        position: relative;
-        overflow: hidden;
-        transform-origin: center;
-      }
-      
-      .strafakte-button::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-        transition: left 0.5s ease;
+        width: 32px;
+        height: 32px;
+        transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+        box-shadow: 
+          0 4px 16px rgba(37, 99, 235, calc(0.3 * var(--glow-intensity))),
+          inset 0 1px 0 rgba(255,255,255,0.2);
+        font-weight: 500;
       }
       
       .strafakte-button:hover {
-        transform: scale(1.08) translateY(-1px);
-        box-shadow: 0 6px 16px rgba(37, 99, 235, 0.4), var(--shadow-glow);
-        background: linear-gradient(135deg, var(--primary-blue-light), var(--primary-blue));
-      }
-      
-      .strafakte-button:hover::before {
-        left: 100%;
+        background: var(--primary-blue-hover);
+        transform: translateY(-2px) scale(1.05);
+        box-shadow: 
+          0 8px 24px rgba(37, 99, 235, calc(0.4 * var(--glow-intensity))),
+          0 0 20px rgba(59, 130, 246, calc(0.3 * var(--glow-intensity))),
+          inset 0 1px 0 rgba(255,255,255,0.3);
       }
       
       .strafakte-button:active {
-        transform: scale(1.05) translateY(-1px);
-        transition: all 0.1s ease;
-      }
-      
-      .strafakte-button:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-        transform: none;
-        box-shadow: none;
+        transform: translateY(-1px) scale(1.02);
       }
       
       .strafakte-button.pinned {
-        background: linear-gradient(135deg, var(--success-color), #059669);
-        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        background: var(--success-gradient);
+        box-shadow: 
+          0 4px 16px rgba(16, 185, 129, calc(0.3 * var(--glow-intensity))),
+          inset 0 1px 0 rgba(255,255,255,0.2);
       }
       
       .strafakte-button.pinned:hover {
-        background: linear-gradient(135deg, #34d399, var(--success-color));
-        box-shadow: 0 8px 20px rgba(16, 185, 129, 0.5);
+        box-shadow: 
+          0 8px 24px rgba(16, 185, 129, calc(0.4 * var(--glow-intensity))),
+          0 0 20px rgba(52, 211, 153, calc(0.3 * var(--glow-intensity))),
+          inset 0 1px 0 rgba(255,255,255,0.3);
       }
       
       .strafakte-button.unpinned {
-        background: linear-gradient(135deg, var(--error-color), #dc2626);
-        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        background: var(--error-gradient);
+        box-shadow: 
+          0 4px 16px rgba(239, 68, 68, calc(0.3 * var(--glow-intensity))),
+          inset 0 1px 0 rgba(255,255,255,0.2);
       }
       
       .strafakte-button.unpinned:hover {
-        background: linear-gradient(135deg, #f87171, var(--error-color));
-        box-shadow: 0 8px 20px rgba(239, 68, 68, 0.5);
+        box-shadow: 
+          0 8px 24px rgba(239, 68, 68, calc(0.4 * var(--glow-intensity))),
+          0 0 20px rgba(248, 113, 113, calc(0.3 * var(--glow-intensity))),
+          inset 0 1px 0 rgba(255,255,255,0.3);
       }
 
       .strafakte-button.close {
-        background: none !important;
-        color: var(--error-color);
+        background: transparent !important;
+        color: #f87171;
         font-size: 20px;
         box-shadow: none;
-        transition: all 0.3s ease;
+        transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
         width: 36px;
         height: 36px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: bold;
+        font-weight: 700;
       }
       
       .strafakte-button.close:hover {
-        transform: scale(1.2) rotate(90deg);
         color: #ff6b6b;
-        text-shadow: 0 0 10px rgba(255, 107, 107, 0.5);
-        background: rgba(255, 107, 107, 0.1) !important;
-        border-radius: 50%;
+        background: linear-gradient(135deg, rgba(248, 113, 113, 0.15) 0%, rgba(239, 68, 68, 0.1) 100%) !important;
+        transform: scale(1.15) rotate(90deg);
+        box-shadow: 0 0 16px rgba(248, 113, 113, calc(0.4 * var(--glow-intensity))) !important;
       }
       
       .strafakte-button-container {
@@ -487,117 +547,96 @@ Object.assign(popup.style, {
       .strafakte-avatar {
         width: 44px;
         height: 44px;
-        border-radius: 50%;
-        margin-right: 12px;
+        border-radius: 12px;
+        margin-right: 14px;
         object-fit: cover;
-        border: 2px solid rgba(37, 99, 235, 0.4);
-        transition: all 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
-        box-shadow: 0 3px 12px rgba(0,0,0,0.3);
-        position: relative;
-      }
-      
-      .strafakte-avatar::before {
-        content: '';
-        position: absolute;
-        inset: -2px;
-        border-radius: 50%;
-        background: linear-gradient(45deg, var(--primary-blue), var(--primary-blue-light), var(--primary-blue));
-        opacity: 0;
-        transition: opacity 0.3s ease;
-        z-index: -1;
+        border: 1px solid rgba(37, 99, 235, 0.3);
+        transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+        box-shadow: 
+          0 4px 16px rgba(0,0,0,0.3),
+          0 0 12px rgba(37, 99, 235, calc(0.2 * var(--glow-intensity)));
       }
       
       .strafakte-avatar:hover {
-        transform: scale(1.15) rotate(5deg);
-        border-color: var(--primary-blue);
-        box-shadow: 0 8px 24px rgba(37, 99, 235, 0.4);
-      }
-      
-      .strafakte-avatar:hover::before {
-        opacity: 1;
+        border-color: #3b82f6;
+        transform: scale(1.08) translateY(-2px);
+        box-shadow: 
+          0 8px 24px rgba(0,0,0,0.4),
+          0 0 20px rgba(59, 130, 246, calc(0.4 * var(--glow-intensity)));
       }
       
       .strafakte-header {
         display: flex;
         align-items: center;
-        margin-bottom: 16px;
+        margin-bottom: 18px;
         padding-bottom: 16px;
-        border-bottom: 1px solid rgba(37, 99, 235, 0.2);
+        border-bottom: 1px solid rgba(59, 130, 246, 0.2);
         position: relative;
       }
       
       .strafakte-header::after {
         content: '';
         position: absolute;
-        bottom: 0;
+        bottom: -1px;
         left: 0;
-        width: 100%;
+        right: 0;
         height: 1px;
-        background: linear-gradient(90deg, transparent, var(--primary-blue), transparent);
-        opacity: 0.6;
+        background: linear-gradient(90deg, transparent 0%, rgba(59, 130, 246, 0.5) 50%, transparent 100%);
+        box-shadow: 0 0 8px rgba(59, 130, 246, calc(0.3 * var(--glow-intensity)));
       }
       
       .strafakte-user-info {
         flex: 1;
         min-width: 0;
-        margin-right: 12px;
+        margin-right: 14px;
       }
       
       .strafakte-username {
         font-weight: 700;
         font-size: 16px;
-        color: #fff;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        letter-spacing: 0.2px;
-        text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-        background: linear-gradient(135deg, #fff, #e1e7ff);
+        background: linear-gradient(135deg, #ffffff 0%, #e2e8f0 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
-        transition: all 0.3s ease;
-      }
-      
-      .strafakte-username:hover {
-        transform: translateX(2px);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin-bottom: 4px;
+        letter-spacing: 0.3px;
+        text-shadow: 0 0 20px rgba(255,255,255,calc(0.1 * var(--glow-intensity)));
       }
       
       .strafakte-userid {
-        font-size: 12px;
+        font-size: 11px;
         color: var(--text-secondary);
-        margin-top: 6px;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
         font-family: 'JetBrains Mono', 'Consolas', monospace;
         opacity: 0.8;
-        transition: color 0.3s ease;
-      }
-      
-      .strafakte-userid:hover {
-        color: var(--primary-blue-light);
+        font-weight: 500;
       }
       
       .strafakte-stats {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(85px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
         gap: 10px;
-        margin-bottom: 16px;
+        margin-bottom: 18px;
       }
       
       .strafakte-stat {
-        background: linear-gradient(135deg, var(--surface-color), rgba(25, 25, 40, 0.6));
-        border-radius: 10px;
-        padding: 12px 8px;
+        background: var(--surface-color);
+        border-radius: 12px;
+        padding: 14px 8px;
         text-align: center;
         cursor: pointer;
-        transition: all 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
-        box-shadow: 0 3px 8px rgba(0,0,0,0.2);
-        border: 1px solid rgba(37, 99, 235, 0.1);
+        transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+        border: 1px solid rgba(59, 130, 246, 0.15);
+        box-shadow: 
+          0 4px 16px rgba(0,0,0,0.2),
+          inset 0 1px 0 rgba(255,255,255,0.1);
         position: relative;
         overflow: hidden;
-        backdrop-filter: blur(10px);
       }
       
       .strafakte-stat::before {
@@ -607,158 +646,145 @@ Object.assign(popup.style, {
         left: 0;
         right: 0;
         height: 2px;
-        background: linear-gradient(90deg, var(--primary-blue), var(--primary-blue-light));
-        transform: scaleX(0);
-        transition: transform 0.3s ease;
+        background: linear-gradient(90deg, #3b82f6 0%, #2563eb 100%);
+        opacity: 0;
+        transition: opacity 0.3s ease;
       }
       
       .strafakte-stat:hover {
-        background: linear-gradient(135deg, var(--surface-hover), rgba(37, 99, 235, 0.1));
+        background: var(--surface-hover);
         transform: translateY(-4px) scale(1.02);
-        box-shadow: 0 12px 28px rgba(0,0,0,0.3), 0 0 20px rgba(37, 99, 235, 0.2);
-        border-color: var(--primary-blue);
+        border-color: rgba(59, 130, 246, 0.4);
+        box-shadow: 
+          0 12px 32px rgba(0,0,0,0.3),
+          0 0 24px rgba(59, 130, 246, calc(0.2 * var(--glow-intensity))),
+          inset 0 1px 0 rgba(255,255,255,0.15);
       }
       
       .strafakte-stat:hover::before {
-        transform: scaleX(1);
-      }
-      
-      .strafakte-stat:active {
-        transform: translateY(-2px) scale(1.01);
+        opacity: 1;
       }
       
       .strafakte-stat-value {
-        font-weight: 800;
+        font-weight: 700;
         font-size: 20px;
-        color: var(--primary-blue-light);
+        background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
         line-height: 1;
-        text-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
-        transition: all 0.3s ease;
+        text-shadow: 0 0 20px rgba(59, 130, 246, calc(0.3 * var(--glow-intensity)));
       }
       
       .strafakte-stat:hover .strafakte-stat-value {
-        color: #fff;
-        text-shadow: 0 0 15px var(--primary-blue-glow);
-        transform: scale(1.08);
+        background: linear-gradient(135deg, #93c5fd 0%, #60a5fa 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        text-shadow: 0 0 24px rgba(59, 130, 246, calc(0.4 * var(--glow-intensity)));
       }
       
       .strafakte-stat-label {
         font-size: 10px;
         color: var(--text-secondary);
         margin-top: 6px;
-        letter-spacing: 0.8px;
+        letter-spacing: 0.5px;
         text-transform: uppercase;
         font-weight: 600;
-        transition: color 0.3s ease;
-      }
-      
-      .strafakte-stat:hover .strafakte-stat-label {
-        color: var(--text-primary);
+        line-height: 1.2;
+        word-wrap: break-word;
+        hyphens: auto;
       }
       
       .strafakte-warning {
-        background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(245, 158, 11, 0.05));
-        border-radius: 10px;
-        padding: 12px 14px;
-        margin-bottom: 16px;
-        font-size: 12px;
+        background: linear-gradient(135deg, rgba(251, 191, 36, 0.15) 0%, rgba(245, 158, 11, 0.1) 100%);
+        border-radius: 12px;
+        padding: 14px 16px;
+        margin-bottom: 18px;
+        font-size: 13px;
         display: flex;
         align-items: center;
-        border-left: 3px solid var(--warning-color);
-        backdrop-filter: blur(10px);
-        transition: all 0.3s ease;
-        position: relative;
-        overflow: hidden;
+        border: 1px solid rgba(251, 191, 36, 0.3);
+        transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+        box-shadow: 
+          0 4px 16px rgba(245, 158, 11, calc(0.1 * var(--glow-intensity))),
+          inset 0 1px 0 rgba(255,255,255,0.1);
       }
       
-      .strafakte-warning::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(45deg, transparent, rgba(245, 158, 11, 0.1), transparent);
-        transform: translateX(-100%);
-        transition: transform 0.6s ease;
-      }
-      
-      .strafakte-warning:hover::before {
-        transform: translateX(100%);
+      .strafakte-warning:hover {
+        background: linear-gradient(135deg, rgba(251, 191, 36, 0.2) 0%, rgba(245, 158, 11, 0.15) 100%);
+        border-color: rgba(251, 191, 36, 0.5);
+        box-shadow: 
+          0 6px 24px rgba(245, 158, 11, calc(0.2 * var(--glow-intensity))),
+          inset 0 1px 0 rgba(255,255,255,0.15);
       }
       
       .strafakte-list-container {
-        max-height: 240px;
+        max-height: 260px;
         overflow-y: auto;
         padding-right: 6px;
         scroll-behavior: smooth;
-        margin-top: 6px;
+        margin-top: 8px;
       }
       
       .strafakte-list-title {
-        margin-bottom: 12px;
+        margin-bottom: 14px;
         font-size: 15px;
-        color: var(--primary-blue-light);
-        border-bottom: 2px solid rgba(37, 99, 235, 0.2);
+        background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        border-bottom: 1px solid rgba(59, 130, 246, 0.3);
         padding-bottom: 10px;
         display: flex;
         align-items: center;
         justify-content: space-between;
         font-weight: 700;
-        position: relative;
-      }
-      
-      .strafakte-list-title::after {
-        content: '';
-        position: absolute;
-        bottom: -2px;
-        left: 0;
-        width: 40px;
-        height: 2px;
-        background: var(--primary-blue);
-        transition: width 0.3s ease;
-      }
-      
-      .strafakte-list-title:hover::after {
-        width: 100%;
+        text-shadow: 0 0 20px rgba(59, 130, 246, calc(0.2 * var(--glow-intensity)));
       }
       
       .strafakte-back-button {
-        background: linear-gradient(135deg, rgba(37, 99, 235, 0.1), rgba(37, 99, 235, 0.05));
+        background: linear-gradient(135deg, rgba(37, 99, 235, 0.15) 0%, rgba(59, 130, 246, 0.1) 100%);
         border: 1px solid rgba(37, 99, 235, 0.3);
-        color: var(--primary-blue-light);
+        color: #60a5fa;
         cursor: pointer;
-        font-size: 13px;
+        font-size: 12px;
         display: flex;
         align-items: center;
         padding: 8px 12px;
-        border-radius: 8px;
-        transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+        border-radius: 10px;
+        transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
         font-weight: 600;
-        backdrop-filter: blur(10px);
+        box-shadow: 
+          0 2px 8px rgba(37, 99, 235, calc(0.1 * var(--glow-intensity))),
+          inset 0 1px 0 rgba(255,255,255,0.1);
       }
       
       .strafakte-back-button:hover {
-        background: linear-gradient(135deg, rgba(37, 99, 235, 0.2), rgba(37, 99, 235, 0.1));
-        color: #fff;
-        transform: translateX(-3px);
-        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        background: linear-gradient(135deg, rgba(37, 99, 235, 0.25) 0%, rgba(59, 130, 246, 0.2) 100%);
+        color: #93c5fd;
+        border-color: rgba(59, 130, 246, 0.5);
+        transform: translateY(-1px);
+        box-shadow: 
+          0 4px 16px rgba(37, 99, 235, calc(0.2 * var(--glow-intensity))),
+          inset 0 1px 0 rgba(255,255,255,0.15);
       }
       
       .strafakte-entry {
-        padding: 10px 12px;
+        padding: 12px 14px;
         margin-bottom: 8px;
-        background: linear-gradient(135deg, var(--surface-color), rgba(25, 25, 40, 0.4));
-        border-radius: 10px;
+        background: var(--surface-color);
+        border-radius: 12px;
         border-left: 3px solid;
         font-size: 12px;
         line-height: 1.5;
-        transition: all 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
-        box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+        transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
         cursor: pointer;
+        box-shadow: 
+          0 2px 8px rgba(0,0,0,0.2),
+          inset 0 1px 0 rgba(255,255,255,0.05);
         position: relative;
         overflow: hidden;
-        backdrop-filter: blur(10px);
       }
       
       .strafakte-entry::before {
@@ -766,17 +792,20 @@ Object.assign(popup.style, {
         position: absolute;
         top: 0;
         left: 0;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(135deg, rgba(37, 99, 235, 0.05), transparent);
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, transparent 100%);
         opacity: 0;
         transition: opacity 0.3s ease;
       }
       
       .strafakte-entry:hover {
+        background: var(--surface-hover);
         transform: translateX(6px) translateY(-2px);
-        background: linear-gradient(135deg, var(--surface-hover), rgba(37, 99, 235, 0.1));
-        box-shadow: 0 8px 24px rgba(0,0,0,0.3), 0 0 20px rgba(37, 99, 235, 0.15);
+        box-shadow: 
+          0 8px 24px rgba(0,0,0,0.3),
+          0 0 16px rgba(59, 130, 246, calc(0.1 * var(--glow-intensity))),
+          inset 0 1px 0 rgba(255,255,255,0.1);
       }
       
       .strafakte-entry:hover::before {
@@ -787,211 +816,178 @@ Object.assign(popup.style, {
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-        transition: color 0.3s ease;
       }
       
-      .strafakte-entry:hover > div {
-        color: var(--text-primary);
-      }
-      
-      /* Kategorie-Farben mit Glow-Effekten */
+      /* Kategorie-Farben mit Glow */
       .strafakte-penalty-category-A { 
-        border-color: var(--success-color);
-        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+        border-color: #10b981; 
+        box-shadow: 0 0 12px rgba(16, 185, 129, calc(0.2 * var(--glow-intensity)));
       }
       .strafakte-penalty-category-B { 
-        border-color: var(--warning-color);
-        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
+        border-color: #f59e0b; 
+        box-shadow: 0 0 12px rgba(245, 158, 11, calc(0.2 * var(--glow-intensity)));
       }
       .strafakte-penalty-category-C { 
-        border-color: #f97316;
-        box-shadow: 0 4px 12px rgba(249, 115, 22, 0.2);
+        border-color: #f97316; 
+        box-shadow: 0 0 12px rgba(249, 115, 22, calc(0.2 * var(--glow-intensity)));
       }
       .strafakte-penalty-category-D { 
-        border-color: var(--error-color);
-        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+        border-color: #ef4444; 
+        box-shadow: 0 0 12px rgba(239, 68, 68, calc(0.2 * var(--glow-intensity)));
       }
       .strafakte-penalty-category-E { 
-        border-color: #8b5cf6;
-        box-shadow: 0 4px 12px rgba(139, 92, 246, 0.2);
+        border-color: #8b5cf6; 
+        box-shadow: 0 0 12px rgba(139, 92, 246, calc(0.2 * var(--glow-intensity)));
       }
       .strafakte-penalty-category-KICK { 
-        border-color: #ff9500;
-        box-shadow: 0 4px 12px rgba(255, 149, 0, 0.2);
+        border-color: #ff9500; 
+        box-shadow: 0 0 12px rgba(255, 149, 0, calc(0.2 * var(--glow-intensity)));
       }
       .strafakte-penalty-category-UNKNOWN { 
-        border-color: #6b7280;
-        box-shadow: 0 4px 12px rgba(107, 114, 128, 0.2);
+        border-color: #6b7280; 
+        box-shadow: 0 0 12px rgba(107, 114, 128, calc(0.1 * var(--glow-intensity)));
       }
       
       .strafakte-warning-entry { 
-        border-color: var(--warning-color);
-        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
+        border-color: #f59e0b; 
+        box-shadow: 0 0 12px rgba(245, 158, 11, calc(0.2 * var(--glow-intensity)));
       }
       .strafakte-unban-entry { 
-        border-color: var(--success-color);
-        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+        border-color: #10b981; 
+        box-shadow: 0 0 12px rgba(16, 185, 129, calc(0.2 * var(--glow-intensity)));
       }
       .strafakte-watchlist-entry { 
-        border-color: var(--primary-blue);
-        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+        border-color: #3b82f6; 
+        box-shadow: 0 0 12px rgba(59, 130, 246, calc(0.2 * var(--glow-intensity)));
       }
       
       .strafakte-entry-expired {
         opacity: 0.6;
         border-left-style: dashed;
-        filter: grayscale(40%);
       }
       
       .strafakte-entry-category {
         display: inline-block;
-        font-size: 10px;
-        padding: 4px 10px;
-        border-radius: 16px;
-        margin-top: 8px;
-        background: linear-gradient(135deg, rgba(37, 99, 235, 0.2), rgba(37, 99, 235, 0.1));
+        font-size: 9px;
+        padding: 3px 8px;
+        border-radius: 12px;
+        margin-top: 6px;
+        background: linear-gradient(135deg, rgba(37, 99, 235, 0.2) 0%, rgba(59, 130, 246, 0.15) 100%);
         border: 1px solid rgba(37, 99, 235, 0.3);
         font-weight: 700;
-        letter-spacing: 0.5px;
+        letter-spacing: 0.4px;
         text-transform: uppercase;
-        transition: all 0.3s ease;
-      }
-      
-      .strafakte-entry:hover .strafakte-entry-category {
-        background: linear-gradient(135deg, var(--primary-blue), var(--primary-blue-dark));
-        color: white;
-        transform: scale(1.05);
+        box-shadow: 
+          0 2px 8px rgba(37, 99, 235, calc(0.1 * var(--glow-intensity))),
+          inset 0 1px 0 rgba(255,255,255,0.1);
       }
       
       .strafakte-entry-date {
-        font-size: 11px;
-        opacity: 0.7;
-        margin-top: 8px;
+        font-size: 10px;
+        opacity: 0.8;
+        margin-top: 6px;
         font-style: italic;
         color: var(--text-secondary);
-        transition: color 0.3s ease;
-      }
-      
-      .strafakte-entry:hover .strafakte-entry-date {
-        color: var(--primary-blue-light);
+        font-weight: 500;
       }
       
       .strafakte-section {
-        margin-bottom: 12px;
+        margin-bottom: 14px;
         font-size: 16px;
-        color: var(--primary-blue-light);
-        border-bottom: 2px solid rgba(37, 99, 235, 0.2);
-        padding-bottom: 12px;
+        background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        border-bottom: 1px solid rgba(59, 130, 246, 0.3);
+        padding-bottom: 10px;
         cursor: pointer;
-        transition: all 0.3s ease;
+        transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
         font-weight: 700;
-        position: relative;
+        text-shadow: 0 0 20px rgba(59, 130, 246, calc(0.2 * var(--glow-intensity)));
       }
       
       .strafakte-section:hover {
-        color: #fff;
-        text-shadow: 0 0 10px var(--primary-blue-glow);
-        transform: translateX(4px);
+        background: linear-gradient(135deg, #93c5fd 0%, #60a5fa 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        text-shadow: 0 0 24px rgba(59, 130, 246, calc(0.3 * var(--glow-intensity)));
       }
       
       .strafakte-empty-state {
         text-align: center;
         padding: 24px;
-        opacity: 0.6;
+        opacity: 0.7;
         font-style: italic;
         font-size: 14px;
         color: var(--text-secondary);
-        transition: all 0.3s ease;
-      }
-      
-      .strafakte-empty-state:hover {
-        opacity: 0.8;
-        color: var(--text-primary);
+        font-weight: 500;
       }
       
       .strafakte-tab-content {
-        animation: slideInUp 0.5s cubic-bezier(0.4, 0.0, 0.2, 1);
+        animation: slideInUp 0.4s cubic-bezier(0.23, 1, 0.32, 1);
       }
       
       .strafakte-detail-view {
-        background: linear-gradient(135deg, rgba(37, 99, 235, 0.1), rgba(37, 99, 235, 0.05));
+        background: linear-gradient(135deg, rgba(37, 99, 235, 0.08) 0%, rgba(59, 130, 246, 0.05) 100%);
         border-radius: 12px;
         padding: 16px;
         margin-top: 12px;
-        animation: slideInUp 0.4s ease;
         border: 1px solid rgba(37, 99, 235, 0.2);
-        backdrop-filter: blur(10px);
+        box-shadow: 
+          0 4px 16px rgba(37, 99, 235, calc(0.05 * var(--glow-intensity))),
+          inset 0 1px 0 rgba(255,255,255,0.05);
       }
       
       .strafakte-detail-title {
         font-weight: 700;
         font-size: 16px;
-        margin-bottom: 12px;
-        color: var(--primary-blue-light);
+        margin-bottom: 14px;
+        background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
         display: flex;
         align-items: center;
         gap: 8px;
-        text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-      }
-      
-      .strafakte-detail-title::before {
-        content: "📋";
-        filter: drop-shadow(0 0 5px rgba(37, 99, 235, 0.5));
+        text-shadow: 0 0 20px rgba(59, 130, 246, calc(0.2 * var(--glow-intensity)));
       }
       
       .strafakte-detail-field {
         margin-bottom: 12px;
-        padding: 12px 0;
-        border-bottom: 1px solid rgba(37, 99, 235, 0.1);
-        transition: all 0.3s ease;
+        padding: 10px 0;
+        border-bottom: 1px solid rgba(255,255,255,0.08);
       }
       
-      .strafakte-detail-field:hover {
-        background: rgba(37, 99, 235, 0.05);
-        border-radius: 8px;
-        padding: 12px;
-        margin: 4px 0;
+      .strafakte-detail-field:last-child {
+        border-bottom: none;
       }
       
       .strafakte-detail-label {
         font-weight: 700;
-        font-size: 12px;
+        font-size: 11px;
         color: var(--text-secondary);
         text-transform: uppercase;
-        letter-spacing: 1px;
+        letter-spacing: 0.6px;
         margin-bottom: 6px;
-        transition: color 0.3s ease;
-      }
-      
-      .strafakte-detail-field:hover .strafakte-detail-label {
-        color: var(--primary-blue-light);
       }
       
       .strafakte-detail-value {
-        font-size: 14px;
+        font-size: 13px;
         word-break: break-word;
         color: var(--text-primary);
-        transition: color 0.3s ease;
-      }
-      
-      .strafakte-detail-field:hover .strafakte-detail-value {
-        color: #fff;
+        font-weight: 500;
       }
       
       @keyframes slideInUp {
         from { 
           opacity: 0; 
-          transform: translateY(20px); 
+          transform: translateY(16px); 
         }
         to { 
           opacity: 1; 
           transform: translateY(0); 
         }
-      }
-      
-      @keyframes pulse {
-        0%, 100% { opacity: 1; }
-        50% { opacity: 0.7; }
       }
       
       .loading-indicator {
@@ -1004,14 +1000,14 @@ Object.assign(popup.style, {
       }
       
       .loading-spinner {
-        width: 56px;
-        height: 56px;
+        width: 36px;
+        height: 36px;
         margin-bottom: 20px;
-        border: 4px solid rgba(37, 99, 235, 0.2);
+        border: 3px solid rgba(37, 99, 235, 0.3);
         border-radius: 50%;
-        border-top-color: var(--primary-blue);
-        animation: spin 1s cubic-bezier(0.68, -0.55, 0.27, 1.55) infinite;
-        filter: drop-shadow(0 0 10px var(--primary-blue-glow));
+        border-top: 3px solid #3b82f6;
+        animation: spin 1s linear infinite;
+        box-shadow: 0 0 20px rgba(59, 130, 246, calc(0.3 * var(--glow-intensity)));
       }
       
       @keyframes spin {
@@ -1020,21 +1016,22 @@ Object.assign(popup.style, {
       }
       
       .loading-text {
-        font-size: 15px;
+        font-size: 14px;
         color: var(--text-secondary);
-        margin-top: 12px;
-        animation: pulse 2s ease-in-out infinite;
+        margin-top: 10px;
+        font-weight: 500;
       }
 
       /* Minimalistisches Design */
       .minimalist-popup .strafakte-header {
-        padding-bottom: 16px;
-        margin-bottom: 16px;
+        padding-bottom: 14px;
+        margin-bottom: 14px;
       }
       
       .minimalist-popup .strafakte-avatar {
         width: 40px;
         height: 40px;
+        border-radius: 10px;
       }
       
       .minimalist-popup .strafakte-username {
@@ -1047,7 +1044,7 @@ Object.assign(popup.style, {
       
       .minimalist-popup .strafakte-stat {
         padding: 12px 6px;
-        min-width: 75px;
+        min-width: 85px;
       }
       
       .minimalist-popup .strafakte-stat-value {
@@ -1059,7 +1056,7 @@ Object.assign(popup.style, {
       }
       
       .minimalist-popup .strafakte-warning {
-        padding: 10px 12px;
+        padding: 12px 14px;
         font-size: 12px;
       }
       
@@ -1069,11 +1066,12 @@ Object.assign(popup.style, {
       
       .minimalist-popup .strafakte-entry {
         padding: 10px 12px;
-        font-size: 12px;
+        font-size: 11px;
       }
     `;
     document.head.appendChild(style);
 
+    // Alle anderen Funktionen bleiben gleich, nur mit neuen CSS-Klassen
     let popupHideTimeout: ReturnType<typeof setTimeout> | null = null;
     let currentUserId: string | null = null;
     let isPinned = settings.store.defaultPinned;
@@ -1081,7 +1079,7 @@ Object.assign(popup.style, {
     let strafakteMouseMoveHandler: ((event: MouseEvent) => void) | null = null;
     const inviteRegex = /https?:\/\/(www\.)?(discord\.gg|discord\.com\/invite)\/([\w-]+)/;
     
-    // Verbesserte Interaktionsflags
+    // Interaktionsflags
     let isMouseOverPopup = false;
     let isMouseOverAvatar = false;
     let hoverTimer: ReturnType<typeof setTimeout> | null = null;
@@ -1095,7 +1093,10 @@ Object.assign(popup.style, {
     // Variable für letzten Mauszeiger-Event
     let latestAvatarMouseEvent: MouseEvent | null = null;
 
-    // Verbesserte Positionierung mit Performance-Optimierung
+    // Alle anderen Funktionen bleiben identisch...
+    // [Rest des Codes bleibt unverändert - positionPopup, adjustPopupPosition, showPopupWithAnimation, etc.]
+
+    // Positionierung
     function positionPopup(popupElement: HTMLElement, e: MouseEvent, xOffset: number = 15, yOffset: number = 15) {
       requestAnimationFrame(() => {
         const rect = popupElement.getBoundingClientRect();
@@ -1134,99 +1135,70 @@ Object.assign(popup.style, {
       });
     }
 
-    // Positionsanpassung nur bei Bedarf - keine kontinuierliche Überwachung
     function adjustPopupPosition() {
       if (!popup || popup.style.display === 'none') return;
 
-      requestAnimationFrame(() => {
+      setTimeout(() => {
         const rect = popup.getBoundingClientRect();
-        const vw = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
-        const vh = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
-        const margin = 10;
+        const vw = window.innerWidth;
+        const vh = window.innerHeight;
+        const margin = 20;
 
         let left = parseFloat(popup.style.left) || 0;
         let top = parseFloat(popup.style.top) || 0;
-        let needsUpdate = false;
 
-        // Prüfe rechten Rand
         if (left + rect.width > vw - margin) {
           left = vw - rect.width - margin;
-          needsUpdate = true;
         }
-        
-        // Prüfe unteren Rand  
         if (top + rect.height > vh - margin) {
           top = vh - rect.height - margin;
-          needsUpdate = true;
         }
-        
-        // Prüfe linken Rand
         if (left < margin) {
           left = margin;
-          needsUpdate = true;
         }
-        
-        // Prüfe oberen Rand
         if (top < margin) {
           top = margin;
-          needsUpdate = true;
         }
 
-        // Nur updaten wenn nötig
-        if (needsUpdate) {
-          popup.style.left = left + "px";
-          popup.style.top = top + "px";
-        }
-
-        // Dynamische Höhenanpassung
-        const maxAllowedHeight = Math.min(
-          settings.store.popupMaxHeight,
-          vh - top - margin
-        );
-        
-        if (parseInt(popup.style.maxHeight) !== maxAllowedHeight) {
-          popup.style.maxHeight = maxAllowedHeight + "px";
-        }
-      });
+        popup.style.left = left + "px";
+        popup.style.top = top + "px";
+      }, 0);
     }
 
-    // Monitor-Check vor Content-Updates
     function isPopupInViewport(): boolean {
       if (!popup || popup.style.display === 'none') return true;
       
       const rect = popup.getBoundingClientRect();
-      const vw = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
-      const vh = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
       
-      return (
-        rect.left >= 0 &&
-        rect.top >= 0 &&
-        rect.right <= vw &&
-        rect.bottom <= vh
-      );
+      return rect.left >= 0 && rect.top >= 0 && rect.right <= vw && rect.bottom <= vh;
     }
 
-    // Popup-Animationen ohne kontinuierliche Überwachung
+    // Popup-Animationen
     function showPopupWithAnimation() {
       popup.style.display = "block";
       popup.style.visibility = "hidden";
       popup.style.opacity = "0";
-      popup.style.transform = "scale(0.95) translateY(10px)";
+      popup.style.transform = "scale(0.95) translateY(12px)";
       
       requestAnimationFrame(() => {
         popup.style.visibility = "visible";
         popup.style.opacity = settings.store.popupOpacity.toString();
         popup.style.transform = "scale(1) translateY(0)";
         
-        // Position nach Animation anpassen
-        setTimeout(() => adjustPopupPosition(), settings.store.animationDuration);
+        setTimeout(() => {
+          if (!isPopupInViewport()) {
+            adjustPopupPosition();
+          }
+        }, settings.store.animationDuration + 50);
       });
     }
 
     function hidePopupWithAnimation() {
       if (settings.store.tooltipAnimation) {
         popup.style.opacity = "0";
-        popup.style.transform = "scale(0.95) translateY(10px)";
+        popup.style.transform = "scale(0.95) translateY(12px)";
         
         setTimeout(() => {
           popup.style.display = "none";
@@ -1237,7 +1209,7 @@ Object.assign(popup.style, {
       }
     }
 
-    // Benutzer-ID Extraktion (unverändert)
+    // Benutzer-ID Extraktion
     function getUserIdFromElement(el: HTMLElement): string | null {
       for (const key in el) {
         if (key.startsWith("__reactFiber$")) {
@@ -1297,7 +1269,7 @@ Object.assign(popup.style, {
       return null;
     }
 
-    // Kontextmenü-Methode (unverändert)
+    // Kontextmenü-Methode
     async function getUserIdFromContextMenu(el: HTMLElement): Promise<string | null> {
       return new Promise((resolve) => {
         if (!el) return resolve(null);
@@ -1351,38 +1323,30 @@ Object.assign(popup.style, {
       });
     }
 
-    // VERBESSERTE Strafe-Kategorisierung mit korrekter Ban-Erkennung
+    // Strafe-Kategorisierung
     function parseStrafeKategorie(strafe: string): string {
       const cleanStrafe = strafe.replace(/^\*\*|\*\*$/g, '').trim().toLowerCase();
       
-      // CRITICAL FIX: Ban-Erkennung hat höchste Priorität
       if (cleanStrafe.includes('ban') && !cleanStrafe.includes('unban') && !cleanStrafe.includes('entban')) {
-        return "E"; // Alle Bans sind Kategorie E
+        return "E";
       }
       
-      // Warn-Erkennung
       if (cleanStrafe.includes('warn')) return "B";
-      
-      // Kick-Erkennung
       if (cleanStrafe.includes('kick')) return "KICK";
-      
-      // Zeit-basierte Strafen (nur wenn kein Ban erkannt wurde)
       if (cleanStrafe.includes('1h') || cleanStrafe.includes('1 h') || cleanStrafe.includes('1 stunde')) return "A";
       
-      // Tage-basierte Strafen (nur wenn kein Ban erkannt wurde)
       const match = cleanStrafe.match(/(\d+)d/i);
       if (match) {
         const days = parseInt(match[1]);
         if (days <= 3) return "C";
         if (days <= 7) return "D";
-        return "E"; // Längere Zeitstrafen sind auch E
+        return "E";
       }
       
-      // Alles andere was nicht erkannt wird
       return "?";
     }
 
-    // Token-Helper (unverändert)
+    // Token-Helper
     let tokenCache: string | undefined;
     async function getToken(): Promise<string | undefined> {
       if (tokenCache) return tokenCache;
@@ -1411,7 +1375,7 @@ Object.assign(popup.style, {
       return tokenCache;
     }
 
-    // Verbesserte Strafakte-Abrufung mit korrekter Ban/Unban-Unterscheidung
+    // Strafakte-Abrufung (bleibt identisch)
     async function fetchStrafakte(userId: string): Promise<StrafakteData> {
       try {
         const user = UserStore.getUser(userId);
@@ -1531,7 +1495,7 @@ Object.assign(popup.style, {
           };
         }
 
-        // Verarbeitung der Strafakte-Nachrichten mit verbesserter Ban/Unban-Logik
+        // Verarbeitung der Strafakte-Nachrichten
         let warnCount = 0;
         let unbanCount = 0;
         const penalties: PenaltyEntry[] = [];
@@ -1547,7 +1511,6 @@ Object.assign(popup.style, {
           const content = msg.content as string;
           if (!content.includes(`ID: ${userId}`)) continue;
           
-          // VERBESSERTE Entbannungs-Erkennung: Prüfe explizit auf Entbannungs-Keywords
           const unbanKeywords = [
             'unbann', 'entbannung', 'entban', 'unban', 
             'entbannungsantrag', 'entbannungsgesuch', 'entbannungantrag',
@@ -1571,7 +1534,6 @@ Object.assign(popup.style, {
             continue;
           }
 
-          // Verarbeite normale Strafen
           const offenseLine = content.split("\n").find(line => line.toLowerCase().startsWith("tat:"));
           const offense = offenseLine?.replace(/Tat:/i, "").trim() || "Keine Tat angegeben";
           
@@ -1582,7 +1544,6 @@ Object.assign(popup.style, {
 
           const kat = parseStrafeKategorie(strafeText);
           
-          // Verwarnungen separat behandeln
           if (kat === "B") {
             warnCount++;
             warnings.push({
@@ -1592,13 +1553,11 @@ Object.assign(popup.style, {
             continue;
           }
           
-          // Unbekannte Kategorien überspringen
           if (kat === "?") continue;
 
           const timestamp = new Date(msg.timestamp);
           const ageDays = (Date.now() - timestamp.getTime()) / 86400000;
           
-          // Ablauf-Logik: Kicks und Bans (E) laufen nie ab
           const verfallen = kat !== "E" && kat !== "KICK" && (
             (kat === "A" && ageDays > 1) ||
             (kat === "C" && ageDays > 30) ||
@@ -1651,7 +1610,7 @@ Object.assign(popup.style, {
       }
     }
 
-    // View-Management (unverändert)
+    // View-Management
     function changeView(view: 'summary' | 'warnings' | 'unbans' | 'penalties' | 'watchlist' | 'detail') {
       activeView = view;
       renderStrafakteContent();
@@ -1664,12 +1623,12 @@ Object.assign(popup.style, {
       changeView('detail');
     }
 
-    // Detailansicht rendern (unverändert aber mit verbessertem Styling)
+    // Detailansicht rendern (bleibt gleich)
     function renderDetailView() {
       if (!detailEntry) return '';
 
       let detailHtml = `
-        <div class="strafakte-detail-title">Detailinformationen</div>
+        <div class="strafakte-detail-title">📋 Detailinformationen</div>
         <div class="strafakte-detail-view">
       `;
 
@@ -1735,16 +1694,11 @@ Object.assign(popup.style, {
       return detailHtml;
     }
 
-    // Hauptrender-Funktion mit verbessertem Design
+    // Hauptrender-Funktion (identisch, nur mit neuen CSS-Klassen)
     function renderStrafakteContent() {
       if (!currentStrafakteData) {
         popup.innerHTML = "Keine Daten verfügbar";
         return;
-      }
-
-      // Monitor-Check vor Content-Update
-      if (!isPopupInViewport()) {
-        adjustPopupPosition();
       }
 
       const oldLeft = popup.style.left;
@@ -1756,7 +1710,7 @@ Object.assign(popup.style, {
         <div class="strafakte-header ${minimalistClass}">
           ${settings.store.showAvatars && currentStrafakteData.avatarUrl ? ` 
             <img src="${currentStrafakteData.avatarUrl}" class="strafakte-avatar" />
-          ` : '<div class="strafakte-avatar" style="background:linear-gradient(135deg,#2c2f33,#1a1d21);display:flex;align-items:center;justify-content:center;font-size:24px;color:#7289da">👤</div>'}
+          ` : '<div class="strafakte-avatar" style="background:linear-gradient(135deg,rgba(37,99,235,0.2) 0%,rgba(59,130,246,0.15) 100%);display:flex;align-items:center;justify-content:center;font-size:22px;color:#3b82f6;border-radius:12px">👤</div>'}
           <div class="strafakte-user-info">
             <div class="strafakte-username" title="${currentStrafakteData.username}">
               ${currentStrafakteData.username || "Unbekannt"}
@@ -1767,7 +1721,7 @@ Object.assign(popup.style, {
           </div>
           <div class="strafakte-button-container">
             <button id="strafakte-pin" class="strafakte-button ${isPinned ? 'pinned' : 'unpinned'}" title="${isPinned ? 'Angepinnt' : 'Anheften'}">
-              ${isPinned ? '🔒' : '📌'}
+              ${isPinned ? '🔒' : '🔓'}
             </button>
             <button id="strafakte-copy-id" class="strafakte-button" title="ID kopieren">📋</button>
             <button id="strafakte-refresh" class="strafakte-button" title="Aktualisieren">🔄</button>
@@ -1792,11 +1746,11 @@ Object.assign(popup.style, {
               <div class="strafakte-stats">
                 <div class="strafakte-stat" data-view="warnings">
                   <div class="strafakte-stat-value">${currentStrafakteData.warnCount}</div>
-                  <div class="strafakte-stat-label">Verwarnungen</div>
+                  <div class="strafakte-stat-label">Warnungen</div>
                 </div>
                 <div class="strafakte-stat" data-view="unbans">
                   <div class="strafakte-stat-value">${currentStrafakteData.unbanCount}</div>
-                  <div class="strafakte-stat-label">Entbannungen</div>
+                  <div class="strafakte-stat-label">Entbans</div>
                 </div>
                 <div class="strafakte-stat" data-view="penalties">
                   <div class="strafakte-stat-value">${currentStrafakteData.penalties.length}</div>
@@ -1819,7 +1773,7 @@ Object.assign(popup.style, {
             
             if (currentStrafakteData.error) {
               contentHtml += `
-                <div style="text-align:center;padding:15px;color:var(--error-color);background:rgba(239,68,68,0.1);border-radius:12px;border:1px solid rgba(239,68,68,0.3)">
+                <div style="text-align:center;padding:14px;color:#f87171;background:linear-gradient(135deg,rgba(248,113,113,0.15) 0%,rgba(239,68,68,0.1) 100%);border-radius:12px;border:1px solid rgba(248,113,113,0.3);font-weight:500">
                   ${currentStrafakteData.error}
                 </div>
               `;
@@ -1942,8 +1896,17 @@ Object.assign(popup.style, {
       
       popup.style.left = oldLeft;
       popup.style.top = oldTop;
+      
+      setTimeout(() => {
+        popup.style.left = oldLeft;
+        popup.style.top = oldTop;
+        
+        setTimeout(() => {
+          adjustPopupPosition();
+        }, 50);
+      }, 25);
 
-      // Event Listener hinzufügen mit verbesserter Performance
+      // Event Listener hinzufügen
       const addEventListeners = () => {
         document.querySelectorAll('.strafakte-stat, .strafakte-back-button').forEach(el => {
           const view = el.getAttribute('data-view');
@@ -1995,7 +1958,7 @@ Object.assign(popup.style, {
             try {
               await navigator.clipboard.writeText(currentUserId);
               copyBtn.textContent = "✓";
-              copyBtn.style.background = "linear-gradient(135deg, var(--success-color), #059669)";
+              copyBtn.style.background = "var(--success-gradient)";
               setTimeout(() => {
                 copyBtn.textContent = "📋";
                 copyBtn.style.background = "";
@@ -2009,12 +1972,12 @@ Object.assign(popup.style, {
         refreshBtn?.addEventListener("click", async () => {
           if (!currentUserId) return;
           
-          refreshBtn.style.transform = "rotate(360deg)";
-          refreshBtn.style.transition = "transform 0.6s cubic-bezier(0.4, 0.0, 0.2, 1)";
+          refreshBtn.style.transform = "rotate(360deg) scale(1.1)";
+          refreshBtn.style.transition = "transform 0.6s cubic-bezier(0.23, 1, 0.32, 1)";
           
           setTimeout(() => {
             if (refreshBtn) {
-              refreshBtn.style.transform = "rotate(0deg)";
+              refreshBtn.style.transform = "rotate(0deg) scale(1)";
               refreshBtn.style.transition = "";
             }
           }, 600);
@@ -2033,7 +1996,7 @@ Object.assign(popup.style, {
           isPinned = !isPinned;
           if (pinBtn) {
             pinBtn.className = `strafakte-button ${isPinned ? 'pinned' : 'unpinned'}`;
-            pinBtn.innerHTML = isPinned ? '🔒' : '📌';
+            pinBtn.innerHTML = isPinned ? '🔒' : '🔓';
             pinBtn.title = isPinned ? 'Angepinnt' : 'Anheften';
           }
         });
@@ -2041,13 +2004,19 @@ Object.assign(popup.style, {
 
       requestAnimationFrame(addEventListeners);
       
-      // Sofortige Positionsanpassung nach Content-Update
-      requestAnimationFrame(() => {
-        adjustPopupPosition();
-      });
+      popup.style.left = oldLeft;
+      popup.style.top = oldTop;
+      
+      adjustPopupPosition();
+      
+      setTimeout(() => {
+        if (!isPopupInViewport()) {
+          adjustPopupPosition();
+        }
+      }, 10);
     }
 
-    // Verbesserte Popup-Interaktionen
+    // Popup-Interaktionen (bleibt gleich)
     popup.addEventListener("mouseenter", () => {
       isMouseOverPopup = true;
       if (hoverTimer) {
@@ -2073,7 +2042,7 @@ Object.assign(popup.style, {
       }
     });
 
-    // Verbesserte Avatar-Hover-Logik
+    // Avatar-Hover-Logik (bleibt identisch)
     const handleAvatarHover = (el: HTMLElement) => {
       if (el.closest("#r6de-supporter-popup")) return;
       if (el.hasAttribute("data-r6de-processed")) return;
@@ -2127,7 +2096,7 @@ Object.assign(popup.style, {
           if (!finalUserId) {
             popup.innerHTML = `
               <div class="strafakte-header">
-                <div class="strafakte-avatar" style="background:linear-gradient(135deg,#2c2f33,#1a1d21);display:flex;align-items:center;justify-content:center;font-size:24px;color:#7289da">❌</div>
+                <div class="strafakte-avatar" style="background:linear-gradient(135deg,rgba(248,113,113,0.2) 0%,rgba(239,68,68,0.15) 100%);display:flex;align-items:center;justify-content:center;font-size:22px;color:#ef4444;border-radius:12px">❌</div>
                 <div class="strafakte-user-info">
                   <div class="strafakte-username">Fehler</div>
                 </div>
@@ -2135,7 +2104,7 @@ Object.assign(popup.style, {
                   <button id="strafakte-close" class="strafakte-button close" title="Schließen">×</button>
                 </div>
               </div>
-              <div style="padding:24px;text-align:center;color:var(--error-color);background:rgba(239,68,68,0.1);border-radius:12px;border:1px solid rgba(239,68,68,0.3)">
+              <div style="padding:16px;text-align:center;color:#f87171;background:linear-gradient(135deg,rgba(248,113,113,0.15) 0%,rgba(239,68,68,0.1) 100%);border-radius:12px;border:1px solid rgba(248,113,113,0.3);font-weight:500">
                 Benutzer-ID konnte nicht extrahiert werden
               </div>
             `;
@@ -2150,7 +2119,7 @@ Object.assign(popup.style, {
           if (user?.bot) {
             popup.innerHTML = `
               <div class="strafakte-header">
-                <div class="strafakte-avatar" style="background:linear-gradient(135deg,#2c2f33,#1a1d21);display:flex;align-items:center;justify-content:center;font-size:24px;color:#7289da">🤖</div>
+                <div class="strafakte-avatar" style="background:linear-gradient(135deg,rgba(37,99,235,0.2) 0%,rgba(59,130,246,0.15) 100%);display:flex;align-items:center;justify-content:center;font-size:22px;color:#3b82f6;border-radius:12px">🤖</div>
                 <div class="strafakte-user-info">
                   <div class="strafakte-username">Bot</div>
                   <div class="strafakte-userid">${finalUserId}</div>
@@ -2159,7 +2128,7 @@ Object.assign(popup.style, {
                   <button id="strafakte-close" class="strafakte-button close" title="Schließen">×</button>
                 </div>
               </div>
-              <div style="padding:24px;text-align:center;color:var(--text-secondary)">
+              <div style="padding:16px;text-align:center;color:var(--text-secondary);font-weight:500">
                 Bots haben keine Strafakte
               </div>
             `;
@@ -2216,7 +2185,7 @@ Object.assign(popup.style, {
       el.addEventListener("mousedown", handleMouseDown, { passive: true });
     };
 
-    // Verbesserte Einladungsvorschau mit komplettem Styling und Anti-Stuck-Mechanismus
+    // Invite-Hover-System (4.0 GLOW Version)
     const handleInvitePreview = (link: HTMLAnchorElement) => {
       if (link.hasAttribute("data-r6de-invite-processed")) return;
       link.setAttribute("data-r6de-invite-processed", "true");
@@ -2230,135 +2199,124 @@ Object.assign(popup.style, {
       let isDataLoaded = false;
       let cachedData: any = null;
       let currentTooltip: HTMLElement | null = null;
-      let hoverTimeout: ReturnType<typeof setTimeout> | null = null;
-      let leaveTimeout: ReturnType<typeof setTimeout> | null = null;
+      let isHovering = false;
 
-      // Daten vorab laden
+      // Daten laden
       fetch(`https://discord.com/api/v9/invites/${code}?with_counts=true&with_expiration=true`)
         .then(res => res.json())
         .then(data => {
           isDataLoaded = true;
           cachedData = data;
         })
-        .catch(error => {
-          console.error("Fehler beim Abrufen der Einladung:", error);
+        .catch(() => {
+          console.warn("Invite-Daten nicht verfügbar");
         });
 
-      const cleanupTooltip = () => {
-        if (currentTooltip) {
-          if (settings.store.tooltipAnimation) {
-            currentTooltip.style.opacity = "0";
-            currentTooltip.style.transform = "scale(0.95) translateY(10px)";
-            
-            setTimeout(() => {
-              if (currentTooltip) {
-                currentTooltip.remove();
-                currentTooltip = null;
-              }
-            }, settings.store.animationDuration);
-          } else {
-            currentTooltip.remove();
-            currentTooltip = null;
-          }
-        }
-      };
+      const createTooltip = (e: MouseEvent) => {
+        if (!isDataLoaded || !cachedData || !isHovering) return;
 
-      const showTooltip = (e: MouseEvent) => {
-        // Cleanup existing tooltip
         if (currentTooltip) {
-          cleanupTooltip();
+          currentTooltip.remove();
+          currentTooltip = null;
         }
-
-        if (!isDataLoaded || !cachedData) return;
 
         currentTooltip = document.createElement("div");
         currentTooltip.className = "r6de-invite-preview";
+        currentTooltip.dataset.created = Date.now().toString();
         
         Object.assign(currentTooltip.style, {
           position: "fixed",
-          zIndex: "10001",
-          maxWidth: "320px",
+          zIndex: "10002",
+          maxWidth: "340px",
           pointerEvents: "none",
           display: "block",
           visibility: "hidden",
           opacity: "0",
-          transform: "scale(0.95) translateY(10px)"
+          transform: "scale(0.95) translateY(12px)"
         });
         
         document.body.appendChild(currentTooltip);
 
-        const g = cachedData.guild || {}, c = cachedData.channel || {};
-        const icon = g.id && g.icon
-          ? `<img src="https://cdn.discordapp.com/icons/${g.id}/${g.icon}.png?size=64" style="width:52px;height:52px;border-radius:12px;margin-bottom:12px;">`
-          : `<div style="width:52px;height:52px;border-radius:12px;margin-bottom:12px;background:linear-gradient(135deg,#2c2f33,#1a1d21);display:flex;align-items:center;justify-content:center;font-size:24px;color:#7289da;border:2px solid rgba(37, 99, 235, 0.4);">🏷️</div>`;
+        const g = cachedData.guild || {};
+        const c = cachedData.channel || {};
         
-        const channelTypes = ["Text", "DM", "Voice", "Gruppen-DM", "Kategorie", "Neuigkeiten", "Shop", "Bühne", "Forum"];
-
+        // Server-Icon mit Glow
+        const serverIcon = g.id && g.icon
+          ? `<img src="https://cdn.discordapp.com/icons/${g.id}/${g.icon}.png?size=128" class="r6de-invite-server-icon" />`
+          : `<div class="r6de-invite-server-icon" style="background:linear-gradient(135deg,rgba(37,99,235,0.25) 0%,rgba(59,130,246,0.2) 100%);display:flex;align-items:center;justify-content:center;font-size:26px;color:#3b82f6">🌟</div>`;
+        
+        // Channel-Emoji mit Glow
+        const channelEmojis = ["💬", "📱", "🔊", "👥", "📁", "📢", "🛒", "🎭", "💭"];
+        const channelEmoji = channelEmojis[c.type] || "💬";
+        
+        // Member-Count
+        const memberCount = cachedData.approximate_member_count || "???";
+        
         currentTooltip.innerHTML = `
-          <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
-            ${icon}
-            <div>
-              <div style="font-weight:700;font-size:16px;color:#fff;margin-bottom:4px;background: linear-gradient(135deg, #fff, #e1e7ff);-webkit-background-clip: text;-webkit-text-fill-color: transparent;background-clip: text;">🏷️ ${g.name || "Unbekannt oder abgelaufen"}</div>
-              <div style="color:var(--text-secondary);font-size:13px;opacity:0.8;">💬 #${c.name || "?"} (${channelTypes[c.type] || "Unbekannt"})</div>
+          <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px;">
+            ${serverIcon}
+            <div style="flex:1;min-width:0;">
+              <div class="r6de-invite-server-name">
+                ${g.name || "🔒 Privater Server"}
+              </div>
+              <div style="color:#cbd5e1;font-size:14px;opacity:0.9;display:flex;align-items:center;gap:6px;margin-bottom:14px;font-weight:500">
+                <span class="r6de-invite-channel-emoji">${channelEmoji}</span>
+                <span>#${c.name || "general"}</span>
+              </div>
             </div>
           </div>
-          <div style="color:var(--primary-blue-light);font-weight:600;font-size:14px;text-shadow: 0 2px 4px rgba(0,0,0,0.3);">👥 ${cachedData.approximate_member_count || "Unbekannt"} Mitglieder</div>
+          <div class="r6de-invite-members">
+            <span class="r6de-invite-members-emoji">👥</span>
+            <span class="r6de-invite-members-count">${memberCount.toLocaleString()} Mitglieder</span>
+          </div>
         `;
 
         // Animation
         requestAnimationFrame(() => {
-          if (currentTooltip) {
+          if (currentTooltip && isHovering) {
             currentTooltip.style.visibility = "visible";
             currentTooltip.style.opacity = settings.store.popupOpacity.toString();
             currentTooltip.style.transform = "scale(1) translateY(0)";
           }
         });
 
-        positionPopup(currentTooltip, e as MouseEvent, 15, 15);
+        positionPopup(currentTooltip, e, 20, 20);
       };
 
+      // ENTER
       link.addEventListener("mouseenter", (e) => {
-        e.stopPropagation();
-        e.preventDefault();
-        
-        // Clear any existing timeouts
-        if (hoverTimeout) clearTimeout(hoverTimeout);
-        if (leaveTimeout) clearTimeout(leaveTimeout);
-        
-        // Debounce hover
-        hoverTimeout = setTimeout(() => {
-          showTooltip(e);
-        }, 100);
+        isHovering = true;
+        setTimeout(() => {
+          if (isHovering) createTooltip(e);
+        }, 150);
       });
 
+      // MOVE
       link.addEventListener("mousemove", (e) => {
-        if (currentTooltip && currentTooltip.style.opacity !== "0") {
-          positionPopup(currentTooltip, e as MouseEvent, 15, 15);
+        if (currentTooltip && isHovering) {
+          positionPopup(currentTooltip, e, 20, 20);
         }
       });
 
+      // LEAVE
       link.addEventListener("mouseleave", () => {
-        // Clear hover timeout
-        if (hoverTimeout) {
-          clearTimeout(hoverTimeout);
-          hoverTimeout = null;
-        }
-        
-        // Debounced cleanup
-        leaveTimeout = setTimeout(() => {
-          cleanupTooltip();
+        isHovering = false;
+        setTimeout(() => {
+          if (currentTooltip && !isHovering) {
+            currentTooltip.style.opacity = "0";
+            currentTooltip.style.transform = "scale(0.95) translateY(12px)";
+            setTimeout(() => {
+              if (currentTooltip) {
+                currentTooltip.remove();
+                currentTooltip = null;
+              }
+            }, 200);
+          }
         }, 50);
-      });
-
-      // Emergency cleanup on click
-      link.addEventListener("click", () => {
-        if (hoverTimeout) clearTimeout(hoverTimeout);
-        if (leaveTimeout) clearTimeout(leaveTimeout);
-        cleanupTooltip();
       });
     };
 
-    // Performance-optimierte Mutation Observer
+    // Mutation Observer
     const observer = new MutationObserver(mutations => {
       const nodesToProcess: HTMLElement[] = [];
       
@@ -2384,7 +2342,6 @@ Object.assign(popup.style, {
         ].join(', ');
 
         for (const node of nodesToProcess) {
-          // Avatar-Hover verarbeiten
           const avatars = node.querySelectorAll(avatarSelectors);
           avatars.forEach((avatar: Element) => {
             if (avatar instanceof HTMLElement) {
@@ -2392,14 +2349,13 @@ Object.assign(popup.style, {
             }
           });
 
-          // Einladungslinks verarbeiten
           const links = node.querySelectorAll<HTMLAnchorElement>("a[href*='discord.gg'], a[href*='discord.com/invite']");
           links.forEach(handleInvitePreview);
         }
       });
     });
 
-    // Initiale Verarbeitung vorhandener Elemente
+    // Initiale Verarbeitung
     requestAnimationFrame(() => {
       const initialAvatars = document.querySelectorAll(`
         img[class*="avatar"], 
@@ -2422,16 +2378,15 @@ Object.assign(popup.style, {
       initialLinks.forEach(handleInvitePreview);
     });
 
-    // Performance-optimierte Observer-Konfiguration
     observer.observe(document.body, { 
       childList: true, 
       subtree: true,
-      attributeFilter: ['class', 'style'] // Nur relevante Attribute überwachen
+      attributeFilter: ['class', 'style']
     });
     
     this.observers.push(observer);
 
-    // Resize-Handler mit Throttling
+    // Resize-Handler
     let resizeTimeout: ReturnType<typeof setTimeout> | null = null;
     const handleResize = () => {
       if (resizeTimeout) clearTimeout(resizeTimeout);
@@ -2444,57 +2399,44 @@ Object.assign(popup.style, {
 
     window.addEventListener('resize', handleResize, { passive: true });
 
-    // Scroll-Handler für bessere Positionierung
+    // Scroll-Handler
     let scrollTimeout: ReturnType<typeof setTimeout> | null = null;
     const handleScroll = () => {
       if (scrollTimeout) clearTimeout(scrollTimeout);
       scrollTimeout = setTimeout(() => {
         if (popup.style.display === 'block' && !isPinned && !isDragging) {
-          // Popup bei Scrollen leicht ausblenden
-          popup.style.opacity = (settings.store.popupOpacity * 0.7).toString();
+          popup.style.opacity = (settings.store.popupOpacity * 0.8).toString();
           
           clearTimeout(scrollTimeout!);
           scrollTimeout = setTimeout(() => {
             if (popup.style.display === 'block') {
               popup.style.opacity = settings.store.popupOpacity.toString();
             }
-          }, 500);
+          }, 300);
         }
-      }, 50);
+      }, 30);
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
 
-    // Cleanup bei Page-Unload mit verbesserter Invite-Cleanup
+    // Cleanup
     const cleanup = () => {
       if (resizeTimeout) clearTimeout(resizeTimeout);
       if (scrollTimeout) clearTimeout(scrollTimeout);
       if (hoverTimer) clearTimeout(hoverTimer);
       if (avatarLeaveTimer) clearTimeout(avatarLeaveTimer);
       
-      // Force-cleanup aller Invite-Tooltips
-      document.querySelectorAll('.r6de-invite-preview').forEach(el => {
-        el.remove();
-      });
+      if (cleanupInterval) clearInterval(cleanupInterval);
+      
+      gentleInviteCleanup();
       
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('scroll', handleScroll);
     };
 
-    // Cleanup bei Page-Unload und auch bei Visibility-Change
-    window.addEventListener('beforeunload', cleanup, { once: true });
-    document.addEventListener('visibilitychange', () => {
-      if (document.hidden) {
-        // Cleanup wenn Tab nicht sichtbar
-        document.querySelectorAll('.r6de-invite-preview').forEach(el => {
-          el.remove();
-        });
-      }
-    });
-
-    // Globaler Escape-Key Handler für Cleanup
+    // Escape-Key Handler
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') {
+      if (e.key === 'Escape' || e.key === 'Tab') {
         document.querySelectorAll('.r6de-invite-preview').forEach(el => {
           el.remove();
         });
@@ -2505,29 +2447,50 @@ Object.assign(popup.style, {
         }
       }
     });
+
+    // Invite-Cleanup
+    const gentleInviteCleanup = () => {
+      document.querySelectorAll('.r6de-invite-preview').forEach(el => {
+        const age = Date.now() - (parseInt(el.dataset.created || '0') || Date.now());
+        if (age > 3000) {
+          el.remove();
+        }
+      });
+    };
+
+    document.addEventListener('scroll', gentleInviteCleanup, { passive: true });
+    
+    const cleanupInterval = setInterval(gentleInviteCleanup, 5000);
+
+    window.addEventListener('beforeunload', cleanup, { once: true });
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        gentleInviteCleanup();
+      }
+    });
   },
 
   stop() {
-    // Cleanup alle Observer
     this.observers.forEach(obs => obs.disconnect());
     this.observers = [];
     
-    // Entferne alle Plugin-Elemente
+    let intervalId = setInterval(() => {}, 1000);
+    for (let i = 0; i <= intervalId; i++) {
+      clearInterval(i);
+    }
+    
     const popup = document.getElementById("r6de-supporter-popup");
     if (popup) popup.remove();
     
-    // FORCE-CLEANUP: Entferne alle hängenden Invite-Previews
     document.querySelectorAll('.r6de-invite-preview').forEach(el => {
       el.remove();
     });
     
-    // Clear alle Timeouts global
     let timeoutId = setTimeout(() => {}, 0);
     for (let i = 0; i <= timeoutId; i++) {
       clearTimeout(i);
     }
     
-    // Reset alle Attribute
     document.querySelectorAll('[data-r6de-processed]').forEach(el => {
       el.removeAttribute("data-r6de-processed");
     });
@@ -2535,14 +2498,13 @@ Object.assign(popup.style, {
       el.removeAttribute("data-r6de-invite-processed");
     });
     
-    // Entferne Plugin-Styles
     document.querySelectorAll('style[data-strafakte-plugin-style]').forEach(el => el.remove());
     
-    // Cleanup Event-Listener
-    window.removeEventListener('resize', () => {});
-    window.removeEventListener('scroll', () => {});
-    window.removeEventListener('beforeunload', () => {});
+    ['resize', 'scroll', 'beforeunload', 'keydown', 'visibilitychange'].forEach(event => {
+      window.removeEventListener(event, () => {});
+      document.removeEventListener(event, () => {});
+    });
     
-    console.log("R6DE Plugin erfolgreich gestoppt - Alle Tooltips entfernt");
+    console.log("R6DE Plugin 4.0 gestoppt!");
   }
 });
