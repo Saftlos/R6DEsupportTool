@@ -478,14 +478,16 @@ export default definePlugin({
         font-weight: 500;
       }
       
-      .strafakte-button:hover {
-        background: var(--primary-blue-hover);
-        transform: translateY(-2px) scale(1.05);
-        box-shadow: 
-          0 8px 24px rgba(37, 99, 235, calc(0.4 * var(--glow-intensity))),
-          0 0 20px rgba(59, 130, 246, calc(0.3 * var(--glow-intensity))),
-          inset 0 1px 0 rgba(255,255,255,0.3);
-      }
+.strafakte-button:hover {
+  background: var(--primary-blue-hover);
+  transform: translateY(-2px) scale(1.05);
+  color: var(--text-primary);
+  -webkit-text-fill-color: var(--text-primary);
+  box-shadow: 
+    0 8px 24px rgba(37, 99, 235, calc(0.4 * var(--glow-intensity))),
+    0 0 20px rgba(59, 130, 246, calc(0.3 * var(--glow-intensity))),
+    inset 0 1px 0 rgba(255,255,255,0.3);
+}
       
       .strafakte-button:active {
         transform: translateY(-1px) scale(1.02);
@@ -498,13 +500,15 @@ export default definePlugin({
           inset 0 1px 0 rgba(255,255,255,0.2);
       }
       
-      .strafakte-button.pinned:hover {
-        box-shadow: 
-          0 8px 24px rgba(16, 185, 129, calc(0.4 * var(--glow-intensity))),
-          0 0 20px rgba(52, 211, 153, calc(0.3 * var(--glow-intensity))),
-          inset 0 1px 0 rgba(255,255,255,0.3);
-      }
-      
+.strafakte-button.pinned:hover {
+  color: var(--text-primary);
+  -webkit-text-fill-color: var(--text-primary);
+  box-shadow: 
+    0 8px 24px rgba(16, 185, 129, calc(0.4 * var(--glow-intensity))),
+    0 0 20px rgba(52, 211, 153, calc(0.3 * var(--glow-intensity))),
+    inset 0 1px 0 rgba(255,255,255,0.3);
+}
+ 
       .strafakte-button.unpinned {
         background: var(--error-gradient);
         box-shadow: 
@@ -512,12 +516,15 @@ export default definePlugin({
           inset 0 1px 0 rgba(255,255,255,0.2);
       }
       
-      .strafakte-button.unpinned:hover {
-        box-shadow: 
-          0 8px 24px rgba(239, 68, 68, calc(0.4 * var(--glow-intensity))),
-          0 0 20px rgba(248, 113, 113, calc(0.3 * var(--glow-intensity))),
-          inset 0 1px 0 rgba(255,255,255,0.3);
-      }
+.strafakte-button.unpinned:hover {
+  color: var(--text-primary);
+  -webkit-text-fill-color: var(--text-primary);
+  box-shadow: 
+    0 8px 24px rgba(239, 68, 68, calc(0.4 * var(--glow-intensity))),
+    0 0 20px rgba(248, 113, 113, calc(0.3 * var(--glow-intensity))),
+    inset 0 1px 0 rgba(255,255,255,0.3);
+}
+
 
       .strafakte-button.close {
         background: transparent !important;
@@ -530,12 +537,14 @@ export default definePlugin({
         font-weight: 700;
       }
       
-      .strafakte-button.close:hover {
-        color: #ff6b6b;
-        background: linear-gradient(135deg, rgba(248, 113, 113, 0.15) 0%, rgba(239, 68, 68, 0.1) 100%) !important;
-        transform: scale(1.15) rotate(90deg);
-        box-shadow: 0 0 16px rgba(248, 113, 113, calc(0.4 * var(--glow-intensity))) !important;
-      }
+.strafakte-button.close:hover {
+  color: #ff6b6b;
+  -webkit-text-fill-color: #ff6b6b;
+  background: linear-gradient(135deg, rgba(248, 113, 113, 0.15) 0%, rgba(239, 68, 68, 0.1) 100%) !important;
+  transform: scale(1.15) rotate(90deg);
+  box-shadow: 0 0 16px rgba(248, 113, 113, calc(0.4 * var(--glow-intensity))) !important;
+}
+
       
       .strafakte-button-container {
         display: flex;
@@ -743,32 +752,35 @@ export default definePlugin({
         text-shadow: 0 0 20px rgba(59, 130, 246, calc(0.2 * var(--glow-intensity)));
       }
       
-      .strafakte-back-button {
-        background: linear-gradient(135deg, rgba(37, 99, 235, 0.15) 0%, rgba(59, 130, 246, 0.1) 100%);
-        border: 1px solid rgba(37, 99, 235, 0.3);
-        color: #60a5fa;
-        cursor: pointer;
-        font-size: 12px;
-        display: flex;
-        align-items: center;
-        padding: 8px 12px;
-        border-radius: 10px;
-        transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
-        font-weight: 600;
-        box-shadow: 
-          0 2px 8px rgba(37, 99, 235, calc(0.1 * var(--glow-intensity))),
-          inset 0 1px 0 rgba(255,255,255,0.1);
-      }
-      
-      .strafakte-back-button:hover {
-        background: linear-gradient(135deg, rgba(37, 99, 235, 0.25) 0%, rgba(59, 130, 246, 0.2) 100%);
-        color: #93c5fd;
-        border-color: rgba(59, 130, 246, 0.5);
-        transform: translateY(-1px);
-        box-shadow: 
-          0 4px 16px rgba(37, 99, 235, calc(0.2 * var(--glow-intensity))),
-          inset 0 1px 0 rgba(255,255,255,0.15);
-      }
+.strafakte-back-button {
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.15) 0%, rgba(59, 130, 246, 0.1) 100%);
+  border: 1px solid rgba(37, 99, 235, 0.3);
+  color: #60a5fa;
+  -webkit-text-fill-color: #60a5fa;
+  cursor: pointer;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 10px;
+  transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+  font-weight: 600;
+  box-shadow: 
+    0 2px 8px rgba(37, 99, 235, calc(0.1 * var(--glow-intensity))),
+    inset 0 1px 0 rgba(255,255,255,0.1);
+}
+
+.strafakte-back-button:hover {
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.25) 0%, rgba(59, 130, 246, 0.2) 100%);
+  color: #93c5fd;
+  -webkit-text-fill-color: #93c5fd;
+  border-color: rgba(59, 130, 246, 0.5);
+  transform: translateY(-1px);
+  box-shadow: 
+    0 4px 16px rgba(37, 99, 235, calc(0.2 * var(--glow-intensity))),
+    inset 0 1px 0 rgba(255,255,255,0.15);
+}
+
       
       .strafakte-entry {
         padding: 12px 14px;
