@@ -156,7 +156,6 @@ interface UnbanEntry {
 }
 
 interface UnmuteEntry {
-  reason: string;
   date: Date;
 }
 
@@ -183,7 +182,7 @@ interface StrafakteData {
 
 export default definePlugin({
   name: "R6DEsupporterTool",
-  description: "Strafakte, Einladungsvorschau & Sprachbenachrichtigungen - 4.0.1 Glow Edition ✨",
+  description: "Strafakte, Einladungsvorschau & Sprachbenachrichtigungen - 4.0 Glow Edition ✨",
   authors: [{ id: 549586034242093069n, name: "Saftlos" }],
   settings,
   dependencies: ["ContextMenuAPI"],
@@ -486,7 +485,7 @@ export default definePlugin({
         -webkit-text-fill-color: var(--text-primary);
         box-shadow: 
           0 8px 24px rgba(37, 99, 235, calc(0.4 * var(--glow-intensity))),
-          0 0 20px rgba(59, 130, 246, calc(0.3 * var(--glow-intensity))),
+          0 0 20px rgba(59, 130, 246, calc、使用(0.3 * var(--glow-intensity)));
           inset 0 1px 0 rgba(255,255,255,0.3);
       }
       
@@ -866,8 +865,8 @@ export default definePlugin({
         box-shadow: 0 0 12px rgba(16, 185, 129, calc(0.2 * var(--glow-intensity)));
       }
       .strafakte-unmute-entry { 
-        border-color: #10b981; 
-        box-shadow: 0 0 12px rgba(16, 185, 129, calc(0.2 * var(--glow-intensity)));
+        border-color: #34d399; 
+        box-shadow: 0 0 12px rgba(52, 211, 153, calc(0.2 * var(--glow-intensity)));
       }
       .strafakte-watchlist-entry { 
         border-color: #3b82f6; 
@@ -942,7 +941,7 @@ export default definePlugin({
       }
       
       .strafakte-detail-view {
-        background: linear-gradient(135deg, rgba(37, 99, 235, 0.08) 0%, rgba(59, 130, 246, 0.05) 100%);
+        background: linear-gradient(135degだが、rgba(37, 99, 235, 0.08) 0%, rgba(59, 130, 246, 0.05) 100%);
         border-radius: 12px;
         padding: 16px;
         margin-top: 12px;
@@ -1095,9 +1094,9 @@ export default definePlugin({
     let hoverTimer: ReturnType<typeof setTimeout> | null = null;
     let avatarLeaveTimer: ReturnType<typeof setTimeout> | null = null;
     
-    let activeView: 'summary' | 'warnings' | 'unbans' | 'penalties' | 'watchlist' | 'unmutes' | 'detail' = 'summary';
+    let activeView: 'summary' | 'warnings' | 'unbans' | 'unmutes' | 'penalties' | 'watchlist' | 'detail' = 'summary';
     let detailEntry: PenaltyEntry | WarningEntry | UnbanEntry | UnmuteEntry | WatchlistEntry | null = null;
-    let detailSourceView: 'warnings' | 'unbans' | 'penalties' | 'watchlist' | 'unmutes' | null = null;
+    let detailSourceView: 'warnings' | 'unbans' | 'unmutes' | 'penalties' | 'watchlist' | null = null;
     
     let latestAvatarMouseEvent: MouseEvent | null = null;
 
@@ -1541,19 +1540,14 @@ export default definePlugin({
             continue;
           }
 
-          const unmuteKeywords = ['entmuted', 'unmuted', 'unmute'];
-          const isUnmuteEntry = unmuteKeywords.some(keyword => 
+          const unmuteKeywords = ['entmute', 'unmute', 'entmuten', 'unmuten', 'entmuted', 'unmuted', 'entmutet', 'unmutet'];
+          const isUnmute = unmuteKeywords.some(keyword => 
             content.toLowerCase().includes(keyword.toLowerCase())
-          ) && !content.toLowerCase().includes('strafe:');
+          );
           
-          if (isUnmuteEntry) {
+          if (isUnmute) {
             unmuteCount++;
-            
-            const reasonLine = content.split("\n").find(line => line.toLowerCase().startsWith("grund:"));
-            const reason = reasonLine?.replace(/Grund:/i, "").trim() || "Kein Grund angegeben";
-            
             unmutes.push({
-              reason,
               date: new Date(msg.timestamp)
             });
             continue;
@@ -1639,13 +1633,13 @@ export default definePlugin({
       }
     }
 
-    function changeView(view: 'summary' | 'warnings' | 'unbans' | 'penalties' | 'watchlist' | 'unmutes' | 'detail') {
+    function changeView(view: 'summary' | 'warnings' | 'unbans' | 'unmutes' | 'penalties' | 'watchlist' | 'detail') {
       activeView = view;
       renderStrafakteContent();
       adjustPopupPosition();
     }
 
-    function showEntryDetail(entry: PenaltyEntry | WarningEntry | UnbanEntry | UnmuteEntry | WatchlistEntry, sourceView: 'warnings' | 'unbans' | 'penalties' | 'watchlist' | 'unmutes') {
+    function showEntryDetail(entry: PenaltyEntry | WarningEntry | UnbanEntry | UnmuteEntry | WatchlistEntry, sourceView: 'warnings' | 'unbans' | 'unmutes' | 'penalties' | 'watchlist') {
       detailEntry = entry;
       detailSourceView = sourceView;
       changeView('detail');
@@ -1682,8 +1676,6 @@ export default definePlugin({
           </div>
           <div class="strafakte-detail-field">
             <div class="strafakte-detail-label">Status</div>
-            <div class="st08/01/2025
-
             <div class="strafakte-detail-value">${penalty.expired ? 'Abgelaufen' : 'Aktiv'}</div>
           </div>
         `;
@@ -1700,8 +1692,8 @@ export default definePlugin({
           </div>
         `;
       } else if ('reason' in detailEntry) {
-        const labelText = detailSourceView === 'unbans' ? "Grund der Entbannung" : 
-                         detailSourceView === 'unmutes' ? "Grund des Unmutes" : "Vorwurf";
+        const isUnban = detailSourceView === 'unbans';
+        const labelText = isUnban ? "Grund der Entbannung" : "Vorwurf";
         
         detailHtml += `
           <div class="strafakte-detail-field">
@@ -1711,6 +1703,14 @@ export default definePlugin({
           <div class="strafakte-detail-field">
             <div class="strafakte-detail-label">Datum</div>
             <div class="strafakte-detail-value">${detailEntry.date?.toLocaleDateString('de-DE') || 'Unbekannt'}</div>
+          </div>
+        `;
+      } else if ('date' in detailEntry && !('reason' in detailEntry)) {
+        const unmute = detailEntry as UnmuteEntry;
+        detailHtml += `
+          <div class="strafakte-detail-field">
+            <div class="strafakte-detail-label">Datum</div>
+            <div class="strafakte-detail-value">${unmute.date?.toLocaleDateString('de-DE') || 'Unbekannt'}</div>
           </div>
         `;
       }
@@ -1724,357 +1724,355 @@ export default definePlugin({
     }
 
     function renderStrafakteContent() {
-      if (!currentStrafakteData) {
-        popup.innerHTML = "Keine Daten verfügbar";
-        return;
-      }
+  if (!currentStrafakteData) {
+    popup.innerHTML = "Keine Daten verfügbar";
+    return;
+  }
 
-      const oldLeft = popup.style.left;
-      const oldTop = popup.style.top;
-      
-      const minimalistClass = settings.store.minimalistPopup ? "minimalist-popup" : "";
-      
-      let contentHtml = `
-        <div class="strafakte-header ${minimalistClass}">
-          ${settings.store.showAvatars && currentStrafakteData.avatarUrl ? ` 
-            <img src="${currentStrafakteData.avatarUrl}" class="strafakte-avatar" />
-          ` : '<div class="strafakte-avatar" style="background:linear-gradient(135deg,rgba(37,99,235,0.2) 0%,rgba(59,130,246,0.15) 100%);display:flex;align-items:center;justify-content:center;font-size:22px;color:#3b82f6;border-radius:12px">👤</div>'}
-          <div class="strafakte-user-info">
-            <div class="strafakte-username" title="${currentStrafakteData.username}">
-              ${currentStrafakteData.username || "Unbekannt"}
-            </div>
-            <div class="strafakte-userid" title="${currentUserId}">
-              ${currentUserId || "ID unbekannt"}
-            </div>
-          </div>
-          <div class="strafakte-button-container">
-            <button id="strafakte-pin" class="strafakte-button ${isPinned ? 'pinned' : 'unpinned'}" title="${isPinned ? 'Angepinnt' : 'Anheften'}">
-              ${isPinned ? '🔒' : '🔓'}
-            </button>
-            <button id="strafakte-copy-id" class="strafakte-button" title="ID kopieren">📋</button>
-            <button id="strafakte-refresh" class="strafakte-button" title="Aktualisieren">🔄</button>
-            <button id="strafakte-close" class="strafakte-button close" title="Schließen">×</button>
-          </div>
+  const oldLeft = popup.style.left;
+  const oldTop = popup.style.top;
+  
+  const minimalistClass = settings.store.minimalistPopup ? "minimalist-popup" : "";
+  
+  let contentHtml = `
+    <div class="strafakte-header ${minimalistClass}">
+      ${settings.store.showAvatars && currentStrafakteData.avatarUrl ? ` 
+        <img src="${currentStrafakteData.avatarUrl}" class="strafakte-avatar" />
+      ` : '<div class="strafakte-avatar" style="background:linear-gradient(135deg,rgba(37,99,235,0.2) 0%,rgba(59,130,246,0.15) 100%);display:flex;align-items:center;justify-content:center;font-size:22px;color:#3b82f6;border-radius:12px">👤</div>'}
+      <div class="strafakte-user-info">
+        <div class="strafakte-username" title="${currentStrafakteData.username}">
+          ${currentStrafakteData.username || "Unbekannt"}
         </div>
-      `;
-      
-      if (activeView === 'detail') {
+        <div class="strafakte-userid" title="${currentUserId}">
+          ${currentUserId || "ID unbekannt"}
+        </div>
+      </div>
+      <div class="strafakte-button-container">
+        <button id="strafakte-pin" class="strafakte-button ${isPinned ? 'pinned' : 'unpinned'}" title="${isPinned ? 'Angepinnt' : 'Anheften'}">
+          ${isPinned ? '🔒' : '🔓'}
+        </button>
+        <button id="strafakte-copy-id" class="strafakte-button" title="ID kopieren">📋</button>
+        <button id="strafakte-refresh" class="strafakte-button" title="Aktualisieren">🔄</button>
+        <button id="strafakte-close" class="strafakte-button close" title="Schließen">×</button>
+      </div>
+    </div>
+  `;
+  
+  if (activeView === 'detail') {
+    contentHtml += `
+      <div class="strafakte-list-title">
+        <span>Detailansicht</span>
+      </div>
+      ${renderDetailView()}
+    `;
+  } else {
+    contentHtml += `<div class="strafakte-tab-content ${minimalistClass}">`;
+    
+    switch (activeView) {
+      case 'summary':
+        contentHtml += `
+          <div class="strafakte-stats">
+            <div class="strafakte-stat" data-view="penalties">
+              <div class="strafakte-stat-value">${currentStrafakteData.penalties.length}</div>
+              <div class="strafakte-stat-label">Strafen</div>
+            </div>
+            <div class="strafakte-stat" data-view="warnings">
+              <div class="strafakte-stat-value">${currentStrafakteData.warnCount}</div>
+              <div class="strafakte-stat-label">Warnungen</div>
+            </div>
+            <div class="strafakte-stat" data-view="unbans">
+              <div class="strafakte-stat-value">${currentStrafakteData.unbanCount}</div>
+              <div class="strafakte-stat-label">Entbans</div>
+            </div>
+            <div class="strafakte-stat" data-view="unmutes">
+              <div class="strafakte-stat-value">${currentStrafakteData.unmuteCount}</div>
+              <div class="strafakte-stat-label">Unmutes</div>
+            </div>
+            <div class="strafakte-stat" data-view="watchlist">
+              <div class="strafakte-stat-value">${currentStrafakteData.watchlistCount}</div>
+              <div class="strafakte-stat-label">Watchlist</div>
+            </div>
+          </div>
+        `;
+        
+        if (currentStrafakteData.newestActiveDays > 0) {
+          contentHtml += `
+            <div class="strafakte-warning">
+              ⚠️ Die nächste Bestrafung kann ${currentStrafakteData.newestActiveDays} Tage hinzufügen!
+            </div>
+          `;
+        }
+        
+        if (currentStrafakteData.error) {
+          contentHtml += `
+            <div style="text-align:center;padding:14px;color:#f87171;background:linear-gradient(135deg,rgba(248,113,113,0.15) 0%,rgba(239,68,68,0.1) 100%);border-radius:12px;border:1px solid rgba(248,113,113,0.3);font-weight:500">
+              ${currentStrafakteData.error}
+            </div>
+          `;
+        }
+        break;
+        
+      case 'warnings':
         contentHtml += `
           <div class="strafakte-list-title">
-            <span>Detailansicht</span>
+            <span>Verwarnungen (${currentStrafakteData.warnCount})</span>
+            <button class="strafakte-back-button" data-view="summary">← Zurück</button>
           </div>
-          ${renderDetailView()}
+          <div class="strafakte-list-container">
         `;
-      } else {
-        contentHtml += `<div class="strafakte-tab-content ${minimalistClass}">`;
         
-        switch (activeView) {
-          case 'summary':
+        if (currentStrafakteData.warnings.length > 0) {
+          currentStrafakteData.warnings.forEach((w, index) => {
+            const dateStr = w.date ? w.date.toLocaleDateString('de-DE') : 'Unbekanntes Datum';
             contentHtml += `
-              <div class="strafakte-stats">
-                <div class="strafakte-stat" data-view="warnings">
-                  <div class="strafakte-stat-value">${currentStrafakteData.warnCount}</div>
-                  <div class="strafakte-stat-label">Warnungen</div>
-                </div>
-                <div class="strafakte-stat" data-view="unbans">
-                  <div class="strafakte-stat-value">${currentStrafakteData.unbanCount}</div>
-                  <div class="strafakte-stat-label">Entbans</div>
-                </div>
-                <div class="strafakte-stat" data-view="penalties">
-                  <div class="strafakte-stat-value">${currentStrafakteData.penalties.length}</div>
-                  <div class="strafakte-stat-label">Strafen</div>
-                </div>
-                <div class="strafakte-stat" data-view="watchlist">
-                  <div class="strafakte-stat-value">${currentStrafakteData.watchlistCount}</div>
-                  <div class="strafakte-stat-label">Watchlist</div>
-                </div>
-                <div class="strafakte-stat" data-view="unmutes">
-                  <div class="strafakte-stat-value">${currentStrafakteData.unmuteCount}</div>
-                  <div class="strafakte-stat-label">Unmutes</div>
-                </div>
+              <div class="strafakte-entry strafakte-warning-entry" data-index="${index}">
+                <div><strong>Tat:</strong> ${w.offense.substring(0, 70)}</div>
+                <div class="strafakte-entry-date">${dateStr}</div>
               </div>
             `;
-            
-            if (currentStrafakteData.newestActiveDays > 0) {
-              contentHtml += `
-                <div class="strafakte-warning">
-                  ⚠️ Die nächste Bestrafung kann ${currentStrafakteData.newestActiveDays} Tage hinzufügen!
-                </div>
-              `;
-            }
-            
-            if (currentStrafakteData.error) {
-              contentHtml += `
-                <div style="text-align:center;padding:14px;color:#f87171;background:linear-gradient(135deg,rgba(248,113,113,0.15) 0%,rgba(239,68,68,0.1) 100%);border-radius:12px;border:1px solid rgba(248,113,113,0.3);font-weight:500">
-                  ${currentStrafakteData.error}
-                </div>
-              `;
-            }
-            break;
-            
-          case 'warnings':
-            contentHtml += `
-              <div class="strafakte-list-title">
-                <span>Verwarnungen (${currentStrafakteData.warnCount})</span>
-                <button class="strafakte-back-button" data-view="summary">← Zurück</button>
-              </div>
-              <div class="strafakte-list-container">
-            `;
-            
-            if (currentStrafakteData.warnings.length > 0) {
-              currentStrafakteData.warnings.forEach((w, index) => {
-                const dateStr = w.date ? w.date.toLocaleDateString('de-DE') : 'Unbekanntes Datum';
-                contentHtml += `
-                  <div class="strafakte-entry strafakte-warning-entry" data-index="${index}">
-                    <div><strong>Tat:</strong> ${w.offense.substring(0, 70)}</div>
-                    <div class="strafakte-entry-date">${dateStr}</div>
-                  </div>
-                `;
-              });
-            } else {
-              contentHtml += `<div class="strafakte-empty-state">Keine Verwarnungen</div>`;
-            }
-            
-            contentHtml += `</div>`;
-            break;
-            
-          case 'unbans':
-            contentHtml += `
-              <div class="strafakte-list-title">
-                <span>Entbannungen (${currentStrafakteData.unbanCount})</span>
-                <button class="strafakte-back-button" data-view="summary">← Zurück</button>
-              </div>
-              <div class="strafakte-list-container">
-            `;
-            
-            if (currentStrafakteData.unbans.length > 0) {
-              currentStrafakteData.unbans.forEach((u, index) => {
-                const dateStr = u.date ? u.date.toLocaleDateString('de-DE') : 'Unbekanntes Datum';
-                contentHtml += `
-                  <div class="strafakte-entry strafakte-unban-entry" data-index="${index}">
-                    <div><strong>Grund:</strong> ${u.reason.substring(0, 70)}</div>
-                    <div class="strafakte-entry-date">${dateStr}</div>
-                  </div>
-                `;
-              });
-            } else {
-              contentHtml += `<div class="strafakte-empty-state">Keine Entbannungen</div>`;
-            }
-            
-            contentHtml += `</div>`;
-            break;
-            
-          case 'penalties':
-            contentHtml += `
-              <div class="strafakte-list-title">
-                <span>Strafen (${currentStrafakteData.penalties.length})</span>
-                <button class="strafakte-back-button" data-view="summary">← Zurück</button>
-              </div>
-              <div class="strafakte-list-container">
-            `;
-            
-            if (currentStrafakteData.penalties.length > 0) {
-              currentStrafakteData.penalties.forEach((p, index) => {
-                const dateStr = p.date ? p.date.toLocaleDateString('de-DE') : 'Unbekanntes Datum';
-                const categoryDisplay = p.category === 'KICK' ? 'Kick' : 
-                                       p.category === '?' ? 'Unbekannt' : p.category;
-                contentHtml += `
-                  <div class="strafakte-entry strafakte-penalty-category-${p.category === '?' ? 'UNKNOWN' : p.category} ${p.expired ? 'strafakte-entry-expired' : ''}" data-index="${index}">
-                    <div><strong>Tat:</strong> ${p.offense?.substring(0, 70) || "Keine Tat angegeben"}</div>
-                    <div><strong>Strafe:</strong> ${p.text.substring(0, 50)}</div>
-                    <div class="strafakte-entry-category">${categoryDisplay}${p.expired ? ' (Abgelaufen)' : ''}</div>
-                    <div class="strafakte-entry-date">${dateStr}</div>
-                  </div>
-                `;
-              });
-            } else {
-              contentHtml += `<div class="strafakte-empty-state">Keine Strafen</div>`;
-            }
-            
-            contentHtml += `</div>`;
-            break;
-            
-          case 'watchlist':
-            contentHtml += `
-              <div class="strafakte-list-title">
-                <span>Watchlist (${currentStrafakteData.watchlistCount})</span>
-                <button class="strafakte-back-button" data-view="summary">← Zurück</button>
-              </div>
-              <div class="strafakte-list-container">
-            `;
-            
-            if (currentStrafakteData.watchlist.length > 0) {
-              currentStrafakteData.watchlist.forEach((w, index) => {
-                const dateStr = w.date ? w.date.toLocaleDateString('de-DE') : 'Unbekanntes Datum';
-                contentHtml += `
-                  <div class="strafakte-entry strafakte-watchlist-entry" data-index="${index}">
-                    <div><strong>Vorwurf:</strong> ${w.reason.substring(0, 70)}</div>
-                    <div class="strafakte-entry-date">${dateStr}</div>
-                  </div>
-                `;
-              });
-            } else {
-              contentHtml += `<div class="strafakte-empty-state">Keine Watchlist-Einträge</div>`;
-            }
-            
-            contentHtml += `</div>`;
-            break;
-            
-          case 'unmutes':
-            contentHtml += `
-              <div class="strafakte-list-title">
-                <span>Unmutes (${currentStrafakteData.unmuteCount})</span>
-                <button class="strafakte-back-button" data-view="summary">← Zurück</button>
-              </div>
-              <div class="strafakte-list-container">
-            `;
-            
-            if (currentStrafakteData.unmutes.length > 0) {
-              currentStrafakteData.unmutes.forEach((u, index) => {
-                const dateStr = u.date ? u.date.toLocaleDateString('de-DE') : 'Unbekanntes Datum';
-                contentHtml += `
-                  <div class="strafakte-entry strafakte-unmute-entry" data-index="${index}">
-                    <div><strong>Grund:</strong> ${u.reason.substring(0, 70)}</div>
-                    <div class="strafakte-entry-date">${dateStr}</div>
-                  </div>
-                `;
-              });
-            } else {
-              contentHtml += `<div class="strafakte-empty-state">Keine Unmutes</div>`;
-            }
-            
-            contentHtml += `</div>`;
-            break;
+          });
+        } else {
+          contentHtml += `<div class="strafakte-empty-state">Keine Verwarnungen</div>`;
         }
         
         contentHtml += `</div>`;
-      }
-
-      popup.innerHTML = contentHtml;
-      
-      popup.style.left = oldLeft;
-      popup.style.top = oldTop;
-      
-      setTimeout(() => {
-        popup.style.left = oldLeft;
-        popup.style.top = oldTop;
+        break;
         
-        setTimeout(() => {
-          adjustPopupPosition();
-        }, 50);
-      }, 25);
-
-      const addEventListeners = () => {
-        document.querySelectorAll('.strafakte-stat, .strafakte-back-button').forEach(el => {
-          const view = el.getAttribute('data-view');
-          if (view) {
-            el.addEventListener('click', () => changeView(view as any), { passive: true });
-          }
-        });
-
-        if (activeView !== 'detail' && activeView !== 'summary') {
-          document.querySelectorAll('.strafakte-entry').forEach((el, index) => {
-            el.addEventListener('click', () => {
-              let entry = null;
-              switch (activeView) {
-                case 'warnings':
-                  entry = currentStrafakteData?.warnings[index];
-                  break;
-                case 'unbans':
-                  entry = currentStrafakteData?.unbans[index];
-                  break;
-                case 'penalties':
-                  entry = currentStrafakteData?.penalties[index];
-                  break;
-                case 'watchlist':
-                  entry = currentStrafakteData?.watchlist[index];
-                  break;
-                case 'unmutes':
-                  entry = currentStrafakteData?.unmutes[index];
-                  break;
-              }
-              if (entry) showEntryDetail(entry, activeView);
-            }, { passive: true });
+      case 'unbans':
+        contentHtml += `
+          <div class="strafakte-list-title">
+            <span>Entbannungen (${currentStrafakteData.unbanCount})</span>
+            <button class="strafakte-back-button" data-view="summary">← Zurück</button>
+          </div>
+          <div class="strafakte-list-container">
+        `;
+        
+        if (currentStrafakteData.unbans.length > 0) {
+          currentStrafakteData.unbans.forEach((u, index) => {
+            const dateStr = u.date ? u.date.toLocaleDateString('de-DE') : 'Unbekanntes Datum';
+            contentHtml += `
+              <div class="strafakte-entry strafakte-unban-entry" data-index="${index}">
+                <div><strong>Grund:</strong> ${u.reason.substring(0, 70)}</div>
+                <div class="strafakte-entry-date">${dateStr}</div>
+              </div>
+            `;
           });
+        } else {
+          contentHtml += `<div class="strafakte-empty-state">Keine Entbannungen</div>`;
         }
+        
+        contentHtml += `</div>`;
+        break;
+        
+      case 'unmutes':
+        contentHtml += `
+          <div class="strafakte-list-title">
+            <span>Unmutes (${currentStrafakteData.unmuteCount})</span>
+            <button class="strafakte-back-button" data-view="summary">← Zurück</button>
+          </div>
+          <div class="strafakte-list-container">
+        `;
+        
+        if (currentStrafakteData.unmutes.length > 0) {
+          currentStrafakteData.unmutes.forEach((u, index) => {
+            const dateStr = u.date ? u.date.toLocaleDateString('de-DE') : 'Unbekanntes Datum';
+            contentHtml += `
+              <div class="strafakte-entry strafakte-unmute-entry" data-index="${index}">
+                <div><strong>Datum:</strong> ${dateStr}</div>
+              </div>
+            `;
+          });
+        } else {
+          contentHtml += `<div class="strafakte-empty-state">Keine Unmutes</div>`;
+        }
+        
+        contentHtml += `</div>`;
+        break;
+        
+      case 'penalties':
+        contentHtml += `
+          <div class="strafakte-list-title">
+            <span>Strafen (${currentStrafakteData.penalties.length})</span>
+            <button class="strafakte-back-button" data-view="summary">← Zurück</button>
+          </div>
+          <div class="strafakte-list-container">
+        `;
+        
+        if (currentStrafakteData.penalties.length > 0) {
+          currentStrafakteData.penalties.forEach((p, index) => {
+            const dateStr = p.date ? p.date.toLocaleDateString('de-DE') : 'Unbekanntes Datum';
+            const categoryDisplay = p.category === 'KICK' ? 'Kick' : 
+                                   p.category === '?' ? 'Unbekannt' : p.category;
+            contentHtml += `
+              <div class="strafakte-entry strafakte-penalty-category-${p.category === '?' ? 'UNKNOWN' : p.category} ${p.expired ? 'strafakte-entry-expired' : ''}" data-index="${index}">
+                <div><strong>Tat:</strong> ${p.offense?.substring(0, 70) || "Keine Tat angegeben"}</div>
+                <div><strong>Strafe:</strong> ${p.text.substring(0, 50)}</div>
+                <div class="strafakte-entry-category">${categoryDisplay}${p.expired ? ' (Abgelaufen)' : ''}</div>
+                <div class="strafakte-entry-date">${dateStr}</div>
+              </div>
+            `;
+          });
+        } else {
+          contentHtml += `<div class="strafakte-empty-state">Keine Strafen</div>`;
+        }
+        
+        contentHtml += `</div>`;
+        break;
+        
+      case 'watchlist':
+        contentHtml += `
+          <div class="strafakte-list-title">
+            <span>Watchlist (${currentStrafakteData.watchlistCount})</span>
+            <button class="strafakte-back-button" data-view="summary">← Zurück</button>
+          </div>
+          <div class="strafakte-list-container">
+        `;
+        
+        if (currentStrafakteData.watchlist.length > 0) {
+          currentStrafakteData.watchlist.forEach((w, index) => {
+            const dateStr = w.date ? w.date.toLocaleDateString('de-DE') : 'Unbekanntes Datum';
+            contentHtml += `
+              <div class="strafakte-entry strafakte-watchlist-entry" data-index="${index}">
+                <div><strong>Vorwurf:</strong> ${w.reason.substring(0, 70)}</div>
+                <div class="strafakte-entry-date">${dateStr}</div>
+              </div>
+            `;
+          });
+        } else {
+          contentHtml += `<div class="strafakte-empty-state">Keine Watchlist-Einträge</div>`;
+        }
+        
+        contentHtml += `</div>`;
+        break;
+    }
+    
+    contentHtml += `</div>`;
+  }
 
-        const closeBtn = document.getElementById("strafakte-close");
-        const copyBtn = document.getElementById("strafakte-copy-id");
-        const refreshBtn = document.getElementById("strafakte-refresh");
-        const pinBtn = document.getElementById("strafakte-pin");
-
-        closeBtn?.addEventListener("click", () => {
-          hidePopupWithAnimation();
-          isPinned = false;
-          isMouseOverPopup = false;
-          isMouseOverAvatar = false;
-          activeView = 'summary';
-          detailSourceView = null;
-        });
-
-        copyBtn?.addEventListener("click", async () => {
-          if (currentUserId) {
-            try {
-              await navigator.clipboard.writeText(currentUserId);
-              copyBtn.textContent = "✓";
-              copyBtn.style.background = "var(--success-gradient)";
-              setTimeout(() => {
-                copyBtn.textContent = "📋";
-                copyBtn.style.background = "";
-              }, 2000);
-            } catch (err) {
-              console.error('Copy failed:', err);
-            }
-          }
-        });
-
-        refreshBtn?.addEventListener("click", async () => {
-          if (!currentUserId) return;
-          
-          refreshBtn.style.transform = "rotate(360deg) scale(1.1)";
-          refreshBtn.style.transition = "transform 0.6s cubic-bezier(0.23, 1, 0.32, 1)";
-          
-          setTimeout(() => {
-            if (refreshBtn) {
-              refreshBtn.style.transform = "rotate(0deg) scale(1)";
-              refreshBtn.style.transition = "";
-            }
-          }, 600);
-          
-          const oldLeft = popup.style.left;
-          const oldTop = popup.style.top;
-          
-          currentStrafakteData = await fetchStrafakte(currentUserId);
-          renderStrafakteContent();
-          
-          popup.style.left = oldLeft;
-          popup.style.top = oldTop;
-        });
-
-        pinBtn?.addEventListener("click", () => {
-          isPinned = !isPinned;
-          if (pinBtn) {
-            pinBtn.className = `strafakte-button ${isPinned ? 'pinned' : 'unpinned'}`;
-            pinBtn.innerHTML = isPinned ? '🔒' : '🔓';
-            pinBtn.title = isPinned ? 'Angepinnt' : 'Anheften';
-          }
-        });
-      };
-
-      requestAnimationFrame(addEventListeners);
-      
-      popup.style.left = oldLeft;
-      popup.style.top = oldTop;
-      
+  popup.innerHTML = contentHtml;
+  
+  popup.style.left = oldLeft;
+  popup.style.top = oldTop;
+  
+  setTimeout(() => {
+    popup.style.left = oldLeft;
+    popup.style.top = oldTop;
+    
+    setTimeout(() => {
       adjustPopupPosition();
-      
-      setTimeout(() => {
-        if (!isPopupInViewport()) {
-          adjustPopupPosition();
-        }
-      }, 10);
+    }, 50);
+  }, 25);
+
+  const addEventListeners = () => {
+    document.querySelectorAll('.strafakte-stat, .strafakte-back-button').forEach(el => {
+      const view = el.getAttribute('data-view');
+      if (view) {
+        el.addEventListener('click', () => changeView(view as any), { passive: true });
+      }
+    });
+
+    if (activeView !== 'detail' && activeView !== 'summary') {
+      document.querySelectorAll('.strafakte-entry').forEach((el, index) => {
+        el.addEventListener('click', () => {
+          let entry = null;
+          switch (activeView) {
+            case 'warnings':
+              entry = currentStrafakteData?.warnings[index];
+              break;
+            case 'unbans':
+              entry = currentStrafakteData?.unbans[index];
+              break;
+            case 'unmutes':
+              entry = currentStrafakteData?.unmutes[index];
+              break;
+            case 'penalties':
+              entry = currentStrafakteData?.penalties[index];
+              break;
+            case 'watchlist':
+              entry = currentStrafakteData?.watchlist[index];
+              break;
+          }
+          if (entry) showEntryDetail(entry, activeView);
+        }, { passive: true });
+      });
     }
 
+    const closeBtn = document.getElementById("strafakte-close");
+    const copyBtn = document.getElementById("strafakte-copy-id");
+    const refreshBtn = document.getElementById("strafakte-refresh");
+    const pinBtn = document.getElementById("strafakte-pin");
+
+    closeBtn?.addEventListener("click", () => {
+      hidePopupWithAnimation();
+      isPinned = false;
+      isMouseOverPopup = false;
+      isMouseOverAvatar = false;
+      activeView = 'summary';
+      detailSourceView = null;
+    });
+
+    copyBtn?.addEventListener("click", async () => {
+      if (currentUserId) {
+        try {
+          await navigator.clipboard.writeText(currentUserId);
+          copyBtn.textContent = "✓";
+          copyBtn.style.background = "var(--success-gradient)";
+          setTimeout(() => {
+            copyBtn.textContent = "📋";
+            copyBtn.style.background = "";
+          }, 2000);
+        } catch (err) {
+          console.error('Copy failed:', err);
+        }
+      }
+    });
+
+    refreshBtn?.addEventListener("click", async () => {
+      if (!currentUserId) return;
+      
+      refreshBtn.style.transform = "rotate(360deg) scale(1.1)";
+      refreshBtn.style.transition = "transform 0.6s cubic-bezier(0.23, 1, 0.32, 1)";
+      
+      setTimeout(() => {
+        if (refreshBtn) {
+          refreshBtn.style.transform = "rotate(0deg) scale(1)";
+          refreshBtn.style.transition = "";
+        }
+      }, 600);
+      
+      const oldLeft = popup.style.left;
+      const oldTop = popup.style.top;
+      
+      currentStrafakteData = await fetchStrafakte(currentUserId);
+      renderStrafakteContent();
+      
+      popup.style.left = oldLeft;
+      popup.style.top = oldTop;
+    });
+
+    pinBtn?.addEventListener("click", () => {
+      isPinned = !isPinned;
+      if (pinBtn) {
+        pinBtn.className = `strafakte-button ${isPinned ? 'pinned' : 'unpinned'}`;
+        pinBtn.innerHTML = isPinned ? '🔒' : '🔓';
+        pinBtn.title = isPinned ? 'Angepinnt' : 'Anheften';
+      }
+    });
+  };
+
+  requestAnimationFrame(addEventListeners);
+  
+  popup.style.left = oldLeft;
+  popup.style.top = oldTop;
+  
+  adjustPopupPosition();
+  
+  setTimeout(() => {
+    if (!isPopupInViewport()) {
+      adjustPopupPosition();
+    }
+  }, 10);
+}
     popup.addEventListener("mouseenter", () => {
       isMouseOverPopup = true;
       if (hoverTimer) {
@@ -2546,6 +2544,6 @@ export default definePlugin({
       document.removeEventListener(event, () => {});
     });
     
-    console.log("R6DE Plugin 4.0.1 gestoppt!");
+    console.log("R6DE Plugin 4.0 gestoppt!");
   }
 });
