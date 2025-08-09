@@ -155,6 +155,11 @@ interface UnbanEntry {
   date: Date;
 }
 
+interface UnmuteEntry {
+  reason: string;
+  date: Date;
+}
+
 interface WatchlistEntry {
   reason: string;
   date: Date;
@@ -163,10 +168,12 @@ interface WatchlistEntry {
 interface StrafakteData {
   warnCount: number;
   unbanCount: number;
+  unmuteCount: number;
   watchlistCount: number;
   penalties: PenaltyEntry[];
   warnings: WarningEntry[];
   unbans: UnbanEntry[];
+  unmutes: UnmuteEntry[];
   watchlist: WatchlistEntry[];
   newestActiveDays: number;
   error?: string;
@@ -176,7 +183,7 @@ interface StrafakteData {
 
 export default definePlugin({
   name: "R6DEsupporterTool",
-  description: "Strafakte, Einladungsvorschau & Sprachbenachrichtigungen - 4.0 Glow Edition ✨",
+  description: "Strafakte, Einladungsvorschau & Sprachbenachrichtigungen - 4.0.1 Glow Edition ✨",
   authors: [{ id: 549586034242093069n, name: "Saftlos" }],
   settings,
   dependencies: ["ContextMenuAPI"],
@@ -203,12 +210,10 @@ export default definePlugin({
     const GUILD_ID = "787620905269854259";
     const WATCHLIST_CHANNEL_ID = "843185952122077224";
     
-    // Popup Container mit modernem Glow Design
     const popup = document.createElement("div");
     popup.id = "r6de-supporter-popup";
     popup.classList.add("r6de-supporter-popup");
     
-    // Moderne Glassmorphism + Glow Styles
     Object.assign(popup.style, {
       position: "fixed",
       background: `linear-gradient(135deg, rgba(15, 15, 25, 0.95) 0%, rgba(20, 25, 35, 0.92) 100%)`,
@@ -244,7 +249,6 @@ export default definePlugin({
     
     document.body.appendChild(popup);
 
-    // 4.0 CSS mit Glow Effects und Blue Gradients
     const scrollFixStyle = document.createElement("style");
     scrollFixStyle.textContent = `
       .r6de-supporter-popup::-webkit-scrollbar {
@@ -278,7 +282,6 @@ export default definePlugin({
     `;
     document.head.appendChild(scrollFixStyle);
 
-    // Dragging-Logik (bleibt gleich)
     let isDragging = false;
     let dragOffsetX = 0;
     let dragOffsetY = 0;
@@ -336,7 +339,6 @@ export default definePlugin({
     document.addEventListener("mouseup", mouseUpHandler);
     document.addEventListener("mouseleave", mouseUpHandler);
 
-    // 4.0 Modern CSS mit Glow & Blue Gradients
     const style = document.createElement("style");
     style.textContent = `
       @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
@@ -360,7 +362,6 @@ export default definePlugin({
         scroll-behavior: smooth;
       }
       
-      /* Einladungsvorschau 4.0 - Glow Edition */
       .r6de-invite-preview {
         background: linear-gradient(135deg, rgba(15, 15, 25, 0.95) 0%, rgba(20, 25, 35, 0.92) 100%) !important;
         backdrop-filter: blur(20px) !important;
@@ -478,16 +479,16 @@ export default definePlugin({
         font-weight: 500;
       }
       
-.strafakte-button:hover {
-  background: var(--primary-blue-hover);
-  transform: translateY(-2px) scale(1.05);
-  color: var(--text-primary);
-  -webkit-text-fill-color: var(--text-primary);
-  box-shadow: 
-    0 8px 24px rgba(37, 99, 235, calc(0.4 * var(--glow-intensity))),
-    0 0 20px rgba(59, 130, 246, calc(0.3 * var(--glow-intensity))),
-    inset 0 1px 0 rgba(255,255,255,0.3);
-}
+      .strafakte-button:hover {
+        background: var(--primary-blue-hover);
+        transform: translateY(-2px) scale(1.05);
+        color: var(--text-primary);
+        -webkit-text-fill-color: var(--text-primary);
+        box-shadow: 
+          0 8px 24px rgba(37, 99, 235, calc(0.4 * var(--glow-intensity))),
+          0 0 20px rgba(59, 130, 246, calc(0.3 * var(--glow-intensity))),
+          inset 0 1px 0 rgba(255,255,255,0.3);
+      }
       
       .strafakte-button:active {
         transform: translateY(-1px) scale(1.02);
@@ -500,15 +501,15 @@ export default definePlugin({
           inset 0 1px 0 rgba(255,255,255,0.2);
       }
       
-.strafakte-button.pinned:hover {
-  color: var(--text-primary);
-  -webkit-text-fill-color: var(--text-primary);
-  box-shadow: 
-    0 8px 24px rgba(16, 185, 129, calc(0.4 * var(--glow-intensity))),
-    0 0 20px rgba(52, 211, 153, calc(0.3 * var(--glow-intensity))),
-    inset 0 1px 0 rgba(255,255,255,0.3);
-}
- 
+      .strafakte-button.pinned:hover {
+        color: var(--text-primary);
+        -webkit-text-fill-color: var(--text-primary);
+        box-shadow: 
+          0 8px 24px rgba(16, 185, 129, calc(0.4 * var(--glow-intensity))),
+          0 0 20px rgba(52, 211, 153, calc(0.3 * var(--glow-intensity))),
+          inset 0 1px 0 rgba(255,255,255,0.3);
+      }
+      
       .strafakte-button.unpinned {
         background: var(--error-gradient);
         box-shadow: 
@@ -516,16 +517,15 @@ export default definePlugin({
           inset 0 1px 0 rgba(255,255,255,0.2);
       }
       
-.strafakte-button.unpinned:hover {
-  color: var(--text-primary);
-  -webkit-text-fill-color: var(--text-primary);
-  box-shadow: 
-    0 8px 24px rgba(239, 68, 68, calc(0.4 * var(--glow-intensity))),
-    0 0 20px rgba(248, 113, 113, calc(0.3 * var(--glow-intensity))),
-    inset 0 1px 0 rgba(255,255,255,0.3);
-}
-
-
+      .strafakte-button.unpinned:hover {
+        color: var(--text-primary);
+        -webkit-text-fill-color: var(--text-primary);
+        box-shadow: 
+          0 8px 24px rgba(239, 68, 68, calc(0.4 * var(--glow-intensity))),
+          0 0 20px rgba(248, 113, 113, calc(0.3 * var(--glow-intensity))),
+          inset 0 1px 0 rgba(255,255,255,0.3);
+      }
+      
       .strafakte-button.close {
         background: transparent !important;
         color: #f87171;
@@ -537,14 +537,13 @@ export default definePlugin({
         font-weight: 700;
       }
       
-.strafakte-button.close:hover {
-  color: #ff6b6b;
-  -webkit-text-fill-color: #ff6b6b;
-  background: linear-gradient(135deg, rgba(248, 113, 113, 0.15) 0%, rgba(239, 68, 68, 0.1) 100%) !important;
-  transform: scale(1.15) rotate(90deg);
-  box-shadow: 0 0 16px rgba(248, 113, 113, calc(0.4 * var(--glow-intensity))) !important;
-}
-
+      .strafakte-button.close:hover {
+        color: #ff6b6b;
+        -webkit-text-fill-color: #ff6b6b;
+        background: linear-gradient(135deg, rgba(248, 113, 113, 0.15) 0%, rgba(239, 68, 68, 0.1) 100%) !important;
+        transform: scale(1.15) rotate(90deg);
+        box-shadow: 0 0 16px rgba(248, 113, 113, calc(0.4 * var(--glow-intensity))) !important;
+      }
       
       .strafakte-button-container {
         display: flex;
@@ -752,35 +751,34 @@ export default definePlugin({
         text-shadow: 0 0 20px rgba(59, 130, 246, calc(0.2 * var(--glow-intensity)));
       }
       
-.strafakte-back-button {
-  background: linear-gradient(135deg, rgba(37, 99, 235, 0.15) 0%, rgba(59, 130, 246, 0.1) 100%);
-  border: 1px solid rgba(37, 99, 235, 0.3);
-  color: #60a5fa;
-  -webkit-text-fill-color: #60a5fa;
-  cursor: pointer;
-  font-size: 12px;
-  display: flex;
-  align-items: center;
-  padding: 8px 12px;
-  border-radius: 10px;
-  transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
-  font-weight: 600;
-  box-shadow: 
-    0 2px 8px rgba(37, 99, 235, calc(0.1 * var(--glow-intensity))),
-    inset 0 1px 0 rgba(255,255,255,0.1);
-}
-
-.strafakte-back-button:hover {
-  background: linear-gradient(135deg, rgba(37, 99, 235, 0.25) 0%, rgba(59, 130, 246, 0.2) 100%);
-  color: #93c5fd;
-  -webkit-text-fill-color: #93c5fd;
-  border-color: rgba(59, 130, 246, 0.5);
-  transform: translateY(-1px);
-  box-shadow: 
-    0 4px 16px rgba(37, 99, 235, calc(0.2 * var(--glow-intensity))),
-    inset 0 1px 0 rgba(255,255,255,0.15);
-}
-
+      .strafakte-back-button {
+        background: linear-gradient(135deg, rgba(37, 99, 235, 0.15) 0%, rgba(59, 130, 246, 0.1) 100%);
+        border: 1px solid rgba(37, 99, 235, 0.3);
+        color: #60a5fa;
+        -webkit-text-fill-color: #60a5fa;
+        cursor: pointer;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        padding: 8px 12px;
+        border-radius: 10px;
+        transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+        font-weight: 600;
+        box-shadow: 
+          0 2px 8px rgba(37, 99, 235, calc(0.1 * var(--glow-intensity))),
+          inset 0 1px 0 rgba(255,255,255,0.1);
+      }
+      
+      .strafakte-back-button:hover {
+        background: linear-gradient(135deg, rgba(37, 99, 235, 0.25) 0%, rgba(59, 130, 246, 0.2) 100%);
+        color: #93c5fd;
+        -webkit-text-fill-color: #93c5fd;
+        border-color: rgba(59, 130, 246, 0.5);
+        transform: translateY(-1px);
+        box-shadow: 
+          0 4px 16px rgba(37, 99, 235, calc(0.2 * var(--glow-intensity))),
+          inset 0 1px 0 rgba(255,255,255,0.15);
+      }
       
       .strafakte-entry {
         padding: 12px 14px;
@@ -830,7 +828,6 @@ export default definePlugin({
         text-overflow: ellipsis;
       }
       
-      /* Kategorie-Farben mit Glow */
       .strafakte-penalty-category-A { 
         border-color: #10b981; 
         box-shadow: 0 0 12px rgba(16, 185, 129, calc(0.2 * var(--glow-intensity)));
@@ -865,6 +862,10 @@ export default definePlugin({
         box-shadow: 0 0 12px rgba(245, 158, 11, calc(0.2 * var(--glow-intensity)));
       }
       .strafakte-unban-entry { 
+        border-color: #10b981; 
+        box-shadow: 0 0 12px rgba(16, 185, 129, calc(0.2 * var(--glow-intensity)));
+      }
+      .strafakte-unmute-entry { 
         border-color: #10b981; 
         box-shadow: 0 0 12px rgba(16, 185, 129, calc(0.2 * var(--glow-intensity)));
       }
@@ -1034,7 +1035,6 @@ export default definePlugin({
         font-weight: 500;
       }
 
-      /* Minimalistisches Design */
       .minimalist-popup .strafakte-header {
         padding-bottom: 14px;
         margin-bottom: 14px;
@@ -1083,7 +1083,6 @@ export default definePlugin({
     `;
     document.head.appendChild(style);
 
-    // Alle anderen Funktionen bleiben gleich, nur mit neuen CSS-Klassen
     let popupHideTimeout: ReturnType<typeof setTimeout> | null = null;
     let currentUserId: string | null = null;
     let isPinned = settings.store.defaultPinned;
@@ -1091,24 +1090,17 @@ export default definePlugin({
     let strafakteMouseMoveHandler: ((event: MouseEvent) => void) | null = null;
     const inviteRegex = /https?:\/\/(www\.)?(discord\.gg|discord\.com\/invite)\/([\w-]+)/;
     
-    // Interaktionsflags
     let isMouseOverPopup = false;
     let isMouseOverAvatar = false;
     let hoverTimer: ReturnType<typeof setTimeout> | null = null;
     let avatarLeaveTimer: ReturnType<typeof setTimeout> | null = null;
     
-    // Aktive Ansicht
-    let activeView: 'summary' | 'warnings' | 'unbans' | 'penalties' | 'watchlist' | 'detail' = 'summary';
-    let detailEntry: PenaltyEntry | WarningEntry | UnbanEntry | WatchlistEntry | null = null;
-    let detailSourceView: 'warnings' | 'unbans' | 'penalties' | 'watchlist' | null = null;
+    let activeView: 'summary' | 'warnings' | 'unbans' | 'penalties' | 'watchlist' | 'unmutes' | 'detail' = 'summary';
+    let detailEntry: PenaltyEntry | WarningEntry | UnbanEntry | UnmuteEntry | WatchlistEntry | null = null;
+    let detailSourceView: 'warnings' | 'unbans' | 'penalties' | 'watchlist' | 'unmutes' | null = null;
     
-    // Variable für letzten Mauszeiger-Event
     let latestAvatarMouseEvent: MouseEvent | null = null;
 
-    // Alle anderen Funktionen bleiben identisch...
-    // [Rest des Codes bleibt unverändert - positionPopup, adjustPopupPosition, showPopupWithAnimation, etc.]
-
-    // Positionierung
     function positionPopup(popupElement: HTMLElement, e: MouseEvent, xOffset: number = 15, yOffset: number = 15) {
       requestAnimationFrame(() => {
         const rect = popupElement.getBoundingClientRect();
@@ -1187,7 +1179,6 @@ export default definePlugin({
       return rect.left >= 0 && rect.top >= 0 && rect.right <= vw && rect.bottom <= vh;
     }
 
-    // Popup-Animationen
     function showPopupWithAnimation() {
       popup.style.display = "block";
       popup.style.visibility = "hidden";
@@ -1221,7 +1212,6 @@ export default definePlugin({
       }
     }
 
-    // Benutzer-ID Extraktion
     function getUserIdFromElement(el: HTMLElement): string | null {
       for (const key in el) {
         if (key.startsWith("__reactFiber$")) {
@@ -1281,7 +1271,6 @@ export default definePlugin({
       return null;
     }
 
-    // Kontextmenü-Methode
     async function getUserIdFromContextMenu(el: HTMLElement): Promise<string | null> {
       return new Promise((resolve) => {
         if (!el) return resolve(null);
@@ -1335,7 +1324,6 @@ export default definePlugin({
       });
     }
 
-    // Strafe-Kategorisierung
     function parseStrafeKategorie(strafe: string): string {
       const cleanStrafe = strafe.replace(/^\*\*|\*\*$/g, '').trim().toLowerCase();
       
@@ -1358,7 +1346,6 @@ export default definePlugin({
       return "?";
     }
 
-    // Token-Helper
     let tokenCache: string | undefined;
     async function getToken(): Promise<string | undefined> {
       if (tokenCache) return tokenCache;
@@ -1387,7 +1374,6 @@ export default definePlugin({
       return tokenCache;
     }
 
-    // Strafakte-Abrufung (bleibt identisch)
     async function fetchStrafakte(userId: string): Promise<StrafakteData> {
       try {
         const user = UserStore.getUser(userId);
@@ -1395,10 +1381,12 @@ export default definePlugin({
           return { 
             warnCount: 0, 
             unbanCount: 0, 
+            unmuteCount: 0,
             watchlistCount: 0,
             penalties: [], 
             warnings: [],
             unbans: [],
+            unmutes: [],
             watchlist: [],
             newestActiveDays: 0,
             error: "Bots haben keine Strafakte",
@@ -1413,16 +1401,17 @@ export default definePlugin({
         if (!tokenStr) return { 
           warnCount: 0, 
           unbanCount: 0, 
+          unmuteCount: 0,
           watchlistCount: 0,
           penalties: [], 
           warnings: [],
           unbans: [],
+          unmutes: [],
           watchlist: [],
           newestActiveDays: 0, 
           error: "Kein Token" 
         };
 
-        // Strafakte abrufen
         const strafakteUrl = `https://discord.com/api/v9/guilds/${GUILD_ID}/messages/search?content=ID%3A%20${userId}&channel_id=${strafakteChannelId}&include_nsfw=true`;
         let res = await fetch(strafakteUrl, { headers: { Authorization: tokenStr } });
         
@@ -1432,10 +1421,12 @@ export default definePlugin({
           if (!tokenStr) return { 
             warnCount: 0, 
             unbanCount: 0, 
+            unmuteCount: 0,
             watchlistCount: 0,
             penalties: [], 
             warnings: [],
             unbans: [],
+            unmutes: [],
             watchlist: [],
             newestActiveDays: 0, 
             error: "Kein Token (401)" 
@@ -1447,10 +1438,12 @@ export default definePlugin({
           return { 
             warnCount: 0, 
             unbanCount: 0, 
+            unmuteCount: 0,
             watchlistCount: 0,
             penalties: [], 
             warnings: [],
             unbans: [],
+            unmutes: [],
             watchlist: [],
             newestActiveDays: 0, 
             error: `Fehler ${res.status}` 
@@ -1460,7 +1453,6 @@ export default definePlugin({
         const strafakteData = await res.json();
         const strafakteMessages = strafakteData.messages.flat();
         
-        // Watchlist abrufen
         let watchlistEntries: WatchlistEntry[] = [];
         const watchlistUrl = `https://discord.com/api/v9/guilds/${GUILD_ID}/messages/search?content=ID%3A%20${userId}&channel_id=${watchlistChannelId}&include_nsfw=true`;
         const watchlistRes = await fetch(watchlistUrl, { headers: { Authorization: tokenStr } });
@@ -1495,10 +1487,12 @@ export default definePlugin({
           return { 
             warnCount: 0, 
             unbanCount: 0, 
+            unmuteCount: 0,
             watchlistCount: watchlistEntries.length,
             penalties: [], 
             warnings: [],
             unbans: [],
+            unmutes: [],
             watchlist: watchlistEntries,
             newestActiveDays: 0,
             error: "Keine Einträge gefunden",
@@ -1507,12 +1501,13 @@ export default definePlugin({
           };
         }
 
-        // Verarbeitung der Strafakte-Nachrichten
         let warnCount = 0;
         let unbanCount = 0;
+        let unmuteCount = 0;
         const penalties: PenaltyEntry[] = [];
         const warnings: WarningEntry[] = [];
         const unbans: UnbanEntry[] = [];
+        const unmutes: UnmuteEntry[] = [];
         let newestActiveDays = 0;
 
         strafakteMessages.sort((a: any, b: any) => 
@@ -1540,6 +1535,24 @@ export default definePlugin({
             const reason = reasonLine?.replace(/Grund:/i, "").trim() || "Kein Grund angegeben";
             
             unbans.push({
+              reason,
+              date: new Date(msg.timestamp)
+            });
+            continue;
+          }
+
+          const unmuteKeywords = ['entmuted', 'unmuted', 'unmute'];
+          const isUnmuteEntry = unmuteKeywords.some(keyword => 
+            content.toLowerCase().includes(keyword.toLowerCase())
+          ) && !content.toLowerCase().includes('strafe:');
+          
+          if (isUnmuteEntry) {
+            unmuteCount++;
+            
+            const reasonLine = content.split("\n").find(line => line.toLowerCase().startsWith("grund:"));
+            const reason = reasonLine?.replace(/Grund:/i, "").trim() || "Kein Grund angegeben";
+            
+            unmutes.push({
               reason,
               date: new Date(msg.timestamp)
             });
@@ -1597,10 +1610,12 @@ export default definePlugin({
         return {
           warnCount,
           unbanCount,
+          unmuteCount,
           watchlistCount: watchlistEntries.length,
           penalties,
           warnings,
           unbans,
+          unmutes,
           watchlist: watchlistEntries,
           newestActiveDays,
           avatarUrl: user?.getAvatarURL(),
@@ -1611,10 +1626,12 @@ export default definePlugin({
         return { 
           warnCount: 0, 
           unbanCount: 0, 
+          unmuteCount: 0,
           watchlistCount: 0,
           penalties: [], 
           warnings: [],
           unbans: [],
+          unmutes: [],
           watchlist: [],
           newestActiveDays: 0, 
           error: "Serverfehler" 
@@ -1622,20 +1639,18 @@ export default definePlugin({
       }
     }
 
-    // View-Management
-    function changeView(view: 'summary' | 'warnings' | 'unbans' | 'penalties' | 'watchlist' | 'detail') {
+    function changeView(view: 'summary' | 'warnings' | 'unbans' | 'penalties' | 'watchlist' | 'unmutes' | 'detail') {
       activeView = view;
       renderStrafakteContent();
       adjustPopupPosition();
     }
 
-    function showEntryDetail(entry: PenaltyEntry | WarningEntry | UnbanEntry | WatchlistEntry, sourceView: 'warnings' | 'unbans' | 'penalties' | 'watchlist') {
+    function showEntryDetail(entry: PenaltyEntry | WarningEntry | UnbanEntry | UnmuteEntry | WatchlistEntry, sourceView: 'warnings' | 'unbans' | 'penalties' | 'watchlist' | 'unmutes') {
       detailEntry = entry;
       detailSourceView = sourceView;
       changeView('detail');
     }
 
-    // Detailansicht rendern (bleibt gleich)
     function renderDetailView() {
       if (!detailEntry) return '';
 
@@ -1667,6 +1682,8 @@ export default definePlugin({
           </div>
           <div class="strafakte-detail-field">
             <div class="strafakte-detail-label">Status</div>
+            <div class="st08/01/2025
+
             <div class="strafakte-detail-value">${penalty.expired ? 'Abgelaufen' : 'Aktiv'}</div>
           </div>
         `;
@@ -1683,8 +1700,8 @@ export default definePlugin({
           </div>
         `;
       } else if ('reason' in detailEntry) {
-        const isUnban = detailSourceView === 'unbans';
-        const labelText = isUnban ? "Grund der Entbannung" : "Vorwurf";
+        const labelText = detailSourceView === 'unbans' ? "Grund der Entbannung" : 
+                         detailSourceView === 'unmutes' ? "Grund des Unmutes" : "Vorwurf";
         
         detailHtml += `
           <div class="strafakte-detail-field">
@@ -1706,7 +1723,6 @@ export default definePlugin({
       return detailHtml;
     }
 
-    // Hauptrender-Funktion (identisch, nur mit neuen CSS-Klassen)
     function renderStrafakteContent() {
       if (!currentStrafakteData) {
         popup.innerHTML = "Keine Daten verfügbar";
@@ -1771,6 +1787,10 @@ export default definePlugin({
                 <div class="strafakte-stat" data-view="watchlist">
                   <div class="strafakte-stat-value">${currentStrafakteData.watchlistCount}</div>
                   <div class="strafakte-stat-label">Watchlist</div>
+                </div>
+                <div class="strafakte-stat" data-view="unmutes">
+                  <div class="strafakte-stat-value">${currentStrafakteData.unmuteCount}</div>
+                  <div class="strafakte-stat-label">Unmutes</div>
                 </div>
               </div>
             `;
@@ -1899,6 +1919,32 @@ export default definePlugin({
             
             contentHtml += `</div>`;
             break;
+            
+          case 'unmutes':
+            contentHtml += `
+              <div class="strafakte-list-title">
+                <span>Unmutes (${currentStrafakteData.unmuteCount})</span>
+                <button class="strafakte-back-button" data-view="summary">← Zurück</button>
+              </div>
+              <div class="strafakte-list-container">
+            `;
+            
+            if (currentStrafakteData.unmutes.length > 0) {
+              currentStrafakteData.unmutes.forEach((u, index) => {
+                const dateStr = u.date ? u.date.toLocaleDateString('de-DE') : 'Unbekanntes Datum';
+                contentHtml += `
+                  <div class="strafakte-entry strafakte-unmute-entry" data-index="${index}">
+                    <div><strong>Grund:</strong> ${u.reason.substring(0, 70)}</div>
+                    <div class="strafakte-entry-date">${dateStr}</div>
+                  </div>
+                `;
+              });
+            } else {
+              contentHtml += `<div class="strafakte-empty-state">Keine Unmutes</div>`;
+            }
+            
+            contentHtml += `</div>`;
+            break;
         }
         
         contentHtml += `</div>`;
@@ -1918,7 +1964,6 @@ export default definePlugin({
         }, 50);
       }, 25);
 
-      // Event Listener hinzufügen
       const addEventListeners = () => {
         document.querySelectorAll('.strafakte-stat, .strafakte-back-button').forEach(el => {
           const view = el.getAttribute('data-view');
@@ -1944,13 +1989,15 @@ export default definePlugin({
                 case 'watchlist':
                   entry = currentStrafakteData?.watchlist[index];
                   break;
+                case 'unmutes':
+                  entry = currentStrafakteData?.unmutes[index];
+                  break;
               }
               if (entry) showEntryDetail(entry, activeView);
             }, { passive: true });
           });
         }
 
-        // Button Event Listeners
         const closeBtn = document.getElementById("strafakte-close");
         const copyBtn = document.getElementById("strafakte-copy-id");
         const refreshBtn = document.getElementById("strafakte-refresh");
@@ -2028,7 +2075,6 @@ export default definePlugin({
       }, 10);
     }
 
-    // Popup-Interaktionen (bleibt gleich)
     popup.addEventListener("mouseenter", () => {
       isMouseOverPopup = true;
       if (hoverTimer) {
@@ -2054,7 +2100,6 @@ export default definePlugin({
       }
     });
 
-    // Avatar-Hover-Logik (bleibt identisch)
     const handleAvatarHover = (el: HTMLElement) => {
       if (el.closest("#r6de-supporter-popup")) return;
       if (el.hasAttribute("data-r6de-processed")) return;
@@ -2197,7 +2242,6 @@ export default definePlugin({
       el.addEventListener("mousedown", handleMouseDown, { passive: true });
     };
 
-    // Invite-Hover-System (4.0 GLOW Version)
     const handleInvitePreview = (link: HTMLAnchorElement) => {
       if (link.hasAttribute("data-r6de-invite-processed")) return;
       link.setAttribute("data-r6de-invite-processed", "true");
@@ -2213,7 +2257,6 @@ export default definePlugin({
       let currentTooltip: HTMLElement | null = null;
       let isHovering = false;
 
-      // Daten laden
       fetch(`https://discord.com/api/v9/invites/${code}?with_counts=true&with_expiration=true`)
         .then(res => res.json())
         .then(data => {
@@ -2252,16 +2295,13 @@ export default definePlugin({
         const g = cachedData.guild || {};
         const c = cachedData.channel || {};
         
-        // Server-Icon mit Glow
         const serverIcon = g.id && g.icon
           ? `<img src="https://cdn.discordapp.com/icons/${g.id}/${g.icon}.png?size=128" class="r6de-invite-server-icon" />`
           : `<div class="r6de-invite-server-icon" style="background:linear-gradient(135deg,rgba(37,99,235,0.25) 0%,rgba(59,130,246,0.2) 100%);display:flex;align-items:center;justify-content:center;font-size:26px;color:#3b82f6">🌟</div>`;
         
-        // Channel-Emoji mit Glow
         const channelEmojis = ["💬", "📱", "🔊", "👥", "📁", "📢", "🛒", "🎭", "💭"];
         const channelEmoji = channelEmojis[c.type] || "💬";
         
-        // Member-Count
         const memberCount = cachedData.approximate_member_count || "???";
         
         currentTooltip.innerHTML = `
@@ -2283,7 +2323,6 @@ export default definePlugin({
           </div>
         `;
 
-        // Animation
         requestAnimationFrame(() => {
           if (currentTooltip && isHovering) {
             currentTooltip.style.visibility = "visible";
@@ -2295,7 +2334,6 @@ export default definePlugin({
         positionPopup(currentTooltip, e, 20, 20);
       };
 
-      // ENTER
       link.addEventListener("mouseenter", (e) => {
         isHovering = true;
         setTimeout(() => {
@@ -2303,14 +2341,12 @@ export default definePlugin({
         }, 150);
       });
 
-      // MOVE
       link.addEventListener("mousemove", (e) => {
         if (currentTooltip && isHovering) {
           positionPopup(currentTooltip, e, 20, 20);
         }
       });
 
-      // LEAVE
       link.addEventListener("mouseleave", () => {
         isHovering = false;
         setTimeout(() => {
@@ -2328,7 +2364,6 @@ export default definePlugin({
       });
     };
 
-    // Mutation Observer
     const observer = new MutationObserver(mutations => {
       const nodesToProcess: HTMLElement[] = [];
       
@@ -2367,7 +2402,6 @@ export default definePlugin({
       });
     });
 
-    // Initiale Verarbeitung
     requestAnimationFrame(() => {
       const initialAvatars = document.querySelectorAll(`
         img[class*="avatar"], 
@@ -2398,7 +2432,6 @@ export default definePlugin({
     
     this.observers.push(observer);
 
-    // Resize-Handler
     let resizeTimeout: ReturnType<typeof setTimeout> | null = null;
     const handleResize = () => {
       if (resizeTimeout) clearTimeout(resizeTimeout);
@@ -2411,7 +2444,6 @@ export default definePlugin({
 
     window.addEventListener('resize', handleResize, { passive: true });
 
-    // Scroll-Handler
     let scrollTimeout: ReturnType<typeof setTimeout> | null = null;
     const handleScroll = () => {
       if (scrollTimeout) clearTimeout(scrollTimeout);
@@ -2431,7 +2463,6 @@ export default definePlugin({
 
     window.addEventListener('scroll', handleScroll, { passive: true });
 
-    // Cleanup
     const cleanup = () => {
       if (resizeTimeout) clearTimeout(resizeTimeout);
       if (scrollTimeout) clearTimeout(scrollTimeout);
@@ -2446,7 +2477,6 @@ export default definePlugin({
       window.removeEventListener('scroll', handleScroll);
     };
 
-    // Escape-Key Handler
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' || e.key === 'Tab') {
         document.querySelectorAll('.r6de-invite-preview').forEach(el => {
@@ -2460,7 +2490,6 @@ export default definePlugin({
       }
     });
 
-    // Invite-Cleanup
     const gentleInviteCleanup = () => {
       document.querySelectorAll('.r6de-invite-preview').forEach(el => {
         const age = Date.now() - (parseInt(el.dataset.created || '0') || Date.now());
@@ -2517,6 +2546,6 @@ export default definePlugin({
       document.removeEventListener(event, () => {});
     });
     
-    console.log("R6DE Plugin 4.0 gestoppt!");
+    console.log("R6DE Plugin 4.0.1 gestoppt!");
   }
 });
