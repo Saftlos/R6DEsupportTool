@@ -2711,3 +2711,4 @@ function renderUpdateConfirmView() {
     document.querySelectorAll('style[data-strafakte-plugin-style]').forEach(el => el.remove());
   }
 });
+
