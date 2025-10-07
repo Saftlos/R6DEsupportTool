@@ -208,7 +208,7 @@ export default definePlugin({
   settings,
   dependencies: ["ContextMenuAPI"],
   
-  version: "5.4.0",
+  version: "5.3.0",
   source: "https://github.com/Saftlos/R6DEsupportTool",
   updateAvailable: false as boolean,
   changelogData: { version: "Lade...", changes: "Lade...", knownBugs: "Lade..." } as ChangelogData,
@@ -262,26 +262,24 @@ export default definePlugin({
     // --- RENDER FUNCTIONS ---
     // We define them here to have access to the 'start' scope variables like 'self' and 'popup'.
 
-    function renderUpdateConfirmView() {
-        return `
-            <div class="update-view">
-                <div class="strafakte-list-title" style="justify-content: center;">🚀 Update Bereit</div>
-                <button id="update-copy-code-btn" class="update-copy-button">Neuen Code kopieren</button>
-                <div class="strafakte-detail-view">
-                    <b>Anleitung:</b><br>
-                    <!-- HIER PLATZHALTER FÜR DEINE ANLEITUNG -->
-                    <ol>
-                        <li>Klicke oben, um den neuen Code in die Zwischenablage zu kopieren.</li>
-                        <li>Öffne die Plugin-Datei <code>R6DEsupportTool.tsx</code> in deinem Vencord-Verzeichnis.</li>
-                        <li>Ersetze den gesamten alten Code durch den kopierten Code.</li>
-                        <li>Speichere die Datei und starte Discord neu oder lade die Plugins neu.</li>
-                    </ol>
-                </div>
-                <button class="strafakte-back-button" data-view="summary">← Zurück</button>
+function renderUpdateConfirmView() {
+    return `
+        <div class="update-view">
+            <div class="strafakte-list-title" style="justify-content: center;">🚀 Update Bereit</div>
+            <button id="update-copy-code-btn" class="update-copy-button">Neuen Code kopieren</button>
+            <div class="strafakte-detail-view">
+                <b>Anleitung:</b><br>
+                <ol>
+                    <li>Klicke oben, um den neuen Code in die Zwischenablage zu kopieren.</li>
+                    <li>Öffne die Plugin-Datei <code>R6DEsupportTool.tsx</code> in deinem Vencord-Verzeichnis unter <code>Vencord\\src\\userplugins\\R6DEsupportTool.tsx</code>.</li>
+                    <li>Ersetze den gesamten alten Code durch den kopierten Code.</li>
+                    <li>Speichere die Datei und führe dein Installer-Skript (z.B. <code>install.bat</code>) aus, um das Plugin zu aktualisieren.</li>
+                </ol>
             </div>
-        `;
-    }
-
+            <button class="strafakte-back-button" data-view="summary">← Zurück</button>
+        </div>
+    `;
+}
     function renderSettingsInfoView() {
         const pluginName = "R6DEsupporterTool";
         const settingsText = `
@@ -408,15 +406,6 @@ export default definePlugin({
       
       const minimalistClass = settings.store.minimalistPopup ? "minimalist-popup" : "";
       const noteIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 18px; height: 18px; color: var(--text-primary); -webkit-text-fill-color: var(--text-primary);"><path d="M13.4 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8.6a2 2 0 0 0-.6-1.4L14.8 2.6a2 2 0 0 0-1.4-.6z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><line x1="9" y1="15" x2="15" y2="15"></line></svg>`;
-
-      let errorHtml = '';
-      if (currentStrafakteData.error) {
-          errorHtml = `
-              <div class="api-error-bar">
-                  ${currentStrafakteData.error}
-              </div>
-          `;
-      }
 
       let contentHtml = `<div class="${minimalistClass}">`;
 
@@ -684,24 +673,28 @@ export default definePlugin({
 
       contentHtml += `</div>`; // .strafakte-tab-content
       
-      contentHtml += errorHtml; // Append error bar here
-
-      if (settings.store.showActionButtons && activeView !== 'settings-info' && activeView !== 'update-confirm') {
-          let updateButtonHtml = '';
-          if (self.updateAvailable) {
-              updateButtonHtml = `<button id="strafakte-update" class="strafakte-button update-available" title="Neues Update verfügbar!">Update Verfügbar</button>`;
-          } else {
-              updateButtonHtml = `<button class="strafakte-button update-unavailable" title="Du bist auf dem neusten Stand." disabled>Aktuell</button>`;
+      if (activeView === 'summary') {
+          let footerHtml = '';
+          if (settings.store.showActionButtons) {
+              let updateButtonHtml = '';
+              if (self.updateAvailable) {
+                  updateButtonHtml = `<button id="strafakte-update" class="strafakte-button update-available" title="Neues Update verfügbar!">Update Verfügbar</button>`;
+              } else {
+                  updateButtonHtml = `<button class="strafakte-button update-unavailable" title="Du bist auf dem neusten Stand." disabled>Aktuell</button>`;
+              }
+              footerHtml = `
+                  <div class="strafakte-footer">
+                      <div class="footer-update-status">${updateButtonHtml}</div>
+                      <div class="footer-buttons-right">
+                          <button id="strafakte-changelog" class="strafakte-button" title="Changelog & Bugs">📜</button>
+                          <button id="strafakte-settings" class="strafakte-button" title="Einstellungen">⚙️</button>
+                      </div>
+                  </div>`;
           }
-
-        contentHtml += `
-            <div class="strafakte-footer">
-                <div class="footer-update-status">${updateButtonHtml}</div>
-                <div class="footer-buttons-right">
-                    <button id="strafakte-changelog" class="strafakte-button" title="Changelog & Bugs">📜</button>
-                    <button id="strafakte-settings" class="strafakte-button" title="Einstellungen">⚙️</button>
-                </div>
-            </div>`;
+          contentHtml += footerHtml;
+          if (currentStrafakteData.error) {
+              contentHtml += `<div class="api-error-bar">${currentStrafakteData.error}</div>`;
+          }
       }
 
       contentHtml += `</div>`; // .minimalist-popup wrapper
@@ -746,7 +739,7 @@ export default definePlugin({
             const copyBtn = document.getElementById('update-copy-code-btn');
             copyBtn?.addEventListener('click', async () => {
                 try {
-                    const response = await fetch("https://raw.githubusercontent.com/Saftlos/R6DEsupportTool/main/R6DEsupportTool.tsx");
+                    const response = await fetch("https://raw.githubusercontent.com/Saftlos/R6DEsupportTool/main/R6DEsupportTool.tsx", { cache: "no-store" });
                     const code = await response.text();
                     await navigator.clipboard.writeText(code);
                     copyBtn.textContent = "✓ Kopiert!";
@@ -810,6 +803,8 @@ export default definePlugin({
           const oldLeft = popup.style.left;
           const oldTop = popup.style.top;
 
+          await fetchChangelog();
+          await checkForUpdates();
           currentStrafakteData = await fetchStrafakte(currentUserId);
           renderStrafakteContent();
 
@@ -866,21 +861,17 @@ export default definePlugin({
     
     const fetchChangelog = async () => {
         try {
-            const response = await fetch("https://raw.githubusercontent.com/Saftlos/R6DEsupportTool/main/CHANGELOG.md");
+            const response = await fetch("https://raw.githubusercontent.com/Saftlos/R6DEsupportTool/main/CHANGELOG.md", { cache: "no-store" });
             const text = await response.text();
-            
-            const knownBugsMatch = text.match(/## Known Bugs\s*([\s\S]*?)(?=\s*##|$)/i);
-            self.changelogData.knownBugs = knownBugsMatch ? knownBugsMatch[1].trim().replace(/\*/g, '•') : "Konnten bekannte Fehler nicht laden.";
-            
-            const latestVersionMatch = text.match(/## \[(.*?)\][\s\S]*?([\s\S]*?)(?=\n## \[|## Known Bugs)/);
-            if (latestVersionMatch) {
-                self.changelogData.version = latestVersionMatch[1].trim();
-                self.changelogData.changes = latestVersionMatch[2].trim().replace(/\*/g, '•');
-            } else {
-                 self.changelogData.version = "Unbekannt";
-                 self.changelogData.changes = "Konnte Änderungen nicht laden.";
-            }
 
+            const versionMatch = text.match(/^Version:\s*(.*)/m);
+            const changesMatch = text.match(/^Änderungen:\s*([\s\S]*?)(?=\n^Bekannte Bugs:|$)/m);
+            const bugsMatch = text.match(/^Bekannte Bugs:\s*([\s\S]*)/m);
+
+            self.changelogData.version = versionMatch ? versionMatch[1].trim() : "Unbekannt";
+            self.changelogData.changes = changesMatch ? changesMatch[1].trim().replace(/\*/g, '•') : "Konnte Änderungen nicht laden.";
+            self.changelogData.knownBugs = bugsMatch ? bugsMatch[1].trim().replace(/\*/g, '•') : "Konnten bekannte Fehler nicht laden.";
+            
         } catch (error) {
             console.error(`${self.name}: Fehler beim Abrufen der Changelog-Daten.`, error);
             self.changelogData.version = "Fehler";
@@ -893,7 +884,7 @@ export default definePlugin({
     const checkForUpdates = async () => {
         try {
             const repoUrl = "https://raw.githubusercontent.com/Saftlos/R6DEsupportTool/main/R6DEsupportTool.tsx";
-            const response = await fetch(repoUrl);
+            const response = await fetch(repoUrl, { cache: "no-store" });
             const remoteCode = await response.text();
             const remoteVersionMatch = remoteCode.match(/version: "([^"]+)"/);
             if (remoteVersionMatch && remoteVersionMatch[1] > self.version) {
@@ -1100,6 +1091,8 @@ export default definePlugin({
             --primary-blue-hover: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
             --text-primary: #f1f5f9;
             --text-secondary: #a1aab8;
+            --success-color: #34d399;
+            --error-color: #f87171;
             --success-gradient: linear-gradient(135deg, #34d399 0%, #10b981 100%);
             --warning-gradient: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
             --error-gradient: linear-gradient(135deg, #f87171 0%, #ef4444 100%);
@@ -1145,33 +1138,28 @@ export default definePlugin({
           .strafakte-button:active:not(:disabled) {
             transform: scale(1.05);
           }
-          
-          .strafakte-button.pinned {
-            background: var(--success-gradient);
-            box-shadow: 
-              0 5px 20px rgba(16, 185, 129, calc(0.5 * var(--glow-intensity))),
-              inset 0 1px 0 rgba(255,255,255,0.2);
-          }
-          
-          .strafakte-button.pinned:hover {
-            box-shadow: 
-              0 8px 30px rgba(16, 185, 129, calc(0.6 * var(--glow-intensity))),
-              0 0 35px rgba(52, 211, 153, calc(0.4 * var(--glow-intensity))),
-              inset 0 1px 0 rgba(255,255,255,0.3);
-          }
-          
+
+          .strafakte-button.pinned,
           .strafakte-button.unpinned {
-            background: var(--error-gradient);
-            box-shadow: 
-              0 5px 20px rgba(239, 68, 68, calc(0.5 * var(--glow-intensity))),
-              inset 0 1px 0 rgba(255,255,255,0.2);
+              background: transparent;
           }
-          
+          .strafakte-button.pinned {
+              border: 1px solid var(--success-color);
+              box-shadow: 0 0 15px rgba(16, 185, 129, calc(0.3 * var(--glow-intensity)));
+          }
+          .strafakte-button.pinned:hover {
+              background: rgba(52, 211, 153, 0.1);
+              border-color: #6ee7b7;
+              box-shadow: 0 8px 30px rgba(16, 185, 129, calc(0.6 * var(--glow-intensity))), 0 0 35px rgba(52, 211, 153, calc(0.4 * var(--glow-intensity))), inset 0 1px 0 rgba(255,255,255,0.1);
+          }
+          .strafakte-button.unpinned {
+              border: 1px solid var(--error-color);
+              box-shadow: 0 0 15px rgba(239, 68, 68, calc(0.3 * var(--glow-intensity)));
+          }
           .strafakte-button.unpinned:hover {
-            box-shadow: 
-              0 8px 30px rgba(239, 68, 68, calc(0.6 * var(--glow-intensity))),
-              0 0 35px rgba(248, 113, 113, calc(0.4 * var(--glow-intensity))),
-              inset 0 1px 0 rgba(255,255,255,0.3);
+              background: rgba(248, 113, 113, 0.1);
+              border-color: #fca5a5;
+              box-shadow: 0 8px 30px rgba(239, 68, 68, calc(0.6 * var(--glow-intensity))), 0 0 35px rgba(248, 113, 113, calc(0.4 * var(--glow-intensity))), inset 0 1px 0 rgba(255,255,255,0.1);
           }
           
           .strafakte-button.close {
@@ -1276,7 +1264,7 @@ export default definePlugin({
           
           .strafakte-stats {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(85px, 1fr));
+            grid-template-columns: repeat(2, 1fr);
             gap: 10px;
             margin-bottom: 18px;
           }
@@ -1550,7 +1538,6 @@ export default definePlugin({
           
           .strafakte-tab-content {
             animation: fadeIn 0.4s ${smoothCubicBezier};
-            padding-bottom: 12px;
           }
           
           .strafakte-detail-view {
@@ -1687,18 +1674,25 @@ export default definePlugin({
              font-weight: 600;
           }
           .update-available {
-             background: var(--success-gradient);
-             box-shadow: 0 4px 15px rgba(16, 185, 129, calc(0.3 * var(--glow-intensity)));
+              background: transparent;
+              border: 1px solid var(--success-color);
+              color: var(--success-color);
+              box-shadow: 0 4px 15px rgba(16, 185, 129, calc(0.3 * var(--glow-intensity)));
           }
            .update-available:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(16, 185, 129, calc(0.5 * var(--glow-intensity)));
+              background: rgba(52, 211, 153, 0.15) !important;
+              color: #86efac !important;
+              border-color: #6ee7b7 !important;
+              transform: translateY(-2px);
+              box-shadow: 0 8px 25px rgba(16, 185, 129, calc(0.5 * var(--glow-intensity)));
           }
            .update-unavailable {
-             background: var(--error-gradient);
-             cursor: not-allowed;
-             opacity: 0.7;
-             box-shadow: 0 4px 15px rgba(239, 68, 68, calc(0.3 * var(--glow-intensity)));
+              background: transparent;
+              border: 1px solid var(--error-color);
+              color: var(--error-color);
+              cursor: not-allowed;
+              opacity: 0.7;
+              box-shadow: 0 4px 15px rgba(239, 68, 68, calc(0.3 * var(--glow-intensity)));
           }
           
           .footer-buttons-right {
@@ -1708,6 +1702,9 @@ export default definePlugin({
           }
           
           .update-view { text-align: center; }
+          .update-view .strafakte-back-button {
+              margin-top: 20px;
+          }
           .update-copy-button {
             display: inline-block;
             text-decoration: none;
@@ -2127,7 +2124,7 @@ export default definePlugin({
           return {
             warnCount: 0, unbanCount: 0, unmuteCount: 0, watchlistCount: 0,
             penalties: [], warnings: [], unbans: [], unmutes: [], watchlist: [],
-            newestActiveDays: 0, error: "Bots haben keine Strafakte",
+            newestActiveDays: 0, 
             username: user.username, avatarUrl: user.getAvatarURL()
           };
         }
@@ -2386,24 +2383,16 @@ export default definePlugin({
           if (!targetUserId) {
             console.warn("R6DE Plugin: Could not extract User ID from element.", el);
             if (popup.querySelector('.strafakte-username')?.textContent === 'Fehler') return;
-
-            popup.innerHTML = `
-              <div class="strafakte-header">
-                <div class="strafakte-avatar" style="background:linear-gradient(135deg,rgba(248,113,113,0.2) 0%,rgba(239,68,68,0.15) 100%);display:flex;align-items:center;justify-content:center;font-size:22px;color:#ef4444;border-radius:12px">❌</div>
-                <div class="strafakte-user-info">
-                  <div class="strafakte-username">Fehler</div>
-                </div>
-                <div class="strafakte-button-container">
-                  <button id="strafakte-close" class="strafakte-button close" title="Close">×</button>
-                </div>
-              </div>
-              <div class="api-error-bar">
-                Konnte Benutzer-ID nicht auslesen
-              </div>
-            `;
+            
+            currentStrafakteData = {
+                warnCount: 0, unbanCount: 0, unmuteCount: 0, watchlistCount: 0, penalties:[], warnings:[],unbans:[],unmutes:[],watchlist:[],newestActiveDays:0,
+                username: "Fehler",
+                avatarUrl: "",
+                error: "Konnte Benutzer-ID nicht auslesen"
+            };
+            renderStrafakteContent();
             if (latestAvatarMouseEvent) positionPopup(popup, latestAvatarMouseEvent);
             showPopupWithAnimation(popup);
-            document.getElementById("strafakte-close")?.addEventListener("click", () => hidePopup(popup));
             return;
           }
 
@@ -2415,24 +2404,17 @@ export default definePlugin({
           if (user?.bot) {
             if (popup.querySelector('.strafakte-username')?.textContent === 'Bot' && currentUserId === targetUserId) return;
             currentUserId = targetUserId;
-            popup.innerHTML = `
-              <div class="strafakte-header">
-                <div class="strafakte-avatar" style="background:linear-gradient(135deg,rgba(37,99,235,0.2) 0%,rgba(59,130,246,0.15) 100%);display:flex;align-items:center;justify-content:center;font-size:22px;color:#3b82f6;border-radius:12px">🤖</div>
-                <div class="strafakte-user-info">
-                  <div class="strafakte-username">Bot</div>
-                  <div class="strafakte-userid">${targetUserId}</div>
-                </div>
-                <div class="strafakte-button-container">
-                  <button id="strafakte-close" class="strafakte-button close" title="Close">×</button>
-                </div>
-              </div>
-              <div style="padding:16px;text-align:center;color:var(--text-secondary);font-weight:500">
-                Bots haben keine Strafakte
-              </div>
-            `;
+            
+            currentStrafakteData = {
+                warnCount: 0, unbanCount: 0, unmuteCount: 0, watchlistCount: 0,
+                penalties: [], warnings: [], unbans: [], unmutes: [], watchlist: [],
+                newestActiveDays: 0, 
+                username: user.username, 
+                avatarUrl: user.getAvatarURL()
+            };
+            renderStrafakteContent();
             if (latestAvatarMouseEvent) positionPopup(popup, latestAvatarMouseEvent);
             showPopupWithAnimation(popup);
-            document.getElementById("strafakte-close")?.addEventListener("click", () => hidePopup(popup));
             return;
           }
           
@@ -2447,6 +2429,8 @@ export default definePlugin({
           showPopupWithAnimation(popup);
 
           currentUserId = targetUserId;
+          await fetchChangelog();
+          await checkForUpdates();
           currentStrafakteData = await fetchStrafakte(targetUserId);
 
           if (popup.style.display !== 'block') {
@@ -2727,5 +2711,3 @@ export default definePlugin({
     document.querySelectorAll('style[data-strafakte-plugin-style]').forEach(el => el.remove());
   }
 });
-
-
