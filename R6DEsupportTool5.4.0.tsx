@@ -208,7 +208,7 @@ export default definePlugin({
   settings,
   dependencies: ["ContextMenuAPI"],
   
-  version: "5.3.0",
+  version: "5.4.0",
   source: "https://github.com/Saftlos/R6DEsupportTool",
   updateAvailable: false as boolean,
   changelogData: { version: "Lade...", changes: "Lade...", knownBugs: "Lade..." } as ChangelogData,
@@ -2727,4 +2727,5 @@ export default definePlugin({
     document.querySelectorAll('style[data-strafakte-plugin-style]').forEach(el => el.remove());
   }
 });
+
 
